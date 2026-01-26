@@ -1,1 +1,402 @@
-{}
+{
+  "verifications": [
+    {
+      "timestamp": "2026-01-25T23:47:38.112270",
+      "stat_type": "season",
+      "total_games": 739,
+      "hero_stats": [
+        {
+          "hero": "Azmodan",
+          "games": 2,
+          "wr": 50,
+          "level": 27
+        },
+        {
+          "hero": "Brightwing",
+          "games": 18,
+          "wr": 61.1,
+          "level": 65
+        },
+        {
+          "hero": "Deckard",
+          "games": 1,
+          "wr": 100,
+          "level": 24
+        },
+        {
+          "hero": "E.T.C.",
+          "games": 5,
+          "wr": 20,
+          "level": 27
+        },
+        {
+          "hero": "Falstad",
+          "games": 4,
+          "wr": 25,
+          "level": 16
+        },
+        {
+          "hero": "Gazlowe",
+          "games": 322,
+          "wr": 51.6,
+          "level": 198
+        },
+        {
+          "hero": "Jaina",
+          "games": 5,
+          "wr": 80,
+          "level": 25
+        },
+        {
+          "hero": "Johanna",
+          "games": 21,
+          "wr": 33.3,
+          "level": 69
+        },
+        {
+          "hero": "Kharazim",
+          "games": 57,
+          "wr": 61.4,
+          "level": 32
+        },
+        {
+          "hero": "Li Li",
+          "games": 18,
+          "wr": 55.6,
+          "level": 131
+        },
+        {
+          "hero": "Li-Ming",
+          "games": 3,
+          "wr": 66.7,
+          "level": 11
+        },
+        {
+          "hero": "Lt. Morales",
+          "games": 10,
+          "wr": 50,
+          "level": 45
+        },
+        {
+          "hero": "Malthael",
+          "games": 27,
+          "wr": 44.4,
+          "level": 86
+        },
+        {
+          "hero": "Muradin",
+          "games": 1,
+          "wr": "0",
+          "level": 16
+        },
+        {
+          "hero": "Nazeebo",
+          "games": 3,
+          "wr": 33.3,
+          "level": 38
+        },
+        {
+          "hero": "Raynor",
+          "games": 55,
+          "wr": 60,
+          "level": 66
+        },
+        {
+          "hero": "Rehgar",
+          "games": 22,
+          "wr": 50,
+          "level": 95
+        },
+        {
+          "hero": "Sgt. Hammer",
+          "games": 12,
+          "wr": 50,
+          "level": 22
+        },
+        {
+          "hero": "Stitches",
+          "games": 17,
+          "wr": 29.4,
+          "level": 22
+        },
+        {
+          "hero": "Sylvanas",
+          "games": 17,
+          "wr": 64.7,
+          "level": 20
+        },
+        {
+          "hero": "Tyrael",
+          "games": 14,
+          "wr": 21.4,
+          "level": 14
+        },
+        {
+          "hero": "Uther",
+          "games": 1,
+          "wr": "",
+          "level": 45
+        }
+      ],
+      "maps": [
+        {
+          "map": "Alterac Pass",
+          "wins": 25,
+          "losses": 27,
+          "wr": 48.1
+        },
+        {
+          "map": "Battlefield of Eternity",
+          "wins": 40,
+          "losses": 24,
+          "wr": 62.5
+        },
+        {
+          "map": "Blackheart's Bay",
+          "wins": 15,
+          "losses": 9,
+          "wr": 62.5
+        },
+        {
+          "map": "Braxis Holdout",
+          "wins": 14,
+          "losses": 24,
+          "wr": 36.8
+        },
+        {
+          "map": "Cursed Hollow",
+          "wins": 28,
+          "losses": 37,
+          "wr": 43.1
+        },
+        {
+          "map": "Dragon Shire",
+          "wins": 31,
+          "losses": 22,
+          "wr": 58.5
+        },
+        {
+          "map": "Garden of Terror",
+          "wins": 28,
+          "losses": 32,
+          "wr": 46.7
+        },
+        {
+          "map": "Infernal Shrines",
+          "wins": 35,
+          "losses": 26,
+          "wr": 57.4
+        },
+        {
+          "map": "Sky Temple",
+          "wins": 20,
+          "losses": 30,
+          "wr": 40
+        },
+        {
+          "map": "Tomb of the Spider Queen",
+          "wins": 31,
+          "losses": 35,
+          "wr": 47
+        },
+        {
+          "map": "Towers of Doom",
+          "wins": 29,
+          "losses": 32,
+          "wr": 47.5
+        },
+        {
+          "map": "Volskaya Foundry",
+          "wins": 19,
+          "losses": 12,
+          "wr": 61.3
+        },
+        {
+          "map": "Warhead Junction",
+          "wins": 11,
+          "losses": 11,
+          "wr": 50
+        }
+      ],
+      "method": "screenshot_ui_enriched"
+    },
+    {
+      "timestamp": "2026-01-25T23:47:37.468578",
+      "stat_type": "lifetime",
+      "total_games": 0,
+      "hero_stats": [
+        {
+          "hero": "Brightwing",
+          "games": 102,
+          "wr": 56.9,
+          "level": 65
+        },
+        {
+          "hero": "Deckard",
+          "games": 76,
+          "wr": 52.6,
+          "level": 24
+        },
+        {
+          "hero": "Gazlowe",
+          "games": 1339,
+          "wr": 53.8,
+          "level": 198
+        },
+        {
+          "hero": "Johanna",
+          "games": 196,
+          "wr": 54.6,
+          "level": 69
+        },
+        {
+          "hero": "Kharazim",
+          "games": 81,
+          "wr": 60.5,
+          "level": 32
+        },
+        {
+          "hero": "Li Li",
+          "games": 105,
+          "wr": 52.4,
+          "level": 131
+        },
+        {
+          "hero": "Lt. Morales",
+          "games": 74,
+          "wr": 56.8,
+          "level": 45
+        },
+        {
+          "hero": "Malthael",
+          "games": 239,
+          "wr": 54,
+          "level": 86
+        },
+        {
+          "hero": "Morales",
+          "games": 74,
+          "wr": 56.8,
+          "level": 45
+        },
+        {
+          "hero": "Ragnaros",
+          "games": 48,
+          "wr": 52.1,
+          "level": 18
+        },
+        {
+          "hero": "Raynor",
+          "games": 283,
+          "wr": 52.3,
+          "level": 66
+        },
+        {
+          "hero": "Rehgar",
+          "games": 325,
+          "wr": 55.4,
+          "level": 95
+        },
+        {
+          "hero": "Sylvanas",
+          "games": 32,
+          "wr": 53.1,
+          "level": 20
+        },
+        {
+          "hero": "Valla",
+          "games": 23,
+          "wr": 52.2,
+          "level": 19
+        },
+        {
+          "hero": "Zagara",
+          "games": 6,
+          "wr": 66.7,
+          "level": 19
+        }
+      ],
+      "maps": [
+        {
+          "map": "Alterac Pass",
+          "wins": 25,
+          "losses": 27,
+          "wr": 48.1
+        },
+        {
+          "map": "Battlefield of Eternity",
+          "wins": 40,
+          "losses": 24,
+          "wr": 62.5
+        },
+        {
+          "map": "Blackheart's Bay",
+          "wins": 15,
+          "losses": 9,
+          "wr": 62.5
+        },
+        {
+          "map": "Braxis Holdout",
+          "wins": 14,
+          "losses": 24,
+          "wr": 36.8
+        },
+        {
+          "map": "Cursed Hollow",
+          "wins": 28,
+          "losses": 37,
+          "wr": 43.1
+        },
+        {
+          "map": "Dragon Shire",
+          "wins": 31,
+          "losses": 22,
+          "wr": 58.5
+        },
+        {
+          "map": "Garden of Terror",
+          "wins": 28,
+          "losses": 32,
+          "wr": 46.7
+        },
+        {
+          "map": "Infernal Shrines",
+          "wins": 35,
+          "losses": 26,
+          "wr": 57.4
+        },
+        {
+          "map": "Sky Temple",
+          "wins": 20,
+          "losses": 30,
+          "wr": 40
+        },
+        {
+          "map": "Tomb of the Spider Queen",
+          "wins": 31,
+          "losses": 35,
+          "wr": 47
+        },
+        {
+          "map": "Towers of Doom",
+          "wins": 29,
+          "losses": 32,
+          "wr": 47.5
+        },
+        {
+          "map": "Volskaya Foundry",
+          "wins": 19,
+          "losses": 12,
+          "wr": 61.3
+        },
+        {
+          "map": "Warhead Junction",
+          "wins": 11,
+          "losses": 11,
+          "wr": 50
+        }
+      ],
+      "method": "screenshot_ui_enriched"
+    }
+  ]
+}

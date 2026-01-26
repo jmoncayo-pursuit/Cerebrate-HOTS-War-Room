@@ -1,8 +1,8 @@
 {
-  "last_reset": 1769320395.6144588,
-  "reset_date": "2026-01-25",
+  "last_reset": 1769406068.6803122,
+  "reset_date": "2026-01-26",
   "usage": {
-    "gemini-2.5-flash": 22,
+    "gemini-2.5-flash": 1,
     "gemini-2.5-flash-lite": 0,
     "gemini-3-pro": 0,
     "gemini-2.5-pro": 0,

@@ -17,6 +17,7 @@ const DataProvenance = lazy(() => import('./pages/DataProvenance'))
 const AlphaSpec = lazy(() => import('./pages/AlphaSpec'))
 const AgentDashboard = lazy(() => import('./components/AgentDashboard'))
 const DraftSimulation = lazy(() => import('./components/DraftSimulation'))
+const TemporalAnalysis = lazy(() => import('./components/TemporalAnalysis'))
 
 function App() {
   const { matches, heroes, profile, loading, error, refresh } = useReplayData()
@@ -218,6 +219,15 @@ function App() {
             <div className="max-w-4xl mx-auto">
               <Suspense fallback={<LoadingSpinner text="Loading Services..." />}>
                 <ServicesPanel />
+              </Suspense>
+            </div>
+          ) : viewMode === 'analytics' ? (
+            <div className="h-full overflow-y-auto custom-scrollbar">
+              <Suspense fallback={<LoadingSpinner text="Loading Temporal Analysis..." />}>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                  <AgentDashboard />
+                  <TemporalAnalysis />
+                </div>
               </Suspense>
             </div>
           ) : viewMode === 'players' ? (

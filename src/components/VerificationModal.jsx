@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import './VerificationModal.css';
 
+import RankIcon from './RankIcon';
+
 export default function VerificationModal({ isOpen, onClose, onSuccess }) {
     const [screenshots, setScreenshots] = useState([]); // Array of files
     const [currentScreenshotIndex, setCurrentScreenshotIndex] = useState(0);
@@ -335,12 +337,13 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                             avg_takedowns: s.avg_takedowns || b.stats.avg_takedowns
                         };
 
-                        // 2. Merge Maps
-                        const newMaps = s.maps ? [...(b.maps || []), ...s.maps].reduce((acc, curr) => {
+                        // 2. Merge Maps (Strictly filter out maps without name to prevent desync)
+                        const incomingMaps = (s.maps || []).filter(m => m && m.map && String(m.map).trim());
+                        const newMaps = [...(b.maps || []), ...incomingMaps].reduce((acc, curr) => {
                             const existing = acc.find(m => m.map === curr.map);
                             if (existing) { Object.assign(existing, curr); return acc; }
                             acc.push(curr); return acc;
-                        }, []) : (b.maps || []);
+                        }, []);
 
                         // 3. Merge Heroes & Extrapolate
                         let incomingHeroes = s.heroes || s.hero_stats || [];
@@ -373,34 +376,43 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                             const name = normalizeHero(rawHero.hero);
                             if (!name) return;
 
-                            // Sanitize incoming data (Ignore header titles captured as data)
-                            const rawG = String(rawHero.games || '');
-                            const rawW = String(rawHero.wins || '');
-                            const rawWR = String(rawHero.wr || '');
+                            // Sanitize incoming data (Allow 0 to persist, only empty if NaN)
+                            const rawG = String(rawHero.games ?? '');
+                            const rawW = String(rawHero.wins ?? '');
+                            const rawWR = String(rawHero.wr ?? '');
 
-                            const g_val = (rawG.toLowerCase().includes('game') || isNaN(parseInt(rawG))) ? 0 : parseInt(rawG);
-                            const w_val = (rawW.toLowerCase().includes('win') || isNaN(parseInt(rawW))) ? 0 : parseInt(rawW);
-                            const wr_val = (rawWR.toLowerCase().includes('wr') || isNaN(parseFloat(rawWR))) ? 0 : parseFloat(rawWR);
+                            const g_parsed = parseInt(rawG);
+                            const w_parsed = parseInt(rawW);
+                            const wr_parsed = parseFloat(rawWR);
+
+                            const g_val = (rawG.toLowerCase().includes('game') || isNaN(g_parsed)) ? '' : g_parsed;
+                            const w_val = (rawW.toLowerCase().includes('win') || isNaN(w_parsed)) ? '' : w_parsed;
+                            const wr_val = (rawWR.toLowerCase().includes('wr') || isNaN(wr_parsed)) ? '' : wr_parsed;
 
                             const newHero = {
                                 hero: name,
-                                games: g_val || '',
-                                wins: w_val || '',
-                                wr: wr_val || '',
+                                games: g_val,
+                                wins: w_val,
+                                wr: wr_val,
                                 level: rawHero.level || ''
                             };
 
                             const existingIdx = newHeroes.findIndex(h => h.hero?.toLowerCase() === name.toLowerCase());
                             let combined = existingIdx >= 0 ? { ...newHeroes[existingIdx], ...newHero } : { ...newHero };
 
-                            // Extrapolation Math (Ensure we use sanitized values)
-                            let final_g = parseFloat(combined.games) || 0;
-                            let final_w = parseFloat(combined.wins) || 0;
-                            let final_wr = parseFloat(combined.wr) || 0;
+                            // Extrapolation Math (Explicit check for empty string vs 0)
+                            const final_g = combined.games !== '' ? parseFloat(combined.games) : NaN;
+                            const final_w = combined.wins !== '' ? parseFloat(combined.wins) : NaN;
+                            const final_wr = combined.wr !== '' ? parseFloat(combined.wr) : NaN;
 
-                            if (final_g > 0 && final_wr > 0 && !final_w) combined.wins = Math.round((final_wr / 100) * final_g);
-                            else if (final_g > 0 && final_w > 0 && (!final_wr)) combined.wr = parseFloat(((final_w / final_g) * 100).toFixed(1));
-                            else if (final_w > 0 && final_wr > 0 && !final_g) combined.games = Math.round((final_w * 100) / final_wr);
+                            if (!isNaN(final_g) && !isNaN(final_wr) && isNaN(final_w)) {
+                                combined.wins = Math.round((final_wr / 100) * final_g);
+                            } else if (!isNaN(final_g) && !isNaN(final_w) && isNaN(final_wr)) {
+                                if (final_g > 0) combined.wr = parseFloat(((final_w / final_g) * 100).toFixed(1));
+                                else combined.wr = 0;
+                            } else if (!isNaN(final_w) && !isNaN(final_wr) && isNaN(final_g)) {
+                                if (final_wr > 0) combined.games = Math.round((final_w * 100) / final_wr);
+                            }
 
                             if (existingIdx >= 0) newHeroes[existingIdx] = combined;
                             else newHeroes.push(combined);
@@ -740,6 +752,15 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                             placeholder="0"
                                         />
                                     </div>
+                                    <div className="stat-input">
+                                        <label>Rank Override</label>
+                                        <input
+                                            type="text"
+                                            value={currentStats.rank}
+                                            onChange={(e) => updateActiveStat('rank', e.target.value)}
+                                            placeholder="e.g. Silver 5"
+                                        />
+                                    </div>
                                 </div>
                                 {currentStats.total_games && (
                                     <div className="calculated-wr">
@@ -763,7 +784,7 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                                 {currentMaps.map(m => (
                                                     <div key={m.map} className="map-stat-item">
                                                         <span className="map-name-sm" title={m.map}>
-                                                            {m.map.split('(')[0].trim()}
+                                                            {m.map?.split('(')[0].trim()}
                                                         </span>
                                                         <span className={`map-wr-sm ${m.wr >= 55 ? 'win' : m.wr < 40 ? 'loss' : ''}`}>
                                                             {m.wr}%
@@ -775,16 +796,15 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                     )}
 
                                     <div className="profile-badge-grid">
-                                        {currentStats.player_level && (
-                                            <div className="badge-item">
-                                                <span className="badge-label">Level</span>
-                                                <span className="badge-value">{currentStats.player_level}</span>
+                                        {currentStats.rank && (
+                                            <div className="badge-item-iconic">
+                                                <RankIcon rank={currentStats.rank} size="md" showLabel={true} />
                                             </div>
                                         )}
-                                        {currentStats.rank && (
+                                        {currentStats.player_level && (
                                             <div className="badge-item">
-                                                <span className="badge-label">Rank</span>
-                                                <span className="badge-value">{currentStats.rank}</span>
+                                                <span className="badge-label">Neural Level</span>
+                                                <span className="badge-value">LVL {currentStats.player_level}</span>
                                             </div>
                                         )}
                                     </div>
@@ -796,7 +816,7 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                                 {Object.entries(currentStats.roles).map(([role, count]) => (
                                                     <div key={role} className="role-stat">
                                                         <span className="role-name">{role.replace('_', ' ')}</span>
-                                                        <span className="role-count">{count}</span>
+                                                        <span className="role-count">{typeof count === 'object' && count !== null ? count.games : count}</span>
                                                     </div>
                                                 ))}
                                             </div>
@@ -822,6 +842,15 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                         + Add Hero
                                     </button>
                                 </div>
+
+                                {currentHeroes.length > 0 && (
+                                    <div className="hero-column-labels">
+                                        <span>Hero / Entity</span>
+                                        <span>Games Played</span>
+                                        <span>Win Rate %</span>
+                                        <span></span>
+                                    </div>
+                                )}
                                 {currentHeroes.map((hero, index) => (
                                     <div key={index} className="hero-stat-row">
                                         <input

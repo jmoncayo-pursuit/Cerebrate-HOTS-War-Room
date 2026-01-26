@@ -20,9 +20,9 @@ pkill -9 -f cerebrate_healer.py 2>/dev/null || true
 # Start services with concurrently (suppress Python tracebacks on exit)
 npx concurrently --raw --kill-others false \
   "vite" \
-  "python3 -u api_server.py 2>&1 | grep -v 'Traceback\|File \"/\|KeyboardInterrupt' || true" \
-  "python3 -u replay_watcher.py || true" \
-  "python3 -u scripts/cerebrate_healer.py || true" \
+  "python3 -u api_server.py" \
+  "python3 -u replay_watcher.py" \
+  "python3 -u scripts/cerebrate_healer.py" \
   "./scripts/startup_banner.sh" \
   -c "magenta,yellow,blue,cyan,green,red" \
   --names "FRONT,API,WATCH,HEAL,INFO"

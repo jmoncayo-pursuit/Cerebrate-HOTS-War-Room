@@ -43,10 +43,13 @@ class CerebrateHealer:
             for key in ['verified_season_2025_3', 'verified_lifetime']:
                 stats = data.get(key)
                 if stats:
-                    wr = stats.get('wr') or stats.get('win_rate') or 0
-                    games = stats.get('games') or 0
-                    curr_wins = stats.get('wins', 0)
-                    expected_wins = round(games * (wr / 100))
+                    try:
+                        wr = float(stats.get('wr') or stats.get('win_rate') or 0)
+                        games = int(stats.get('games') or 0)
+                        curr_wins = int(stats.get('wins', 0))
+                        expected_wins = round(games * (wr / 100))
+                    except ValueError:
+                        continue
                     
                     if abs(curr_wins - expected_wins) > 1:
                         ColoredLogger.warn(f"🔧 [HEALER] Repairing {hero} {key}: {curr_wins}->{expected_wins} wins", "HEAL")
