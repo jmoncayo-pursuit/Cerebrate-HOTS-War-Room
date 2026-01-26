@@ -200,7 +200,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
 
                         return (
                             <>
-                                <RankIcon rank={profile?.rank_data?.storm_league?.current_rank} className="w-6 h-6" />
+                                <RankIcon rank={profile?.rank_data?.storm_league?.current_rank} size="xs" />
                                 <span className="text-cyan-400 font-bold">{displayGames}</span> Season 3 Games • <span className={displayWR >= 50 ? 'text-green-400' : 'text-amber-400'}>
                                     {displayWR}% WR
                                 </span>

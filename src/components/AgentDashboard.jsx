@@ -97,10 +97,10 @@ const AgentDashboard = () => {
       const res = await fetch(`/api/usage?t=${Date.now()}`)
       if (res.ok) {
         const data = await res.json()
-        setUsage(data.usage)
+        setUsage(data.quota)
         setModelHealth({
-          quality: data.model_status,
-          last_model: data.last_model
+          quality: data.link_quality,
+          last_model: data.current_model
         })
       }
     } catch (e) {

@@ -43,10 +43,10 @@ export default function ServicesPanel() {
                 const usageRes = await fetch(`/api/usage?t=${timestamp}`)
                 if (usageRes.ok) {
                     const usageData = await usageRes.json()
-                    setUsage(usageData.usage)
+                    setUsage(usageData.quota)
                     setModelHealth({
-                        quality: usageData.model_status,
-                        last_model: usageData.last_model
+                        quality: usageData.link_quality,
+                        last_model: usageData.current_model
                     })
                 }
             } else {

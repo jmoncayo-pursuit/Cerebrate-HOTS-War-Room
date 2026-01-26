@@ -644,6 +644,9 @@ export default function UnifiedChat({
 
   const loadMatchFromHistory = (match) => {
     setShowHistory(false)
+    // Synchronize global match context so agents know which match we are discussing
+    if (onShowMatchStats) onShowMatchStats(match)
+
     let replayMarkdown = `### 🎬 Archive Loaded: ${match.map} (${match.result})\n`
     if (match.analysis.verdict) {
       const color = match.analysis.verdict.toUpperCase().includes('WIN') ? 'text-green-400' : 'text-red-400'

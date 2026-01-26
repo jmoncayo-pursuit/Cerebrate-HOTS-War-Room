@@ -32,8 +32,14 @@ class AnalystAgent(BaseAgent):
             'analyze', 'review', 'mistake', 'critical error',
             'what happened', 'breakdown', 'post-game',
             'last match', 'recent game', 'that game',
-            'forensic', 'performance', 'stats'
+            'forensic', 'performance', 'stats',
+            'verdict', 'explain', 'tell me about this', 'why'
         ]
+        
+        # If we have an active match context, we handle analytical followups
+        if context.get('selectedMatch') or context.get('match_id'):
+            if query_lower.startswith(('why', 'how', 'tell me', 'explain', 'elaborate')):
+                return True
         
         return any(keyword in query_lower for keyword in analysis_keywords)
     
@@ -63,9 +69,13 @@ class AnalystAgent(BaseAgent):
         recent_matches = context.get('matches', [])[:5] # Limit to 5 most recent
         
         # Target specific match or general audit?
+        selected_match = context.get('selectedMatch')
         match_id = context.get('match_id')
+        
         target_match = None
-        if match_id:
+        if selected_match:
+            target_match = selected_match
+        elif match_id:
             target_match = next((m for m in recent_matches if m.get('id') == match_id), None)
         
         mode = "Match Analysis" if target_match else "FORENSIC AUDIT"

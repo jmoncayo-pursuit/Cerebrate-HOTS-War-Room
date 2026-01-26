@@ -59,7 +59,7 @@ const AlphaSpec = () => {
                         <div className="text-right">
                             <div className="text-xs text-slate-500 uppercase tracking-widest mb-1">Current Bracket</div>
                             <div className="text-2xl font-bold text-white flex items-center justify-end gap-2 text-right">
-                                <RankIcon rank={stats.rank} className="w-10 h-10" />
+                                <RankIcon rank={stats.rank} size="lg" />
                                 <div className="flex flex-col items-end">
                                     <span>{stats.rank}</span>
                                     {profile?.rank_data?.storm_league?.rank_points !== undefined && (
