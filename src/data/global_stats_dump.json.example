@@ -1,0 +1,47 @@
+[
+    {
+        "hero": "The Butcher",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Nazeebo",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Raynor",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Tyrael",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Li Li",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    }
+]

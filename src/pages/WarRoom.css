@@ -1,0 +1,422 @@
+.arsenal-page {
+    position: relative;
+    padding: 1.5rem;
+    max-width: 1800px;
+    margin: 0 auto;
+    color: var(--md-sys-color-on-surface);
+    min-height: 100vh;
+}
+
+/* Header */
+.arsenal-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.arsenal-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 50%, #ff8c00 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.title-icon {
+    font-size: 2rem;
+}
+
+.title-subtitle {
+    font-size: 0.9rem;
+    font-weight: 400;
+    color: var(--md-sys-color-on-surface-variant);
+    -webkit-text-fill-color: var(--md-sys-color-on-surface-variant);
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: var(--md-sys-color-on-surface-variant);
+    font-weight: 300;
+}
+
+/* Map Directives Grid - Material 3 */
+.map-directives-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1rem;
+}
+
+.map-directives-grid.focused-view {
+    display: flex;
+    justify-content: center;
+    grid-template-columns: none;
+}
+
+.map-directives-grid.focused-view .map-card {
+    max-width: 900px;
+    width: 100%;
+}
+
+.map-card {
+    background: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.2s ease;
+}
+
+.map-card:hover {
+    background: var(--md-sys-color-surface-container-high);
+    border-color: var(--md-sys-color-primary);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+}
+
+.map-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.map-name {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface);
+}
+
+.map-wr {
+    font-size: 0.95rem;
+    font-weight: bold;
+    padding: 0.25rem 0.6rem;
+    border-radius: 4px;
+}
+
+.map-wr.positive {
+    background: linear-gradient(135deg, #4ade80, #22c55e);
+    color: #000;
+}
+
+.map-wr.negative {
+    background: linear-gradient(135deg, #f87171, #ef4444);
+    color: #fff;
+}
+
+.win-condition {
+    font-size: 0.75rem;
+    color: #fbbf24;
+    background: rgba(251, 191, 36, 0.08);
+    padding: 0.4rem 0.75rem;
+    border-radius: 4px;
+    border: 1px solid rgba(251, 191, 36, 0.15);
+    margin-bottom: 1rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+/* Hero Sections - Material 3 */
+.hero-section {
+    margin-bottom: 1rem;
+}
+
+.section-title {
+    font-size: 0.7rem;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    padding-left: 0.25rem;
+}
+
+.section-title.pocket {
+    color: #a78bfa;
+}
+
+.section-title.proven {
+    color: #4ade80;
+}
+
+.section-title.hot {
+    color: #fb923c;
+}
+
+.section-title.untapped {
+    color: #60a5fa;
+}
+
+.section-title.strategy {
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.section-title.avoid {
+    color: #f87171;
+}
+
+.hero-item {
+    background: var(--md-sys-color-surface);
+    padding: 0.5rem;
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    border-left: 2px solid;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    border-left: 3px solid;
+}
+
+.hero-item.pocket {
+    border-left-color: #a78bfa;
+    background: rgba(167, 139, 250, 0.04);
+}
+
+.hero-item.proven {
+    border-left-color: #4ade80;
+    background: rgba(74, 222, 128, 0.04);
+}
+
+.hero-item.hot {
+    border-left-color: #fb923c;
+    background: rgba(251, 146, 60, 0.04);
+}
+
+.hero-item.untapped {
+    border-left-color: #60a5fa;
+    background: rgba(96, 165, 250, 0.04);
+}
+
+.hero-info {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.25rem;
+}
+
+.hero-name {
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface);
+    font-size: 0.85rem;
+}
+
+.verified-badge {
+    background: #22c55e;
+    color: #000;
+    font-size: 0.6rem;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    font-weight: bold;
+}
+
+.hero-stats {
+    color: var(--md-sys-color-on-surface-variant);
+    font-size: 0.75rem;
+}
+
+.build-container {
+    margin-top: 0.25rem;
+    transform: scale(0.85);
+    transform-origin: left;
+}
+
+/* Strategy Section - Material 3 */
+.strategy-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.strategy-hero {
+    margin-bottom: 0.75rem;
+}
+
+.strategy-role {
+    font-size: 0.8rem;
+    color: var(--md-sys-color-on-surface-variant);
+    margin-bottom: 0.25rem;
+}
+
+.strategy-role span {
+    color: var(--md-sys-color-on-surface);
+    font-weight: bold;
+    margin-left: 0.4rem;
+}
+
+/* Avoid Section - Material 3 */
+.avoid-section {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.avoid-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(248, 113, 113, 0.04);
+    padding: 0.4rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid rgba(248, 113, 113, 0.08);
+    margin-bottom: 0.4rem;
+    font-size: 0.75rem;
+}
+
+.avoid-item .hero-name {
+    color: #f87171;
+    font-size: 0.75rem;
+}
+
+.avoid-item .hero-stats {
+    font-size: 0.7rem;
+}
+
+/* Map Status - Material 3 */
+.map-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.status-label {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: bold;
+    color: var(--md-sys-color-on-surface-variant);
+}
+
+.status-badge {
+    font-size: 0.7rem;
+    font-weight: bold;
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    border: 1px solid;
+}
+
+.status-badge.dominant {
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.status-badge.contested {
+    background: rgba(96, 165, 250, 0.1);
+    color: #60a5fa;
+    border-color: rgba(96, 165, 250, 0.3);
+}
+
+.status-badge.weak {
+    background: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+    border-color: rgba(248, 113, 113, 0.3);
+}
+
+/* Responsive */
+@media (min-width: 1400px) {
+    .map-directives-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    .arsenal-title {
+        font-size: 2rem;
+    }
+
+    .map-directives-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Hero Portrait */
+.hero-portrait {
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    object-fit: cover;
+    border: 1px solid var(--md-sys-color-outline-variant);
+    flex-shrink: 0;
+}
+
+
+/* Map Images */
+.map-image {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px 8px 0 0;
+    margin: -1rem -1rem 0.75rem -1rem;
+    border-bottom: 2px solid var(--md-sys-color-outline-variant);
+}
+
+.map-card-header {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.map-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Mission Intel / Gold Standard Styles */
+.mission-intel {
+    background: rgba(var(--md-sys-color-primary-rgb), 0.03);
+    border-radius: 8px;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.section-title.mission {
+    color: #ffd700;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.75rem;
+}
+
+.forensic-bans-container {
+    background: rgba(239, 68, 68, 0.05);
+    padding: 0.5rem;
+    border-radius: 4px;
+    border: 1px solid rgba(239, 68, 68, 0.1);
+}
+
+.mission-hero-item {
+    transition: all 0.2s ease;
+}
+
+.mission-hero-item:hover {
+    background: rgba(var(--md-sys-color-primary-rgb), 0.08);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* Fix or Drop / Slump styles */
+.slump-indicator {
+    background: rgba(248, 113, 113, 0.1);
+    color: #f87171;
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    margin-top: 0.25rem;
+    border: 1px solid rgba(248, 113, 113, 0.2);
+}
+
+.scouting-badge {
+    background: #6366f1;
+    color: white;
+    font-size: 0.6rem;
+    padding: 0.1rem 0.3rem;
+    border-radius: 2px;
+    font-weight: bold;
+}

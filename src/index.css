@@ -1,0 +1,193 @@
+@import './theme/main.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: 'Roboto', 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background-color: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}
+
+/* Material 3 utility classes */
+.bg-primary {
+  background-color: var(--md-sys-color-primary);
+}
+
+.text-on-primary {
+  color: var(--md-sys-color-on-primary);
+}
+
+.bg-primary-container {
+  background-color: var(--md-sys-color-primary-container);
+}
+
+.text-on-primary-container {
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.bg-surface-container-high {
+  background-color: var(--md-sys-color-surface-container-high);
+}
+
+.text-on-surface {
+  color: var(--md-sys-color-on-surface);
+}
+
+.text-on-surface-variant {
+  color: var(--md-sys-color-on-surface-variant);
+}
+
+.border-outline-variant {
+  border-color: var(--md-sys-color-outline-variant);
+}
+
+.text-primary {
+  color: var(--md-sys-color-primary);
+}
+
+.text-error {
+  color: var(--md-sys-color-error);
+}
+
+.bg-surface-container {
+  background-color: var(--md-sys-color-surface-container);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* HotS Glow Effects overrides */
+.hots-text-glow {
+  text-shadow: 0 0 10px rgba(74, 180, 255, 0.5);
+}
+
+.tile-glow {
+  box-shadow: none;
+  transition: box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.tile-glow:hover {
+  box-shadow: var(--md-sys-elevation-level1);
+  transform: translateY(-2px);
+}
+
+/* Premium Header Design System */
+.cerebrate-header-card {
+  background: rgba(15, 23, 42, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 1rem;
+  padding: 1.5rem 2rem;
+  margin-bottom: 2rem;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  box-shadow: none;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+  animation: headerSlideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.cerebrate-header-card::before {
+  display: none;
+}
+
+.cerebrate-header-card .header-icon-box {
+  width: 3.5rem;
+  height: 3.5rem;
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  border-radius: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #22d3ee;
+  margin-right: 1.5rem;
+  box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+.cerebrate-header-card .header-title {
+  font-size: 1.75rem;
+  font-weight: 900;
+  color: white;
+  letter-spacing: -0.02em;
+  margin: 0;
+  background: linear-gradient(to right, #ffffff, #94a3b8);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cerebrate-header-card .header-subtitle {
+  color: #94a3b8;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+  max-width: 600px;
+}
+
+.status-indicator {
+  background: rgba(6, 182, 212, 0.1);
+  border: 1px solid rgba(6, 182, 212, 0.2);
+  padding: 0.35rem 0.85rem;
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #22d3ee;
+  box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
+}
+
+@keyframes headerSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Scrollbar styling */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(6, 182, 212, 0.3);
+  border-radius: 4px;
+  transition: background 0.2s;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(6, 182, 212, 0.5);
+}

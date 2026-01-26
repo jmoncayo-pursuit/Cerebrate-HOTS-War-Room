@@ -1,0 +1,30 @@
+{
+  "name": "cerebrate-hots-war-room",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "prestart": "lsof -i :8000,5173 -t | xargs kill -9 2>/dev/null || pkill -9 -f replay_watcher.py || true",
+    "start": "./start_server.sh"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.22.1",
+    "framer-motion": "^12.23.26",
+    "lucide-react": "^0.561.0",
+    "puppeteer": "^21.11.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-markdown": "^10.1.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "autoprefixer": "^10.4.17",
+    "concurrently": "^9.2.1",
+    "postcss": "^8.4.33",
+    "tailwindcss": "^3.4.1",
+    "vite": "^5.1.0"
+  }
+}

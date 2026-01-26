@@ -1,0 +1,148 @@
+/**
+ * Cerebrate Design System
+ * Material 3 (Material You) Architecture + Heroes of the Storm Aesthetic
+ */
+
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;700&family=Roboto:wght@300;400;500;700&display=swap');
+
+:root {
+    /* --- HotS Palette (Base) --- */
+    --nexus-void: #050511;
+    --nexus-deep-blue: #0a0e1a;
+    --nexus-panel: #0f1126;
+    --nexus-bright-blue: #4ab4ff;
+    --nexus-void-purple: #9d4edd;
+    --nexus-gold: #ffb800;
+    --nexus-teal: #00ffcc;
+    --nexus-crimson: #ff4444;
+
+    /* --- Material 3 Token System (Nexus Implementation) --- */
+    --md-sys-color-primary: var(--nexus-bright-blue);
+    --md-sys-color-on-primary: #002e4d;
+    --md-sys-color-primary-container: #004574;
+    --md-sys-color-on-primary-container: #cce5ff;
+
+    --md-sys-color-secondary: #d4bbff;
+    --md-sys-color-on-secondary: #3b0090;
+    --md-sys-color-secondary-container: #5417b7;
+    --md-sys-color-on-secondary-container: #e9ddff;
+
+    --md-sys-color-tertiary: var(--nexus-teal);
+    --md-sys-color-on-tertiary: #003730;
+
+    --md-sys-color-error: var(--nexus-crimson);
+    --md-sys-color-on-error: #690005;
+
+    --md-sys-color-background: var(--nexus-deep-blue);
+    --md-sys-color-on-background: #e1e2ec;
+    --md-sys-color-surface: var(--nexus-deep-blue);
+    --md-sys-color-on-surface: #e1e2ec;
+    --md-sys-color-surface-variant: var(--nexus-deep-blue);
+    --md-sys-color-on-surface-variant: #c4c6d0;
+
+    --md-sys-color-outline: #2d3855;
+    --md-sys-color-outline-variant: #1f233a;
+
+    --md-sys-color-surface-container: var(--nexus-panel);
+    --md-sys-color-surface-container-high: #1a1d36;
+    --md-sys-color-surface-container-highest: #262945;
+    --md-sys-color-surface-container-low: #0b0d1e;
+
+    /* --- Elevation & Shadows --- */
+    --md-sys-elevation-level1: 0 0 15px rgba(0, 180, 255, 0.15);
+    --md-sys-elevation-level2: 0 0 20px rgba(0, 180, 255, 0.25);
+    --md-sys-elevation-level3: 0 0 30px rgba(157, 78, 221, 0.3);
+
+    /* --- Shape --- */
+    --md-sys-shape-corner-small: 8px;
+    --md-sys-shape-corner-medium: 12px;
+    --md-sys-shape-corner-large: 16px;
+    --md-sys-shape-corner-extra-large: 24px;
+
+    /* --- Typography --- */
+    --font-display: 'Outfit', sans-serif;
+    --font-body: 'Roboto', sans-serif;
+    font-size: 15px;
+}
+
+/* Base Semantic Classes */
+.nexus-surface {
+    background-color: var(--md-sys-color-surface);
+    color: var(--md-sys-color-on-surface);
+    font-family: var(--font-body);
+}
+
+.nexus-card {
+    background-color: var(--md-sys-color-surface-container);
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: var(--md-sys-shape-corner-large);
+    box-shadow: var(--md-sys-elevation-level1);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.nexus-card:hover {
+    box-shadow: var(--md-sys-elevation-level2);
+    border-color: var(--md-sys-color-primary);
+}
+
+/* HotS Specific Glows */
+.text-glow-blue {
+    text-shadow: 0 0 10px rgba(74, 180, 255, 0.6), 0 0 20px rgba(74, 180, 255, 0.3);
+}
+
+.text-glow-purple {
+    text-shadow: 0 0 10px rgba(157, 78, 221, 0.6), 0 0 20px rgba(157, 78, 221, 0.3);
+}
+
+.text-icy {
+    font-family: var(--font-display);
+    background: linear-gradient(180deg, #fff 0%, #4ab4ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 8px rgba(74, 180, 255, 0.4));
+}
+
+/* Material 3 Buttons (Nexus Style) */
+.md3-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 24px;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+    font-family: var(--font-display);
+    font-weight: 500;
+    letter-spacing: 0.1px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.md3-button-filled {
+    background: linear-gradient(135deg, var(--md-sys-color-primary) 0%, var(--md-sys-color-secondary) 100%);
+    color: #fff;
+    box-shadow: var(--md-sys-elevation-level1);
+}
+
+.md3-button-filled:hover {
+    box-shadow: var(--md-sys-elevation-level3);
+    transform: translateY(-1px);
+}
+
+/* Scrollbar (Nexus) */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--nexus-void);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--md-sys-color-outline);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--nexus-bright-blue);
+}

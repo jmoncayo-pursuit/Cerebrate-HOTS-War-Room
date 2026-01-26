@@ -1,0 +1,250 @@
+/* Replay Selector Premium Styling */
+
+.replay-container {
+    position: relative;
+    width: 100%;
+    /* Ensure the container takes full available height if needed */
+    height: 100%;
+}
+
+.cinematic-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+        linear-gradient(rgba(18, 20, 28, 0.2), rgba(10, 12, 16, 0.4)),
+        url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%239C92AC' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+}
+
+.cinematic-overlay::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 50% 0%, rgba(139, 92, 246, 0.03) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Match History Card */
+.history-card {
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1.25rem;
+    overflow: hidden;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 50px -20px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+}
+
+.history-header {
+    background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 0%, rgba(30, 41, 59, 0.4) 100%);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.history-title {
+    font-size: 1.1rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.history-icon {
+    width: 2.25rem;
+    height: 2.25rem;
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    border-radius: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #22d3ee;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
+}
+
+.table-header-row {
+    display: grid;
+    grid-template-columns: 80px 180px 120px 70px 280px 1fr 40px;
+    gap: 1rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(15, 23, 42, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.65rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #64748b;
+}
+
+.match-row {
+    display: grid;
+    grid-template-columns: 80px 180px 120px 70px 280px 1fr 40px;
+    gap: 1rem;
+    padding: 1rem 1.5rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+}
+
+.match-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+    padding-left: 1.75rem;
+    /* Subtle shift */
+}
+
+/* Upload Section */
+.ingest-panel {
+    background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    display: flex;
+    gap: 2rem;
+    backdrop-filter: blur(30px);
+    box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6);
+    position: relative;
+    overflow: hidden;
+}
+
+.ingest-panel::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: linear-gradient(to bottom, #06b6d4, #3b82f6);
+    opacity: 0.5;
+}
+
+.dropzone-area {
+    background: rgba(15, 23, 42, 0.6);
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 1rem;
+    transition: all 0.3s ease;
+    height: 100%;
+    min-height: 80px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    gap: 1.5rem;
+}
+
+.dropzone-area:hover {
+    border-color: rgba(6, 182, 212, 0.4);
+    background: rgba(6, 182, 212, 0.03);
+    box-shadow: inset 0 0 30px rgba(6, 182, 212, 0.05);
+}
+
+.dropzone-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.75rem;
+    background: rgba(6, 182, 212, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #22d3ee;
+    margin-bottom: 0;
+    box-shadow: 0 0 25px rgba(6, 182, 212, 0.2);
+    transition: transform 0.3s ease;
+}
+
+.dropzone-area:hover .dropzone-icon {
+    transform: scale(1.1) rotate(-5deg);
+}
+
+.queue-panel {
+    background: rgba(10, 12, 16, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1rem;
+    display: flex;
+    flex-direction: column;
+    height: 400px;
+    overflow: hidden;
+}
+
+.queue-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.queue-title {
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.process-btn {
+    background: linear-gradient(135deg, #06b6d4 0%, #0ea5e9 100%);
+    border: none;
+    padding: 0.5rem 1.25rem;
+    border-radius: 2rem;
+    color: white;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.4);
+    transition: all 0.3s ease;
+}
+
+.process-btn:hover {
+    box-shadow: 0 0 30px rgba(6, 182, 212, 0.6);
+    transform: translateY(-1px);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+@media (max-width: 768px) {
+    .ingest-panel {
+        padding: 1rem;
+        gap: 1rem;
+        border-radius: 1rem;
+    }
+
+    .queue-panel {
+        height: 200px;
+    }
+}

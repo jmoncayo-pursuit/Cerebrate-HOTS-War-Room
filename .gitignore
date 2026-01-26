@@ -1,0 +1,157 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+*.db
+*.sqlite
+
+# Node/React
+node_modules/
+dist/
+build/
+.vite/
+
+# ============================================
+# PERSONAL DATA PRIVACY
+# ============================================
+# These files contain YOUR personal gaming data and should NEVER be committed
+# Example/template versions with .example suffix are safe to commit
+
+# Personal Match History & Stats
+src/data/match_history.json
+src/data/match_history*.backup*.json
+src/data/match_history_full.json*
+src/data/player_profile.json
+src/data/baseline_stats.json
+src/data/baseline_season_stats.json
+src/data/build_stats.json
+
+# Personal Social Network Data
+src/data/player_interactions.json
+src/data/nemesis_forensics.json
+
+# Personal AI Analysis & Recommendations
+src/data/cerebrate_advice_log.json
+src/data/map_knowledge.json
+src/data/map_recommendations_cache.json
+src/data/response_cache.json
+src/data/qm_blacklist.json
+
+# Personal Hero Mastery Data
+src/data/hero_roster_levels.json
+
+# Personal Configuration
+src/data/cerebrate_config.json
+src/data/gold_standards.json
+
+# ============================================
+# SHARED/PUBLIC DATA (OK TO COMMIT)
+# ============================================
+# These files are game metadata, not personal:
+# - hero_data.json (game hero definitions)
+# - hero_roles.json (role classifications)
+# - talents.json (talent database)
+# - talent_id_map.json (talent ID mappings)
+# - global_hero_stats_stormleague_plus_talents.json (public meta data)
+# - hero_patches.json (patch history)
+
+# ============================================
+# LEGACY DATA FILES
+# ============================================
+db.json
+hero_stats.json
+heroes_profile_dump.json
+dashboard.db
+*.log
+data/hero_patches.json
+data/patch_cache.json
+data/*_test_results.json
+
+# Debug/Analysis artifacts
+analysis*.json
+final_*.json
+local_*_stats.json
+*_stats_requests.json
+
+# Replay files (user-specific)
+*.StormReplay
+
+# Backup files
+*.backup
+cleanup_backup_*/
+
+# Log files
+logs/
+*.log
+parser_debug.log
+server.log
+api_server.log
+backend.log
+frontend.log
+war_room.log
+
+# Test files (keep codebase clean)
+test_*.py
+*_test.py
+TEST_*.md
+*_TEST_RESULTS.md
+
+# Browser recordings & AI artifacts
+*.webp
+.gemini/
+.agent/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+# Environment Variables
+.env
+100_PERCENT_COMPLETE.md
+src/data/replays/
+
+# Local Service State
+.api_server.pid
+.frontend.pid
+.watcher.pid
+.processed_replays.txt
+.watcher_activity.json
+.watcher_status.json
+.watcher_history.json
+
+# Database Files (CRITICAL - NEVER COMMIT)
+src/data/cerebrate.db
+src/data/*.db
+src/data/*.sqlite
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Hackathon & Forensic Tools
+scripts/forensic_reaper.py
+scripts/migrate_analysis_keys.py
+scripts/batch_reparse.py
+scripts/debug_pings.py
+scripts/debug_pings_structure.py
+scripts/debug_chat.py
+scripts/rebuild_player_profile.py
+scripts/update_personal_stats.py
+
+# Hackathon Documentation (keep local until ready)
+docs/HACKATHON_JOURNEY.md
+HACKATHON_SUBMISSION.md
+DRAFT_GUIDE.md
+.agent/DEMO_NARRATION_SCRIPTS.md
+.agent/workflows

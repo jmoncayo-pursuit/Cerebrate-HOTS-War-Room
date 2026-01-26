@@ -1,0 +1,1621 @@
+import { useState, useEffect } from 'react'
+import ReactDOM from 'react-dom'
+import { motion, AnimatePresence } from 'framer-motion'
+import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer } from 'lucide-react'
+import HeroPortrait from './HeroPortrait'
+import talentData from '../data/talents.json'
+// import profileData from '../data/player_profile.json' // Removed
+import { formatFullDateTime } from '../utils/dateUtils'
+import { normalizeHeroName } from '../utils/heroUtils'
+import MatchTimeline from './MatchTimeline'
+import { processHeroIcons } from './HeroText'
+import heroData from '../data/hero_data.json'
+
+// --- CUSTOM HOOKS ---
+
+function useEncounteredPlayers() {
+    const [interactions, setInteractions] = useState({})
+    useEffect(() => {
+        fetch('/api/player_interactions')
+            .then(res => res.json())
+            .then(data => setInteractions(data))
+            .catch(err => console.error('Failed to load interactions:', err))
+    }, [])
+    return interactions
+}
+
+// --- HELPER COMPONENTS ---
+
+const EncounterBadge = ({ stats }) => {
+    if (!stats || !stats.games) return null;
+
+    const wr = stats.win_rate !== undefined ? Math.round(stats.win_rate) : null;
+    const wrColor = wr >= 60 ? 'text-green-300' : wr <= 40 ? 'text-red-300' : 'text-purple-200';
+
+    return (
+        <div className="flex items-center gap-1.5 px-1.5 py-0.5 rounded bg-purple-500/20 border border-purple-500/40 text-[10px] font-bold shrink-0 cursor-help"
+            title={`Played ${stats.games} games together${wr !== null ? ` (${wr}% Win Rate)` : ''}`}>
+            <Activity size={10} className="text-purple-300" />
+            <span className="text-purple-200">{stats.games}g</span>
+            {wr !== null && (
+                <span className={`${wrColor} border-l border-white/10 pl-1.5`}>{wr}%</span>
+            )}
+        </div>
+    )
+}
+
+const Questionable = ({ children, title, value, context, onDiscuss }) => {
+    const [showOption, setShowOption] = useState(false);
+
+    return (
+        <>
+            {showOption && (
+                <div
+                    className="fixed inset-0 z-[100] cursor-default"
+                    onClick={(e) => {
+                        e.stopPropagation()
+                        setShowOption(false)
+                    }}
+                />
+            )}
+            <div
+                className="relative cursor-pointer group"
+                onClick={() => setShowOption(!showOption)}
+            >
+                {children}
+                {showOption && (
+                    <motion.div
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        className="absolute z-[101] bottom-full mb-2 left-1/2 -translate-x-1/2 bg-[#0f172a] py-2 px-3 rounded text-left border border-cyan-500/50 shadow-xl flex items-center gap-2 hover:bg-cyan-900/40 transition-colors cursor-pointer min-w-[150px] z-50 whitespace-nowrap"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onDiscuss({
+                                type: 'match_discussion',
+                                text: `I want to discuss the ${title}: "${value}".\n\n${context || ''}\n\nWhy is this the assessment?`,
+                                topic: title
+                            });
+                            setShowOption(false);
+                        }}
+                    >
+                        <MessageSquare size={14} className="text-cyan-400 shrink-0" />
+                        <span className="text-xs font-bold text-cyan-200">Discuss with Coach?</span>
+                    </motion.div>
+                )}
+            </div>
+        </>
+    )
+}
+
+const TalentImage = ({ hero, tier, talentIndex, talentName, talentMap, size = "md" }) => {
+    const [error, setError] = useState(false)
+
+    const tierToLevel = {
+        1: 1, 2: 4, 3: 7, 4: 10, 5: 13, 6: 16, 7: 20
+    }
+
+    const level = tierToLevel[tier] || tier
+    const heroId = normalizeHeroName(hero)
+
+    // Try constructed key first
+    let iconFilename = talentMap[`${heroId}-${level}-${talentIndex}`]
+
+    // Fallback to talent name
+    if (!iconFilename && talentName) {
+        iconFilename = talentMap[talentName]
+    }
+
+    // Size classes
+    const dims = size === 'sm' ? 'w-6 h-6' : size === 'lg' ? 'w-12 h-12' : 'w-10 h-10'
+
+    if (!iconFilename) {
+        return (
+            <div className={`${dims} bg-[#1e293b] rounded flex items-center justify-center border border-white/20`} title={talentName || `Lvl ${level}`}>
+                <span className="text-[9px] text-gray-500 font-bold">{level}</span>
+            </div>
+        )
+    }
+
+    return (
+        <img
+            src={`/images/talents/${iconFilename}`}
+            alt={`Lvl ${level}`}
+            title={talentName || `Lvl ${level}`}
+            className={`${dims} rounded border border-white/20 shadow-sm bg-black object-cover`}
+            onError={() => setError(true)}
+        />
+    )
+}
+
+const formatMMSS = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+};
+
+// --- BANKING LEDGER COMPONENT ---
+
+function EconomyTab({ match, players }) {
+    const mapName = match.map || '';
+    const ECONOMY_MAPS = [
+        "Blackheart's Bay",
+        "Tomb of the Spider Queen",
+        "Warhead Junction",
+        "Cursed Hollow",
+        "Garden of Terror",
+        "Towers of Doom"
+    ];
+
+    const isEconomyMap = ECONOMY_MAPS.some(map => mapName.includes(map));
+
+    // Determine asset name and icon based on map
+    const getAssetInfo = (map) => {
+        if (map.includes("Blackheart")) return { name: "Doubloons", icon: "🪙", collectedKey: "BlackheartDoubloonsCollected", turnedInKey: "BlackheartDoubloonsTurnedIn" };
+        if (map.includes("Spider Queen")) return { name: "Gems", icon: "💎", collectedKey: "GemsCollected", turnedInKey: "GemsTurnedIn" };
+        if (map.includes("Warhead")) return { name: "Warheads", icon: "☢️", collectedKey: "WarheadsCollected", turnedInKey: "WarheadsActivated" };
+        if (map.includes("Cursed")) return { name: "Tributes", icon: "🏺", collectedKey: "TributesCollected", turnedInKey: "TributesTurnedIn" };
+        if (map.includes("Garden")) return { name: "Seeds", icon: "🌱", collectedKey: "SeedsCollected", turnedInKey: "SeedsTurnedIn" };
+        if (map.includes("Towers")) return { name: "Altars", icon: "⛩️", collectedKey: "AltarsCaptured", turnedInKey: null };
+        return { name: "Objectives", icon: "📦", collectedKey: null, turnedInKey: null };
+    };
+
+    const { name: assetName, icon: assetIcon, collectedKey, turnedInKey } = getAssetInfo(mapName);
+
+    if (!collectedKey) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 uppercase tracking-widest bg-black/20 rounded-lg border border-white/5 gap-4">
+                <AlertTriangle size={48} className="text-gray-700" />
+                <span>No economy data for this battleground.</span>
+            </div>
+        );
+    }
+
+    // Calculate totals per player
+    const playerTotals = players.map(p => {
+        const stats = { ...p.stats, ...p.kv_stats };
+        const collected = stats[collectedKey] || 0;
+        const turnedIn = turnedInKey ? (stats[turnedInKey] || 0) : 0;
+
+        // Calculate likely dropped (collected - turned in)
+        // If turned in > collected, they picked up coins from deaths
+        const likelyDropped = Math.max(0, collected - turnedIn);
+        const pickedUpFromDeaths = Math.max(0, turnedIn - collected);
+
+        return {
+            ...p,
+            collected,
+            turnedIn,
+            likelyDropped,
+            pickedUpFromDeaths,
+            efficiency: collected > 0 ? ((turnedIn / collected) * 100).toFixed(1) : 0
+        };
+    }).filter(p => p.collected > 0 || p.turnedIn > 0);
+
+    if (playerTotals.length === 0) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 uppercase tracking-widest bg-black/20 rounded-lg border border-white/5 gap-4">
+                <AlertTriangle size={48} className="text-gray-700" />
+                <span>No {assetName.toLowerCase()} activity recorded.</span>
+            </div>
+        );
+    }
+
+    return (
+        <div className="space-y-6 max-w-5xl mx-auto">
+            <div className="bg-[#0f0518]/90 rounded-2xl border border-white/10 overflow-hidden shadow-2xl backdrop-blur-xl">
+                <div className="bg-white/5 px-8 py-5 border-b border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <TrendingUp size={20} className="text-cyan-400" />
+                        <h3 className="text-sm font-black uppercase tracking-[0.2em] text-cyan-400">{assetName} Summary: {mapName}</h3>
+                    </div>
+                    <div className="px-3 py-1 rounded bg-cyan-500/20 border border-cyan-500/30 text-[10px] font-bold text-cyan-300">
+                        {playerTotals.length} PLAYERS
+                    </div>
+                </div>
+                <div className="px-8 py-6">
+                    <div className="space-y-4">
+                        {playerTotals.map((p, idx) => (
+                            <div key={idx} className="bg-white/5 rounded-lg border border-white/10 p-4 hover:bg-white/10 transition-colors">
+                                <div className="flex items-center gap-4 mb-3">
+                                    <div className="relative shrink-0">
+                                        <HeroPortrait heroName={p.hero} size="md" />
+                                        <div className="absolute -bottom-1 -right-1 bg-cyan-600 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold border border-white/20">
+                                            {p.team === 0 ? 'A' : 'B'}
+                                        </div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="font-black text-sm text-white">{p.name}</div>
+                                        <div className="text-[10px] text-gray-400 uppercase">{p.hero}</div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div className="bg-cyan-500/10 rounded p-3 border border-cyan-500/20">
+                                        <div className="text-[10px] text-cyan-400 uppercase font-bold mb-1">Collected</div>
+                                        <div className="text-2xl font-black text-white">{assetIcon} {p.collected}</div>
+                                    </div>
+
+                                    {turnedInKey && (
+                                        <div className="bg-green-500/10 rounded p-3 border border-green-500/20">
+                                            <div className="text-[10px] text-green-400 uppercase font-bold mb-1">Turned In</div>
+                                            <div className="text-2xl font-black text-white">{assetIcon} {p.turnedIn}</div>
+                                        </div>
+                                    )}
+
+                                    {p.likelyDropped > 0 && (
+                                        <div className="bg-red-500/10 rounded p-3 border border-red-500/20">
+                                            <div className="text-[10px] text-red-400 uppercase font-bold mb-1">Likely Dropped</div>
+                                            <div className="text-2xl font-black text-white">{assetIcon} {p.likelyDropped}</div>
+                                            <div className="text-[9px] text-red-300 mt-1">On death</div>
+                                        </div>
+                                    )}
+
+                                    {p.pickedUpFromDeaths > 0 && (
+                                        <div className="bg-yellow-500/10 rounded p-3 border border-yellow-500/20">
+                                            <div className="text-[10px] text-yellow-400 uppercase font-bold mb-1">Picked Up</div>
+                                            <div className="text-2xl font-black text-white">{assetIcon} {p.pickedUpFromDeaths}</div>
+                                            <div className="text-[9px] text-yellow-300 mt-1">From deaths</div>
+                                        </div>
+                                    )}
+
+                                    {turnedInKey && p.collected > 0 && (
+                                        <div className="bg-purple-500/10 rounded p-3 border border-purple-500/20">
+                                            <div className="text-[10px] text-purple-400 uppercase font-bold mb-1">Efficiency</div>
+                                            <div className="text-2xl font-black text-white">{p.efficiency}%</div>
+                                            <div className="text-[9px] text-purple-300 mt-1">Turn-in rate</div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Insight messages */}
+                                {p.likelyDropped > 0 && (
+                                    <div className="mt-3 p-2 bg-red-500/10 border border-red-500/30 rounded text-[11px] text-red-300">
+                                        ⚠️ Lost {p.likelyDropped} {assetName.toLowerCase()} on death - critical mistake
+                                    </div>
+                                )}
+                                {p.efficiency < 50 && p.collected > 3 && (
+                                    <div className="mt-3 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-[11px] text-yellow-300">
+                                        ⚠️ Low turn-in rate ({p.efficiency}%) - holding too long
+                                    </div>
+                                )}
+                                {p.pickedUpFromDeaths > 0 && (
+                                    <div className="mt-3 p-2 bg-green-500/10 border border-green-500/30 rounded text-[11px] text-green-300">
+                                        ✓ Picked up {p.pickedUpFromDeaths} {assetName.toLowerCase()} from enemy deaths
+                                    </div>
+                                )}
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="mt-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded text-[11px] text-blue-300">
+                        <strong>Note:</strong> Replay files only contain end-game totals, not per-transaction events.
+                        "Likely Dropped" is calculated as (Collected - Turned In).
+                        If Turned In &gt; Collected, player picked up coins from enemy deaths.
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// --- MAIN COMPONENT ---
+
+export default function MatchStatsOverlay({ match: initialMatch, onClose, onDiscuss, className }) {
+    if (!initialMatch) return null
+
+    const [activeTab, setActiveTab] = useState('summary')
+    const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
+    const [localMatch, setLocalMatch] = useState(initialMatch)
+    const [isVerifying, setIsVerifying] = useState(false)
+    const [playerProfile, setPlayerProfile] = useState(null)
+    const [talentMap, setTalentMap] = useState({})
+
+    useEffect(() => {
+        fetch('/api/data/talent_id_map.json')
+            .then(res => res.json())
+            .then(data => setTalentMap(data))
+            .catch(err => console.error("Failed to load talent map", err))
+    }, [])
+
+    useEffect(() => {
+        if (initialMatch) {
+            setLocalMatch(initialMatch)
+        }
+    }, [initialMatch, initialMatch?.id, initialMatch?.timestamp_iso])
+
+    useEffect(() => {
+        fetch('/api/player_profile')
+            .then(res => res.json())
+            .then(setPlayerProfile)
+            .catch(err => console.error(err))
+    }, [])
+
+    // Add Escape key handler to close overlay
+    useEffect(() => {
+        const handleEscape = (e) => {
+            if (e.key === 'Escape' && onClose) {
+                onClose()
+            }
+        }
+        window.addEventListener('keydown', handleEscape)
+        return () => window.removeEventListener('keydown', handleEscape)
+    }, [onClose])
+
+    const { map, hero, result, date, analysis, advanced_stats, players } = localMatch
+    const isWin = result === 'WIN'
+
+    return (
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className={className || "fixed inset-0 z-50 bg-black/95 backdrop-blur-sm flex items-center justify-center p-4"}
+                onClick={onClose}
+            >
+                {/* Main Container - Full Screen Overlay Style */}
+                <div
+                    className="w-full h-full flex flex-col relative"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                        background: 'radial-gradient(circle at 50% 50%, #1a0b2e 0%, #050505 100%)'
+                    }}
+                >
+
+                    {/* Top Bar: Title & Resources */}
+                    <div className="flex justify-between items-center px-8 py-4 border-b border-white/10 bg-[#0f0518]/80 shrink-0">
+                        {/* Title Section */}
+                        <div className="flex flex-col">
+                            <h1 className="text-3xl font-black text-white uppercase tracking-wider italic">
+                                <span className="text-purple-300 mr-3">{map || 'Unknown Map'}</span>
+                                <span className={isWin ? 'text-[#38bdf8] drop-shadow-[0_0_10px_rgba(56,189,248,0.5)]' : 'text-red-500'}>
+                                    {isWin ? 'VICTORY' : 'DEFEAT'}
+                                </span>
+                            </h1>
+                            <div className="flex items-center gap-2 text-sm text-gray-400 font-medium">
+                                <span>{hero}</span>
+                                <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                                <span>{formatFullDateTime(date || initialMatch.timestamp_iso)}</span>
+                                <span className="w-1 h-1 bg-gray-600 rounded-full" />
+                                <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_5px_#22d3ee] animate-pulse" />
+                                    <span className="text-[10px] text-cyan-500 font-black uppercase tracking-widest italic">Cerebrate Forensic Link Verified (v{localMatch.pipeline_version || '2.1.0'})</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+
+                    <div className="px-8 pt-6 flex gap-8 border-b border-white/5 mx-8 shrink-0">
+                        {['summary', 'stats', 'talents', 'timeline'].map(tab => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab)}
+                                className={`pb-4 text-lg font-bold uppercase tracking-widest transition-colors relative ${activeTab === tab ? 'text-white' : 'text-gray-500 hover:text-gray-300'}`}
+                            >
+                                {tab}
+                                {activeTab === tab && (
+                                    <motion.div layoutId="tabLine" className="absolute bottom-0 left-0 right-0 h-1 bg-[#38bdf8] shadow-[0_0_10px_#38bdf8]" />
+                                )}
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Content Area */}
+                    <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
+                        <div className="w-full">
+                            {activeTab === 'stats' && <StatsScoreboard match={localMatch} players={players} onDiscuss={onDiscuss} />}
+                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} />}
+                            {activeTab === 'talents' && <TalentGrid match={localMatch} players={players} talentMap={talentMap} onDiscuss={onDiscuss} playerProfile={playerProfile} />}
+                            {activeTab === 'timeline' && <MatchTimeline matchId={localMatch.id} />}
+                        </div>
+                    </div>
+
+                    {/* Footer / Close Button */}
+                    <div className="mt-auto py-6 flex justify-center shrink-0 bg-[#0f0518] border-t border-white/5">
+                        <button
+                            onClick={onClose}
+                            className="w-12 h-12 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-white/50 hover:text-white transition-all group"
+                        >
+                            <X size={20} className="group-hover:scale-110 transition-transform" />
+                        </button>
+                    </div>
+
+                </div>
+            </motion.div>
+        </AnimatePresence >
+    )
+}
+
+// --- SCOREBOARD ---
+
+function StatsScoreboard({ match, players, onDiscuss }) {
+    const interactions = useEncounteredPlayers()
+    const [sortBy, setSortBy] = useState('HeroDamage')
+    const [sortDir, setSortDir] = useState('desc')
+
+    // Safety check: ensure players exists and is an array
+    if (!players || !Array.isArray(players) || players.length === 0) {
+        return (
+            <div className="text-center text-gray-400 py-8">
+                No player data available for this match.
+            </div>
+        )
+    }
+
+    // Identify user
+    const userPlayer = players.find(p => p.name === (typeof PLAYER_NAME !== 'undefined' ? PLAYER_NAME : 'CerebrateUser') || p.hero === match.hero);
+    const userTeamId = userPlayer ? userPlayer.team : 0;
+
+    // Sort ALL players together (mixed teams)
+    const sortedPlayers = [...players].sort((a, b) => {
+        const aVal = a.stats?.[sortBy] || 0
+        const bVal = b.stats?.[sortBy] || 0
+        return sortDir === 'desc' ? bVal - aVal : aVal - bVal
+    })
+
+    // Split into teams AFTER sorting
+    const team0 = sortedPlayers.filter(p => p.team === 0)
+    const team1 = sortedPlayers.filter(p => p.team === 1)
+
+    // User team on top
+    const topTeam = userTeamId === 0 ? team0 : team1;
+    const botTeam = userTeamId === 0 ? team1 : team0;
+
+    // Levels - accessing .stats
+    const topLvl = topTeam[0]?.stats?.TeamLevel || 0;
+    const botLvl = botTeam[0]?.stats?.TeamLevel || 0;
+
+    // Handle column header click
+    const handleSort = (column) => {
+        if (sortBy === column) {
+            setSortDir(sortDir === 'desc' ? 'asc' : 'desc')
+        } else {
+            setSortBy(column)
+            setSortDir('desc')
+        }
+    }
+
+    return (
+        <div className="w-full flex justify-center mt-4">
+            <div className="w-full border-[3px] border-[#4c3b7f] bg-[#0c0518] shadow-2xl relative">
+
+                {/* HEADERS */}
+                <div className="grid grid-cols-[300px_repeat(7,1fr)] bg-[#1a1033] border-b border-[#2e2158] h-10 select-none pl-[6px]">
+                    <div className="pl-4 flex items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
+                        Hero
+                    </div>
+                    <StatHeader label="Kills" sub="Combat" icon={Swords} color="#94a3b8" column="SoloKills" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="Assists" sub="Combat" icon={Heart} color="#fbbf24" column="Assists" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="Deaths" sub="Combat" icon={Skull} color="#a855f7" column="Deaths" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="Siege" sub="Damage" icon={Award} color="#94a3b8" column="SiegeDamage" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="Hero" sub="Damage" icon={Target} color="#94a3b8" column="HeroDamage" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="Healing" sub="Support" icon={Shield} color="#94a3b8" column="Healing" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="XP" sub="Contrib" icon={ArrowUpCircle} color="#c084fc" column="ExperienceContribution" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                </div>
+
+                {/* ALL PLAYERS - MIXED */}
+                <div>
+                    {sortedPlayers.map((p, i) => {
+                        const isUserTeam = p.team === userTeamId
+                        return (
+                            <PlayerRow
+                                key={i}
+                                player={p}
+                                isUser={p === userPlayer}
+                                isTop={isUserTeam}
+                                onDiscuss={onDiscuss}
+                                interactions={interactions}
+                            />
+                        )
+                    })}
+                </div>
+
+            </div>
+        </div>
+    )
+}
+
+function StatHeader({ icon: Icon, color, label, sub, column, sortBy, sortDir, onSort }) {
+    const isActive = sortBy === column
+    return (
+        <div
+            className="flex flex-col items-center justify-center border-l border-[#2e2158] h-full relative group cursor-pointer bg-[#1e1b30] hover:bg-[#2a2640] transition-colors"
+            onClick={() => onSort && onSort(column)}
+        >
+            <div className="flex items-center gap-2">
+                <Icon size={14} style={{ color: color }} strokeWidth={2.5} />
+                <span className="text-xs font-bold text-gray-200 uppercase tracking-wide">{label}</span>
+                {isActive && (
+                    <span className="text-cyan-400 text-xs">{sortDir === 'desc' ? '↓' : '↑'}</span>
+                )}
+            </div>
+        </div>
+    )
+}
+
+function PlayerRow({ player, isUser, isTop, onDiscuss, interactions }) {
+    // CORRECTED: .stats
+    const s = player.stats || {}
+    const fmt = (n) => n ? n.toLocaleString() : '-'
+
+    // Team colors: Blue for your team, Red for enemy
+    // User gets special cyan highlight
+    const rowClass = isUser
+        ? 'bg-[#1e3a8a]/50 border-l-[6px] border-l-cyan-400 shadow-lg shadow-cyan-900/20'
+        : isTop
+            ? 'bg-[#172554]/30 border-l-[6px] border-l-blue-500/60 hover:bg-[#172554]/40'
+            : 'bg-[#450a0a]/20 border-l-[6px] border-l-red-500/60 hover:bg-[#450a0a]/30'
+
+    return (
+        <div className={`grid grid-cols-[300px_repeat(7,1fr)] h-16 border-b border-[#2e2158] items-center transition-colors ${rowClass}`}>
+            {/* Player Info - NOW WITH HERO PORTRAIT */}
+            <div className="pl-4 flex items-center gap-4 h-full">
+                {/* Hero Portrait Frame */}
+                <div className={`relative w-12 h-12 rounded border-2 overflow-hidden shrink-0 shadow-lg group ${isUser ? 'border-cyan-400 shadow-cyan-900/50' : isTop ? 'border-blue-500/50' : 'border-red-500/50'}`}>
+                    <HeroPortrait heroName={player.hero} size="full" />
+                    {/* Level Badge */}
+                    <div className="absolute bottom-0 right-0 bg-black/80 text-[10px] text-white font-bold px-1 border-tl rounded-tl border-white/20">
+                        {player.stats?.Level}
+                    </div>
+                </div>
+
+                {/* Names */}
+                <div className="flex flex-col justify-center min-w-0">
+                    <span className={`text-sm font-bold truncate ${isUser ? 'text-white' : isTop ? 'text-blue-200' : 'text-red-200'}`}>
+                        {player.hero}
+                    </span>
+                    <div className="flex items-center gap-1.5 min-w-0">
+                        <span className={`text-xs truncate ${isUser ? 'text-cyan-300 font-black' : isTop ? 'text-blue-400/70' : 'text-red-400/70'}`}>
+                            {player.name}
+                        </span>
+                        {interactions[player.name] && !isUser && (
+                            <EncounterBadge stats={interactions[player.name]} />
+                        )}
+                    </div>
+                </div>
+            </div>
+
+            {/* Stats - using s which is .stats */}
+            <div className="flex items-center justify-center font-bold text-lg border-l border-[#ffffff]/5 h-full">
+                {s.SoloKill > 5 ? (
+                    <Questionable
+                        title={`${player.hero} Kills`}
+                        value={s.SoloKill}
+                        context={`${player.name} had ${s.SoloKill} kills in this match`}
+                        onDiscuss={onDiscuss}
+                    >
+                        <span className={`${isTop ? 'text-cyan-400' : 'text-red-400'} cursor-pointer`}>{s.SoloKill ?? 0}</span>
+                    </Questionable>
+                ) : (
+                    <span className="text-white">{s.SoloKill ?? 0}</span>
+                )}
+            </div>
+            <div className="flex items-center justify-center text-white font-bold text-lg border-l border-[#ffffff]/5 h-full">{s.Assists ?? 0}</div>
+            <div className="flex items-center justify-center font-bold text-lg border-l border-[#ffffff]/5 h-full">
+                {s.Deaths > 5 ? (
+                    <Questionable
+                        title={`${player.hero} Deaths`}
+                        value={s.Deaths}
+                        context={`${player.name} died ${s.Deaths} times in this match`}
+                        onDiscuss={onDiscuss}
+                    >
+                        <span className="text-purple-400 cursor-pointer">{s.Deaths ?? 0}</span>
+                    </Questionable>
+                ) : (
+                    <span className="text-[#94a3b8]">{s.Deaths ?? 0}</span>
+                )}
+            </div>
+
+            <div className="flex items-center justify-center text-white font-medium text-sm border-l border-[#ffffff]/5 h-full">{fmt(s.SiegeDamage)}</div>
+            <div className="flex items-center justify-center text-white font-medium text-sm border-l border-[#ffffff]/5 h-full">{fmt(s.HeroDamage)}</div>
+            <div className="flex items-center justify-center text-white font-medium text-sm border-l border-[#ffffff]/5 h-full">
+                {s.Healing > 0 ? fmt(s.Healing) : (s.SelfHealing > 2000 ? <span className="text-gray-600 text-xs">{fmt(s.SelfHealing)}</span> : '-')}
+            </div>
+            <div className="flex items-center justify-center text-[#c084fc] font-medium text-sm border-l border-[#ffffff]/5 h-full">{fmt(s.ExperienceContribution)}</div>
+        </div>
+    )
+}
+
+// --- SUMMARY TAB ---
+
+// Helper function to render text with **bold** markdown and hero icons
+// Helper function to render text with **bold** markdown and hero icons
+function renderMarkdown(text) {
+    if (!text) return text;
+
+    // 1. Process hero names with optional possessives (e.g. "Sylvanas's")
+    const HERO_NAMES = Object.keys(heroData).sort((a, b) => b.length - a.length);
+    let parts = [text];
+
+    HERO_NAMES.forEach(hero => {
+        if (!hero) return;
+        let newParts = [];
+        parts.forEach(part => {
+            if (typeof part !== 'string') {
+                newParts.push(part);
+                return;
+            }
+
+            // Regex for hero name with optional 's (case insensitive, whole word)
+            const regex = new RegExp(`\\b(${hero.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})('\\s*s)?\\b`, 'gi');
+            const split = part.split(regex);
+
+            // split results in [non-match, hero, 's, non-match, hero, 's, ...]
+            // because of the two capturing groups in our regex
+            for (let i = 0; i < split.length; i += 3) {
+                // The non-matching part
+                if (split[i]) newParts.push(split[i]);
+
+                // If we have a hero match at this position
+                if (i + 1 < split.length && split[i + 1]) {
+                    const heroMatch = split[i + 1];
+                    const possessiveMatch = split[i + 2] || '';
+
+                    newParts.push(
+                        <span
+                            key={`${hero}-${i}-${Math.random()}`}
+                            className="inline-flex items-center gap-1 px-2 py-0.5 bg-slate-800/80 rounded border border-slate-700/50 mx-0.5 align-middle shadow-sm"
+                        >
+                            <img
+                                src={`/images/heroes/${normalizeHeroName(hero)}.png`}
+                                alt={hero}
+                                className="w-5 h-5 rounded shadow-inner border border-white/5"
+                                onError={(e) => e.target.style.display = 'none'}
+                            />
+                            <span className="font-bold text-cyan-300 text-[11px] leading-none tracking-tight">
+                                {heroMatch}{possessiveMatch}
+                            </span>
+                        </span>
+                    );
+                }
+            }
+        });
+        parts = newParts;
+    });
+
+    // 2. Process bolding (**text**) on remaining string parts
+    const finalParts = [];
+    parts.forEach((part, partIdx) => {
+        if (typeof part === 'string') {
+            const boldSplit = part.split(/(\*\*[^*]+\*\*)/g);
+            boldSplit.forEach((bPart, splitIdx) => {
+                if (bPart.startsWith('**') && bPart.endsWith('**')) {
+                    finalParts.push(
+                        <strong key={`bold-${partIdx}-${splitIdx}`} className="text-white font-bold">
+                            {bPart.slice(2, -2)}
+                        </strong>
+                    );
+                } else if (bPart) {
+                    finalParts.push(bPart);
+                }
+            });
+        } else {
+            finalParts.push(part);
+        }
+    });
+
+    return <>{finalParts}</>;
+}
+
+function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onClose }) {
+    const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
+    const [isVerifying, setIsVerifying] = useState(false)
+
+    // Get user's stats and team stats for comparison
+    const userPlayer = match.players?.find(p => p.name === (typeof PLAYER_NAME !== 'undefined' ? PLAYER_NAME : 'CerebrateUser') || p.hero === match.hero);
+    const userStats = userPlayer?.stats || {};
+    const userTeam = match.players?.filter(p => p.team === userPlayer?.team) || [];
+
+    // Calculate team max for each stat
+    const teamMax = {
+        HeroDamage: Math.max(...userTeam.map(p => p.stats?.HeroDamage || 0)),
+        SiegeDamage: Math.max(...userTeam.map(p => p.stats?.SiegeDamage || 0)),
+        Healing: Math.max(...userTeam.map(p => p.stats?.Healing || 0)),
+        ExperienceContribution: Math.max(...userTeam.map(p => p.stats?.ExperienceContribution || 0)),
+        Assists: Math.max(...userTeam.map(p => p.stats?.Assists || 0)),
+    };
+
+    // Helper to render a stat bar
+    const StatBar = ({ label, value, max, color, icon: Icon }) => {
+        const percentage = max > 0 ? (value / max) * 100 : 0;
+        const isTop = value === max && value > 0;
+
+        return (
+            <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <Icon size={14} className={color} />
+                        <span className="text-xs text-gray-400 uppercase tracking-wider">{label}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <span className={`text-sm font-bold ${isTop ? 'text-yellow-400' : 'text-white'}`}>
+                            {value.toLocaleString()}
+                        </span>
+                        {isTop && <Crown size={12} className="text-yellow-400" />}
+                    </div>
+                </div>
+                <div className="h-2 bg-black/40 rounded-full overflow-hidden border border-white/5">
+                    <motion.div
+                        initial={{ width: 0 }}
+                        animate={{ width: `${percentage}%` }}
+                        transition={{ duration: 0.8, ease: "easeOut" }}
+                        className={`h-full ${color.replace('text-', 'bg-')} shadow-lg`}
+                        style={{
+                            boxShadow: isTop ? `0 0 10px ${color.replace('text-', '')}` : 'none'
+                        }}
+                    />
+                </div>
+            </div>
+        );
+    };
+
+    // Economy Ranking Logic
+    const getEconomyInsight = () => {
+        if (!match.players) return null;
+
+        const mapName = match.map || '';
+        let key = null;
+        let assetName = '';
+        let icon = '';
+
+        if (mapName.includes("Blackheart")) {
+            key = 'BlackheartDoubloonsTurnedIn';
+            assetName = 'Doubloons';
+            icon = '🪙';
+        } else if (mapName.includes("Spider Queen")) {
+            key = 'GemsTurnedIn';
+            assetName = 'Gems';
+            icon = '💎';
+        } else if (mapName.includes("Warhead")) {
+            key = 'WarheadsActivated';
+            assetName = 'Warheads';
+            icon = '☢️';
+        } else if (mapName.includes("Cursed")) {
+            key = 'TributesCollected';
+            assetName = 'Tributes';
+            icon = '🏺';
+        } else if (mapName.includes("Garden")) {
+            key = 'SeedsTurnedIn';
+            assetName = 'Seeds';
+            icon = '🌱';
+        } else if (mapName.includes("Towers")) {
+            key = 'AltarsCaptured';
+            assetName = 'Altars';
+            icon = '⛩️';
+        }
+
+        if (!key) return null;
+
+        // Get all players stats for this key
+        const playersWithStats = match.players.map(p => ({
+            name: p.name,
+            hero: p.hero,
+            val: (p.stats?.[key] || p.kv_stats?.[key] || 0)
+        })).sort((a, b) => b.val - a.val);
+
+        const userStat = userPlayer?.stats?.[key] || userPlayer?.kv_stats?.[key] || 0;
+        if (userStat <= 0) return null;
+
+        const rank = playersWithStats.findIndex(p => p.hero === userPlayer?.hero && p.name === userPlayer?.name) + 1;
+        const totalPlayers = playersWithStats.length;
+
+        let rankSuffix = 'th';
+        if (rank === 1) rankSuffix = 'st';
+        else if (rank === 2) rankSuffix = 'nd';
+        else if (rank === 3) rankSuffix = 'rd';
+
+        return {
+            assetName,
+            icon,
+            value: userStat,
+            rank,
+            rankText: rank <= 3 ? (rank === 1 ? 'MOST' : `${rank}${rankSuffix} MOST`) : `${rank}${rankSuffix}`,
+            isTop: rank <= 3
+        };
+    };
+
+    const economyInsight = getEconomyInsight();
+
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-white relative">
+            {/* Background Watermark */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-5 pointer-events-none overflow-hidden">
+                <FileText size={400} />
+            </div>
+
+            <div className="space-y-8 z-10">
+                {/* Verdict Card */}
+                <div className="bg-[#0f172a] border-l-4 border-cyan-500 p-8 shadow-2xl relative rounded-r-lg group hover:bg-[#162038] transition-colors">
+                    <div className="absolute right-0 top-0 opacity-10 p-4 transition-transform group-hover:scale-110 duration-700">
+                        <Crown size={150} />
+                    </div>
+                    <div className="flex items-center gap-3 mb-4">
+                        <Award className="text-cyan-500" size={24} />
+                        <h2 className="text-cyan-500 text-sm font-bold uppercase tracking-widest">Analytical Verdict</h2>
+                    </div>
+                    <div className="text-5xl font-black text-white mb-6 italic tracking-tight">{analysis?.verdict || "ANALYZING..."}</div>
+                    <p className="text-gray-300 leading-relaxed text-lg font-light border-t border-white/10 pt-4">
+                        {renderMarkdown(analysis?.summary)}
+                    </p>
+                </div>
+
+                {/* Summary Stats Visualization */}
+                <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f172a] border border-purple-500/20 rounded-lg p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-6 pb-3 border-b border-purple-500/20">
+                        <Activity className="text-purple-400" size={20} />
+                        <h3 className="text-purple-300 font-bold uppercase tracking-wider text-xs">Key Insights</h3>
+                    </div>
+
+                    <div className="space-y-4">
+                        {/* Display AI-generated Key Insights if available */}
+                        {analysis?.key_insights && (
+                            <>
+                                {analysis.key_insights.kill_streak && parseInt(analysis.key_insights.kill_streak) > 0 && (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-green-500/20">
+                                        <div className="text-[10px] text-green-400 uppercase tracking-wider mb-3 font-bold">Kill Streak</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Swords size={16} className="text-green-400" />
+                                                <span className="text-sm text-gray-300">Longest streak</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-green-300">{analysis.key_insights.kill_streak}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {analysis.key_insights.mercenary_camps && parseInt(analysis.key_insights.mercenary_camps) > 0 && (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-purple-500/20">
+                                        <div className="text-[10px] text-purple-400 uppercase tracking-wider mb-3 font-bold">Mercenary Camps</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <TrendingUp size={16} className="text-purple-400" />
+                                                <span className="text-sm text-gray-300">Camps captured</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-purple-300">{analysis.key_insights.mercenary_camps}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-red-500/20">
+                                        <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Skull size={16} className="text-red-400" />
+                                                <span className="text-sm text-gray-300">Time spent dead</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-red-300">{analysis.key_insights.downtime}</div>
+                                                <div className="text-[9px] text-gray-500">respawn time</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                                {(analysis.key_insights.true_soak || analysis.key_insights.minion_xp) && (() => {
+                                    const soakValue = analysis.key_insights.minion_xp || analysis.key_insights.true_soak;
+                                    const numValue = typeof soakValue === 'string' ? parseInt(soakValue.replace(/,/g, '')) : soakValue;
+                                    if (!numValue || numValue <= 0) return null;
+                                    return (
+                                        <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/20">
+                                            <div className="text-[10px] text-cyan-400 uppercase tracking-wider mb-3 font-bold">Minion XP</div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Activity size={16} className="text-cyan-400" />
+                                                    <span className="text-sm text-gray-300">Lane Pressure</span>
+                                                </div>
+                                                <div className="text-right">
+                                                    <div className="text-2xl font-black text-cyan-300">
+                                                        {numValue.toLocaleString()}
+                                                    </div>
+                                                    <div className="text-[9px] text-gray-500">EXCL. PASSIVE XP</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+
+                                {economyInsight && (
+                                    <div className={`bg-black/30 rounded-lg p-4 border ${economyInsight.isTop ? 'border-yellow-500/30' : 'border-blue-500/20'}`}>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="text-[10px] text-yellow-400 uppercase tracking-wider font-bold">{economyInsight.assetName} Management</div>
+                                            {economyInsight.isTop && <Crown size={12} className="text-yellow-400" />}
+                                        </div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <div className="text-2xl">{economyInsight.icon}</div>
+                                                <div className="flex flex-col">
+                                                    <span className="text-sm text-gray-300">Turned In</span>
+                                                    <span className={`text-[10px] font-black ${economyInsight.isTop ? 'text-yellow-400' : 'text-blue-400'}`}>
+                                                        {economyInsight.rankText} in Match
+                                                    </span>
+                                                </div>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className={`text-2xl font-black ${economyInsight.isTop ? 'text-yellow-400' : 'text-white'}`}>
+                                                    {economyInsight.value}
+                                                </div>
+                                                <div className="text-[9px] text-gray-500 uppercase">{economyInsight.assetName}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </>
+                        )}
+
+
+                        {/* Extract unique stats from match data (not in Stats tab) - Fallback if no AI insights */}
+                        {(!analysis?.key_insights) && (() => {
+                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || p.name.includes('CerebrateUser'))?.stats;
+                            if (!playerStats) return null;
+
+                            const uniqueInsights = [];
+
+                            // Kill Streak (if 5+)
+                            if (playerStats.HighestKillStreak >= 5) {
+                                uniqueInsights.push(
+                                    <div key="killstreak" className="bg-black/30 rounded-lg p-4 border border-green-500/20">
+                                        <div className="text-[10px] text-green-400 uppercase tracking-wider mb-3 font-bold">Kill Streak</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Swords size={16} className="text-green-400" />
+                                                <span className="text-sm text-gray-300">Longest streak</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-green-300">{playerStats.HighestKillStreak}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // CC Time (if significant)
+                            const totalCC = (playerStats.TimeCCdEnemyHeroes || 0) + (playerStats.TimeRootingEnemyHeroes || 0) + (playerStats.TimeSilencingEnemyHeroes || 0);
+                            if (totalCC >= 30) {
+                                uniqueInsights.push(
+                                    <div key="cctime" className="bg-black/30 rounded-lg p-4 border border-blue-500/20">
+                                        <div className="text-[10px] text-blue-400 uppercase tracking-wider mb-3 font-bold">Crowd Control</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Activity size={16} className="text-blue-400" />
+                                                <span className="text-sm text-gray-300">Total CC time</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-blue-300">{totalCC}s</div>
+                                                <div className="text-[9px] text-gray-500">enemies disabled</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // Merc Camps (if captured any)
+                            if (playerStats.MercCampCaptures > 0) {
+                                uniqueInsights.push(
+                                    <div key="mercs" className="bg-black/30 rounded-lg p-4 border border-purple-500/20">
+                                        <div className="text-[10px] text-purple-400 uppercase tracking-wider mb-3 font-bold">Mercenary Camps</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <TrendingUp size={16} className="text-purple-400" />
+                                                <span className="text-sm text-gray-300">Camps captured</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-purple-300">{playerStats.MercCampCaptures}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            // Time Spent Dead (if significant)
+                            if (playerStats.TimeSpentDead >= 60) {
+                                uniqueInsights.push(
+                                    <div key="deadtime" className="bg-black/30 rounded-lg p-4 border border-red-500/20">
+                                        <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Skull size={16} className="text-red-400" />
+                                                <span className="text-sm text-gray-300">Time spent dead</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-red-300">{playerStats.TimeSpentDead}s</div>
+                                                <div className="text-[9px] text-gray-500">respawn time</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+
+                            return uniqueInsights;
+                        })()}
+
+                        {/* Parse killer stats with timestamps - "**Alarak** (4 deaths: 01:59, 08:20, 15:46, 16:56)" */}
+                        {(() => {
+                            const text = analysis?.areas_for_improvement || '';
+                            const killerMatch = text.match(/\*\*(\w+)\*\*\s*\((\d+)\s+deaths?:\s*([^)]+)\)/i);
+
+                            if (killerMatch) {
+                                const hero = killerMatch[1];
+                                const count = parseInt(killerMatch[2]);
+                                const timestamps = killerMatch[3].split(',').map(t => t.trim());
+
+                                return (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-red-500/20">
+                                        <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Hunted By</div>
+                                        <div className="flex items-center justify-between mb-3">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 rounded border-2 border-red-500/50 overflow-hidden">
+                                                    <HeroPortrait heroName={hero} size="full" />
+                                                </div>
+                                                <div>
+                                                    <div className="text-sm font-bold text-gray-200">{hero}</div>
+                                                    <div className="text-xs text-gray-500">killed you {count} times</div>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <Skull size={16} className="text-red-400" />
+                                                <span className="text-2xl font-black text-red-400">×{count}</span>
+                                            </div>
+                                        </div>
+                                        <div className="flex flex-wrap gap-2 mt-2">
+                                            {timestamps.map((time, i) => (
+                                                <div key={i} className="px-2 py-1 bg-red-500/10 border border-red-500/30 rounded text-xs text-red-300 font-mono">
+                                                    {time}
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        {/* Parse distance from team at death - "distance of **38.1**" */}
+                        {(() => {
+                            const text = analysis?.areas_for_improvement || '';
+                            const distanceMatch = text.match(/Your death at (\d+:\d+).*?distance of \*\*([\d.]+)\*\*/i);
+
+                            if (distanceMatch) {
+                                const timestamp = distanceMatch[1];
+                                const distance = parseFloat(distanceMatch[2]);
+                                return (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-yellow-500/20">
+                                        <div className="text-[10px] text-yellow-400 uppercase tracking-wider mb-3 font-bold">Positional Isolation</div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <div className="flex items-center gap-2">
+                                                <AlertTriangle size={16} className="text-yellow-400" />
+                                                <span className="text-sm text-gray-300">Death at <span className="font-mono text-yellow-300">{timestamp}</span></span>
+                                            </div>
+                                            <span className="text-2xl font-black text-yellow-300">{distance}</span>
+                                        </div>
+                                        <div className="text-[10px] text-gray-500">units from nearest ally</div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        {/* Parse capital losses (dropped gems, coins, etc.) */}
+                        {(() => {
+                            const text = (analysis?.summary || '') + ' ' + (analysis?.areas_for_improvement || '');
+                            const capitalMatch = text.match(/Capital Losses.*?(\d+)\s+(gems?|coins?)/i);
+
+                            if (capitalMatch) {
+                                const amount = parseInt(capitalMatch[1]);
+                                const currency = capitalMatch[2];
+                                return (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-red-500/20">
+                                        <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Capital Losses</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Skull size={16} className="text-red-400" />
+                                                <span className="text-sm text-gray-300">Dropped {currency}</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-red-300">{amount}</div>
+                                                <div className="text-[9px] text-gray-500">{currency}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        {/* Parse talent tier disadvantages */}
+                        {(() => {
+                            const text = (analysis?.summary || '') + ' ' + (analysis?.win_condition_analysis || '');
+                            const talentMatch = text.match(/(\d+)\s+talent tiers? (?:behind|down)/i);
+
+                            if (talentMatch) {
+                                const tiers = parseInt(talentMatch[1]);
+                                return (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-orange-500/20">
+                                        <div className="text-[10px] text-orange-400 uppercase tracking-wider mb-3 font-bold">Talent Disadvantage</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <TrendingUp size={16} className="text-orange-400" />
+                                                <span className="text-sm text-gray-300">Tiers behind</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-orange-300">-{tiers}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        {/* Parse kill streaks or shutdown mentions */}
+                        {(() => {
+                            const text = analysis?.win_condition_analysis || '';
+                            const streakMatch = text.match(/(\d+)[-\s]kill streak/i);
+
+                            if (streakMatch) {
+                                const kills = parseInt(streakMatch[1]);
+                                if (kills <= 0) return null;
+                                return (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-green-500/20">
+                                        <div className="text-[10px] text-green-400 uppercase tracking-wider mb-3 font-bold">Kill Streak</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Swords size={16} className="text-green-400" />
+                                                <span className="text-sm text-gray-300">Consecutive kills</span>
+                                            </div>
+                                            <span className="text-2xl font-black text-green-300">{kills}</span>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+
+                        {/* Structure Damage */}
+                        {(() => {
+                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || p.name.includes('CerebrateUser'))?.stats;
+                            if (!playerStats?.SiegeDamage) return null;
+
+                            const siegeDmg = playerStats.SiegeDamage;
+                            if (siegeDmg < 10000) return null; // Only show if significant
+
+                            return (
+                                <div className="bg-black/30 rounded-lg p-4 border border-orange-500/20">
+                                    <div className="text-[10px] text-orange-400 uppercase tracking-wider mb-3 font-bold">Structure Damage</div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Target size={16} className="text-orange-400" />
+                                            <span className="text-sm text-gray-300">Siege Pressure</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-2xl font-black text-orange-300">{siegeDmg.toLocaleString()}</div>
+                                            <div className="text-[9px] text-gray-500">BUILDINGS</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })()}
+
+                        {/* Parse Objective Occupancy - handle seconds or MM:SS */}
+                        {(() => {
+                            const text = (analysis?.summary || '') + ' ' + (analysis?.dominance || '');
+                            const objMatch = text.match(/([\d]+:[\d]+|[\d]+)\s+(?:seconds\s+of\s+)?(?:Temple|Objective|Occupancy)/i);
+
+                            if (objMatch) {
+                                let timeStr = objMatch[1];
+                                if (!timeStr.includes(':')) {
+                                    const totalSec = parseInt(timeStr);
+                                    if (totalSec <= 0) return null;
+                                    const mins = Math.floor(totalSec / 60);
+                                    const secs = totalSec % 60;
+                                    timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                                }
+                                if (timeStr === '0:00' || timeStr === '00:00') return null;
+                                return (
+                                    <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/20">
+                                        <div className="text-[10px] text-cyan-400 uppercase tracking-wider mb-3 font-bold">Objective Control</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Timer size={16} className="text-cyan-400" />
+                                                <span className="text-sm text-gray-300">Time on Point</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-2xl font-black text-cyan-300">{timeStr}</div>
+                                                <div className="text-[9px] text-gray-500">MM:SS</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            }
+                            return null;
+                        })()}
+                    </div>
+                </div>
+
+            </div >
+
+            <div className="space-y-8 z-10">
+                {/* Critical Mistake */}
+                {analysis?.critical_mistake && (
+                    <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-lg">
+                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                            <div className="p-2 bg-orange-500/10 rounded">
+                                <Activity className="text-orange-400" size={24} />
+                            </div>
+                            <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                        </div>
+                        <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
+                            <p className="text-orange-100/90 leading-relaxed text-sm font-medium italic">
+                                {renderMarkdown(analysis.critical_mistake)}
+                            </p>
+                        </Questionable>
+                    </div>
+                )}
+
+                {/* Win Condition */}
+                {(analysis?.win_condition || analysis?.win_condition_analysis) && (
+                    <div className="bg-[#0f2026] border border-emerald-500/20 p-6 rounded relative hover:border-emerald-500/40 transition-colors">
+                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                            <div className="p-2 bg-white/5 rounded">
+                                <Target className={match.result === 'WIN' ? 'text-cyan-400' : 'text-red-400'} size={24} />
+                            </div>
+                            <h3 className="text-emerald-400 font-bold uppercase tracking-wider text-sm">Win Condition</h3>
+                        </div>
+                        <Questionable title="Win Condition" value={analysis.win_condition || analysis.win_condition_analysis} onDiscuss={onDiscuss}>
+                            <p className="text-gray-300 leading-relaxed text-sm">{renderMarkdown(analysis.win_condition || analysis.win_condition_analysis)}</p>
+                        </Questionable>
+                    </div>
+                )}
+
+            </div>
+        </div >
+    )
+}
+
+// --- TALENT GRID ---
+
+function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
+    const [sortBy, setSortBy] = useState('hero')
+    const [sortDir, setSortDir] = useState('asc')
+    // const [playerProfile, setPlayerProfile] = useState(null) // Removed
+
+    // Talent tier to level mapping (tier 1-7 -> levels 1, 4, 7, 10, 13, 16, 20)
+    const levelToTier = {
+        1: 1, 4: 2, 7: 3, 10: 4, 13: 5, 16: 6, 20: 7
+    }
+    const levels = [1, 4, 7, 10, 13, 16, 20]
+
+    const playerInteractions = useEncounteredPlayers()
+
+    // Identify user
+    const userPlayer = players.find(p => p.name === 'CerebrateUser')
+    const userTeamId = userPlayer ? userPlayer.team : 0
+
+    // Sort players
+    const sortedPlayers = [...players].sort((a, b) => {
+        if (sortBy === 'hero') {
+            return sortDir === 'asc'
+                ? a.hero.localeCompare(b.hero)
+                : b.hero.localeCompare(a.hero)
+        }
+        return 0
+    })
+
+    const handleSort = (column) => {
+        if (sortBy === column) {
+            setSortDir(sortDir === 'desc' ? 'asc' : 'desc')
+        } else {
+            setSortBy(column)
+            setSortDir('asc')
+        }
+    }
+
+    // Helper to find highest talent tier picked
+    const getHighestTalentTier = (player) => {
+        for (let tier = 7; tier >= 1; tier--) {
+            if (player.stats?.[`Tier${tier}Talent`]) {
+                return tier
+            }
+        }
+        return 0
+    }
+
+    return (
+        <div className="w-full flex justify-center mt-4">
+            <div className="w-full border-[3px] border-[#4c3b7f] bg-[#0c0518] shadow-2xl relative">
+
+                {/* HEADERS */}
+                <div className="grid grid-cols-[180px_repeat(7,minmax(0,1fr))_120px] bg-[#1a1033] border-b border-[#2e2158] h-10 select-none border-l-[6px] border-l-transparent">
+                    <div
+                        className="pl-6 flex items-center text-xs font-bold text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-[#2a2640] transition-colors"
+                        onClick={() => handleSort('hero')}
+                    >
+                        Hero {sortBy === 'hero' && (sortDir === 'desc' ? '↓' : '↑')}
+                    </div>
+                    {levels.map(lvl => (
+                        <div key={lvl} className="flex items-center justify-center border-l border-[#2e2158] h-full bg-[#1e1b30] p-2">
+                            <span className="text-xs font-bold text-gray-200 uppercase">Lvl {lvl}</span>
+                        </div>
+                    ))}
+                    <div className="flex items-center justify-center border-l border-[#2e2158] h-full bg-[#1e1b30] p-2">
+                        <span className="text-xs font-bold text-gray-200 uppercase whitespace-nowrap">Build WR</span>
+                    </div>
+                </div>
+
+                {/* PLAYER ROWS */}
+                <div>
+                    {sortedPlayers.map((p, i) => {
+                        const isUserTeam = p.team === userTeamId
+                        const isUser = p === userPlayer
+                        const highestTier = getHighestTalentTier(p)
+                        const stats = playerInteractions[p.name]
+
+                        // Row styling
+                        const rowClass = isUser
+                            ? 'bg-[#1e3a8a]/50 border-l-cyan-400 shadow-lg shadow-cyan-900/20'
+                            : isUserTeam
+                                ? 'bg-[#172554]/30 border-l-blue-500/60 hover:bg-[#172554]/40'
+                                : 'bg-[#450a0a]/20 border-l-red-500/60 hover:bg-[#450a0a]/30'
+
+                        // Generate build hash from player's talents
+                        const buildHash = [1, 2, 3, 4, 5, 6, 7]
+                            .map(tier => p.stats?.[`Tier${tier}Talent`] || 0)
+                            .join('-')
+
+                        // Fetch real build WR from player_profile.json
+                        const buildStats = playerProfile?.talent_builds?.[p.hero]?.[buildHash]
+                        const realBuildWR = buildStats?.wr
+                        const realBuildGames = buildStats?.games
+
+                        // Fallback to mock if no real data
+                        const mockBuildWR = 45 + (p.hero.charCodeAt(0) % 15)
+                        const mockBuildGames = 10 + (p.hero.charCodeAt(1) % 40)
+
+                        return (
+                            <div key={i} className={`grid grid-cols-[180px_repeat(7,minmax(0,1fr))_120px] min-h-[60px] py-0.5 border-b border-[#2e2158] items-center transition-colors hover:brightness-110 border-l-[6px] ${rowClass}`}>
+                                {/* Hero Info */}
+                                <div className="pl-6 flex items-center gap-3 h-full">
+                                    <div className={`w-10 h-10 rounded border-2 overflow-hidden ${isUser ? 'border-cyan-400' : isUserTeam ? 'border-blue-500/50' : 'border-red-500/50'}`}>
+                                        <HeroPortrait heroName={p.hero} size="full" />
+                                    </div>
+                                    <div className="flex flex-col justify-center min-w-0">
+                                        <div className={`text-[11px] font-bold truncate leading-tight ${isUser ? 'text-white' : isUserTeam ? 'text-blue-200' : 'text-red-200'}`}>
+                                            {p.hero}
+                                        </div>
+                                        <div className="flex items-center gap-1.5">
+                                            <div className={`text-[9px] truncate font-medium ${isUser ? 'text-cyan-300' : 'text-gray-500'}`}>
+                                                {p.name}
+                                            </div>
+                                            {stats && !isUser && <EncounterBadge stats={stats} mini />}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Talent Cells */}
+                                {levels.map((lvl) => {
+                                    const realTier = levelToTier[lvl]
+                                    let tIdx = p.stats?.[`Tier${realTier}Talent`]
+                                    let tName = null
+
+                                    // Fallback to talents array if Tier stat is missing
+                                    if (!tIdx && p.talents && p.talents.length >= realTier) {
+                                        const tObj = p.talents[realTier - 1]
+                                        if (tObj) {
+                                            tName = tObj.talent_name
+                                            // Extract index if it's "Talent Index X" or "Talent Name #X"
+                                            const match = tName?.match(/(?:Index|#)\s*(\d+)/i)
+                                            if (match) tIdx = parseInt(match[1]) + (tName.includes('Index') ? 1 : 0)
+                                        }
+                                    }
+
+                                    const talentInfo = talentData[p.hero]?.[realTier]?.[tIdx]
+                                    const displayTName = tName || talentInfo?.name || (tIdx ? `Talent ${tIdx}` : null)
+
+                                    // Fetch real per-talent WR from player_profile.json
+                                    const talentStats = playerProfile?.talent_stats?.[p.hero]?.[realTier]?.[tIdx]
+                                    const realWR = talentStats?.wr
+                                    const realPR = talentStats?.pr
+
+                                    // Fallback to mock if no real data
+                                    const mockWR = tIdx ? 45 + (tIdx * 5) % 20 : null
+                                    const mockPickRate = tIdx ? 15 + (tIdx * 8) % 35 : null
+
+                                    // Use real data if available, otherwise mock
+                                    const displayWR = realWR !== undefined ? realWR : mockWR
+                                    const displayPR = realPR !== undefined ? realPR : mockPickRate
+
+                                    return (
+                                        <div key={`${i}-${lvl}`} className="flex flex-col items-center justify-center border-l border-[#2e2158] self-stretch pt-1.5 pb-1.5 px-0.5 group hover:bg-white/5 transition-colors relative">
+                                            {tIdx ? (
+                                                <div className="relative group/tooltip">
+                                                    <Questionable
+                                                        title={`${p.hero} Lvl ${lvl}`}
+                                                        value={displayTName || `Lvl ${lvl}`}
+                                                        context={talentInfo?.description}
+                                                        onDiscuss={onDiscuss}
+                                                    >
+                                                        <div className="flex flex-col items-center gap-1 cursor-help">
+                                                            {/* Talent Image */}
+                                                            <div className="hover:scale-110 transition-transform">
+                                                                <TalentImage
+                                                                    hero={p.hero}
+                                                                    tier={realTier}
+                                                                    talentIndex={tIdx}
+                                                                    talentName={tName || talentInfo?.tooltipId}
+                                                                    talentMap={talentMap}
+                                                                    size="md"
+                                                                />
+                                                            </div>
+
+                                                            {/* Talent Name */}
+                                                            <div className="text-[10px] text-slate-300 text-center leading-tight w-full break-words">
+                                                                {displayTName}
+                                                            </div>
+                                                        </div>
+                                                    </Questionable>
+
+                                                    {/* RICH DATA TOOLTIP */}
+                                                    <div className="absolute z-[100] bottom-full mb-2 left-1/2 -translate-x-1/2 w-48 bg-[#0f172a] border border-[#334155] rounded shadow-xl p-3 opacity-0 group-hover/tooltip:opacity-100 transition-opacity pointer-events-none">
+                                                        <div className="text-xs font-bold text-white mb-2 border-b border-white/10 pb-1">{tName}</div>
+
+                                                        <div className="space-y-2">
+                                                            {/* Personal WR */}
+                                                            {isUser && (
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[10px] text-cyan-400 font-bold uppercase">Your WR</span>
+                                                                    {(() => {
+                                                                        const pWR = playerProfile?.personal_talent_stats?.[p.hero]?.season_3?.[realTier]?.[tIdx]?.wr
+                                                                            ?? playerProfile?.personal_talent_stats?.[p.hero]?.lifetime?.[realTier]?.[tIdx]?.wr;
+
+                                                                        const pGames = playerProfile?.personal_talent_stats?.[p.hero]?.season_3?.[realTier]?.[tIdx]?.games
+                                                                            ?? playerProfile?.personal_talent_stats?.[p.hero]?.lifetime?.[realTier]?.[tIdx]?.games;
+
+                                                                        if (pWR !== undefined) {
+                                                                            const delta = realWR ? pWR - realWR : 0;
+                                                                            return (
+                                                                                <div className="flex flex-col items-end">
+                                                                                    <span className={`text-xs font-bold ${pWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                                        {pWR.toFixed(1)}%
+                                                                                    </span>
+                                                                                    <div className="flex gap-1 items-center">
+                                                                                        <span className="text-[8px] text-slate-500">{pGames} g</span>
+                                                                                        {realWR && (
+                                                                                            <span className={`text-[8px] ${delta > 0 ? 'text-green-500' : 'text-red-500'}`}>
+                                                                                                ({delta > 0 ? '+' : ''}{delta.toFixed(1)}%)
+                                                                                            </span>
+                                                                                        )}
+                                                                                    </div>
+                                                                                </div>
+                                                                            )
+                                                                        }
+                                                                        return <span className="text-[10px] text-slate-600">No Data</span>
+                                                                    })()}
+                                                                </div>
+                                                            )}
+
+                                                            {/* Meta WR */}
+                                                            <div className="flex justify-between items-center">
+                                                                <span className="text-[10px] text-slate-400 font-bold uppercase">Meta WR</span>
+                                                                <div className="flex flex-col items-end">
+                                                                    {realWR !== undefined ? (
+                                                                        <>
+                                                                            <span className={`text-xs font-bold ${realWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                                {realWR.toFixed(1)}%
+                                                                            </span>
+                                                                            <span className="text-[8px] text-slate-500">
+                                                                                PR: {displayPR?.toFixed(1)}%
+                                                                            </span>
+                                                                        </>
+                                                                    ) : (
+                                                                        <span className="text-[10px] text-slate-600">No Data</span>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="mt-2 text-[9px] text-slate-500 italic border-t border-white/5 pt-1">
+                                                            {talentInfo?.description?.slice(0, 60)}...
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <div className="w-10 h-10 bg-white/5 rounded border border-white/10 flex items-center justify-center">
+                                                    <span className="text-[8px] text-gray-600">N/A</span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )
+                                })}
+
+                                {/* Build Win Rate Column */}
+                                <div className="flex flex-col items-center justify-center border-l border-[#2e2158] h-full p-2 gap-1.5 overflow-hidden">
+                                    {highestTier > 0 ? (
+                                        <>
+                                            {/* Copy Build Button */}
+                                            <button
+                                                onClick={() => {
+                                                    const buildString = [1, 2, 3, 4, 5, 6, 7]
+                                                        .map(tier => p.stats?.[`Tier${tier}Talent`] || 0)
+                                                        .join('-')
+                                                    navigator.clipboard.writeText(buildString)
+                                                }}
+                                                className="text-[8px] px-2 py-0.5 bg-purple-600/20 hover:bg-purple-600/40 text-purple-300 rounded border border-purple-500/30 transition-colors"
+                                                title="Copy build to clipboard"
+                                            >
+                                                Copy Build
+                                            </button>
+
+                                            {/* Compact Stats Display */}
+                                            <div className="flex flex-col gap-0.5 w-full items-center">
+                                                {/* YOUR WR (Personal or Spec) - Only for the player */}
+                                                {(p.name?.toLowerCase() === 'discerning' || p.name === playerProfile?.battletag?.split('#')[0]) && (
+                                                    <>
+                                                        {(() => {
+                                                            // Try Specific Build Stats first
+                                                            const currentBuildKey = match?.talent_build;
+                                                            const specStats = currentBuildKey ? playerProfile?.talent_builds?.[p.hero]?.[currentBuildKey] : null;
+
+                                                            if (specStats) {
+                                                                return (
+                                                                    <div className="flex items-center gap-1">
+                                                                        <span className="text-[8px] text-orange-400 uppercase font-bold">SPEC</span>
+                                                                        <span className={`text-[9px] font-bold ${specStats.wr >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                            {specStats.wr.toFixed(1)}%
+                                                                        </span>
+                                                                        <span className="text-[7px] text-slate-500">
+                                                                            ({specStats.games}g)
+                                                                        </span>
+                                                                    </div>
+                                                                );
+                                                            }
+
+                                                            // Fallback to S3 Hero Stats
+                                                            const s3Stats = playerProfile?.personal_talent_stats?.[p.hero]?.overall?.season_3;
+                                                            const lifetimeStats = playerProfile?.personal_talent_stats?.[p.hero]?.overall?.lifetime;
+                                                            const pWR = s3Stats?.wr ?? lifetimeStats?.wr;
+                                                            const isS3 = s3Stats?.wr !== undefined;
+
+                                                            return (
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-[8px] text-cyan-400 uppercase font-bold">{isS3 ? 'S3' : 'YOU'}</span>
+                                                                    {pWR !== undefined ? (
+                                                                        <span className={`text-[9px] font-bold ${pWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                            {pWR.toFixed(1)}%
+                                                                        </span>
+                                                                    ) : <span className="text-[8px] text-slate-600">N/A</span>}
+                                                                </div>
+                                                            );
+                                                        })()}
+                                                    </>
+                                                )}
+
+                                                {/* META WR with game count inline */}
+                                                <div className="flex items-center gap-1">
+                                                    <span className="text-[8px] text-slate-400 uppercase font-bold">META</span>
+                                                    <span className={`text-[9px] font-bold ${(realBuildWR || mockBuildWR) >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                        {(realBuildWR || mockBuildWR).toFixed(1)}%
+                                                    </span>
+                                                    <span className="text-[7px] text-slate-500">
+                                                        ({realBuildGames || mockBuildGames}g)
+                                                    </span>
+                                                </div>
+                                            </div>
+
+                                            {/* HeroesProfile Link - Compact */}
+                                            <a
+                                                href={`https://www.heroesprofile.com/Global/Talents/${p.hero.replace(/\s+/g, '')}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-[7px] text-blue-400 hover:text-blue-300 underline"
+                                                title="View on HeroesProfile"
+                                            >
+                                                HP
+                                            </a>
+                                        </>
+                                    ) : (
+                                        <div className="text-xs text-gray-600">No data</div>
+                                    )}
+                                </div>
+                            </div>
+                        )
+                    })}
+                </div>
+
+            </div>
+        </div>
+    )
+}
+

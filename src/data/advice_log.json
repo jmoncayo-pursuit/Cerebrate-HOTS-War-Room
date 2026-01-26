@@ -1,0 +1,68 @@
+{
+  "advice_history": [
+    {
+      "id": "adv_cf860e3d",
+      "timestamp": "2026-01-16T00:00:57.933788",
+      "context": {
+        "map": "Unknown"
+      },
+      "advice_given": {
+        "content": "## Battlefield of Eternity\n**Directives**: RACE. Burn the Immortal.\n\n\ud83d\udeab **TARGETED BANS**: **Illidan**, **Genji**, **Tracer**\n\n### \ud83c\udfaf STRATEGIC PRIMARY\n**Raynor** (Ranged Assassin)\n> Utilize 'Exterminator' at Level 1 to achieve elite Immortal race velocity (90+ DPS); maintain a 6.6 range positional tether to sieging Immortals to avoid the 1.5s stun telegraph.\n`[T1231214,Raynor]`\n\n### \ud83d\udd04 STRATEGIC BACKUPS\n**Sylvanas** (Ranged Assassin)\n> Prioritize Black Arrows on the Immortal during the 20s burn phase to disable nearby structures for the follow-up push; focus 'Wailing Arrow' (R) on the enemy healer to secure the objective win.\n`[T1211221,Sylvanas]`\n**Gazlowe** (Bruiser)\n> Establish Turret City 15s before the Immortal centers; focus fire the enemy racer to force a retreat while your 3+ turrets deal consistent 98 DPS to the objective.\n`[T2112123,Gazlowe]`\n**Rehgar** (Healer)\n> Cycle Earthbind Totem (E) into a 2s slow window to peel for your racers; reserve Bloodlust (R) for the 50% HP mark of the enemy Immortal to secure the race victory.\n`[T2311321,Rehgar]`\n\n### TANK\n**E.T.C.** (Primary) - 50.0% WR (1 games)\n> Standard: `[T0000000,E.T.C.]`\n_Stitches (Alternative) - 50.0% WR (9 games)_\n> Standard: `[T1112113,Stitches]`\n\n### HEALER\n**Rehgar** (Primary) - 50.0% WR (10 games)\n> \ud83d\udee0\ufe0f **Plan**: Cycle Earthbind Totem (E) into a 2s slow window to peel for your racers; reserve Bloodlust (R) for the 50% HP mark of the enemy Immortal to secure the race victory.\n`[T2311321,Rehgar]`\n_Deckard (Alternative) - 50.0% WR (1 games)_\n> Standard: `[T0000000,Deckard]`\n\n### RANGED ASSASSIN\n**Raynor** (Primary) - 50.0% WR (21 games)\n> \ud83d\udee0\ufe0f **Plan**: Utilize 'Exterminator' at Level 1 to achieve elite Immortal race velocity (90+ DPS); maintain a 6.6 range positional tether to sieging Immortals to avoid the 1.5s stun telegraph.\n`[T1231214,Raynor]`\n> Standard: `[T1132112,Raynor]`\n_Jaina (Alternative) - 50.0% WR (2 games)_\n> Standard: `[T2221222,Jaina]`\n\n### BRUISER\n**Malthael** (Primary) - 50.0% WR (10 games)\n> \ud83d\udee0\ufe0f **Plan**: Utilize 'On a Pale Horse' at Level 1 to double-soak between phases; target the Immortal with 'Die Alone' (Q) procs to secure a 15% reduction in objective kill time.\n`[T2112114,Malthael]`\n_Gazlowe (Alternative) - 50.0% WR (62 games)_\n> Plan: Establish Turret City 15s before the Immortal centers; focus fire the enemy racer to force a retreat while your 3+ turrets deal consistent 98 DPS to the objective.\n`[T2112123,Gazlowe]`"
+      },
+      "action_taken": null,
+      "feedback": null
+    },
+    {
+      "id": "adv_ba3b1d8c",
+      "timestamp": "2026-01-16T00:00:57.951915",
+      "context": {
+        "map": "Unknown"
+      },
+      "advice_given": {
+        "content": "## Battlefield of Eternity\n**Directives**: RACE. Burn the Immortal.\n\n\ud83d\udeab **TARGETED BANS**: **Illidan**, **Genji**, **Tracer**\n\n### \ud83c\udfaf STRATEGIC PRIMARY\n**Raynor** (Ranged Assassin)\n> Utilize 'Exterminator' at Level 1 to achieve elite Immortal race velocity (90+ DPS); maintain a 6.6 range positional tether to sieging Immortals to avoid the 1.5s stun telegraph.\n`[T1231214,Raynor]`\n\n### \ud83d\udd04 STRATEGIC BACKUPS\n**Sylvanas** (Ranged Assassin)\n> Prioritize Black Arrows on the Immortal during the 20s burn phase to disable nearby structures for the follow-up push; focus 'Wailing Arrow' (R) on the enemy healer to secure the objective win.\n`[T1211221,Sylvanas]`\n**Gazlowe** (Bruiser)\n> Establish Turret City 15s before the Immortal centers; focus fire the enemy racer to force a retreat while your 3+ turrets deal consistent 98 DPS to the objective.\n`[T2112123,Gazlowe]`\n**Rehgar** (Healer)\n> Cycle Earthbind Totem (E) into a 2s slow window to peel for your racers; reserve Bloodlust (R) for the 50% HP mark of the enemy Immortal to secure the race victory.\n`[T2311321,Rehgar]`\n\n### TANK\n**E.T.C.** (Primary) - 50.0% WR (1 games)\n> Standard: `[T0000000,E.T.C.]`\n_Stitches (Alternative) - 50.0% WR (9 games)_\n> Standard: `[T1112113,Stitches]`\n\n### HEALER\n**Rehgar** (Primary) - 50.0% WR (10 games)\n> \ud83d\udee0\ufe0f **Plan**: Cycle Earthbind Totem (E) into a 2s slow window to peel for your racers; reserve Bloodlust (R) for the 50% HP mark of the enemy Immortal to secure the race victory.\n`[T2311321,Rehgar]`\n_Deckard (Alternative) - 50.0% WR (1 games)_\n> Standard: `[T0000000,Deckard]`\n\n### RANGED ASSASSIN\n**Raynor** (Primary) - 50.0% WR (21 games)\n> \ud83d\udee0\ufe0f **Plan**: Utilize 'Exterminator' at Level 1 to achieve elite Immortal race velocity (90+ DPS); maintain a 6.6 range positional tether to sieging Immortals to avoid the 1.5s stun telegraph.\n`[T1231214,Raynor]`\n> Standard: `[T1132112,Raynor]`\n_Jaina (Alternative) - 50.0% WR (2 games)_\n> Standard: `[T2221222,Jaina]`\n\n### BRUISER\n**Malthael** (Primary) - 50.0% WR (10 games)\n> \ud83d\udee0\ufe0f **Plan**: Utilize 'On a Pale Horse' at Level 1 to double-soak between phases; target the Immortal with 'Die Alone' (Q) procs to secure a 15% reduction in objective kill time.\n`[T2112114,Malthael]`\n_Gazlowe (Alternative) - 50.0% WR (62 games)_\n> Plan: Establish Turret City 15s before the Immortal centers; focus fire the enemy racer to force a retreat while your 3+ turrets deal consistent 98 DPS to the objective.\n`[T2112123,Gazlowe]`"
+      },
+      "action_taken": null,
+      "feedback": null
+    },
+    {
+      "id": "adv_663f4c2b",
+      "timestamp": "2026-01-16T00:20:47.170205",
+      "context": {
+        "map": "Unknown"
+      },
+      "advice_given": {
+        "content": "## Battlefield of Eternity\n**Directives**: RACE. Burn the Immortal.\n\n\ud83d\udeab **TARGETED BANS**: **Illidan**, **Genji**, **Tracer**\n\n### \ud83c\udfaf STRATEGIC PRIMARY\n**Raynor** (Ranged Assassin)\n> Utilize 'Exterminator' at Level 1 to achieve elite Immortal race velocity (90+ DPS); maintain a 6.6 range positional tether to sieging Immortals to avoid the 1.5s stun telegraph.\n`[T1231214,Raynor]`\n\n### \ud83d\udd04 STRATEGIC BACKUPS\n**Sylvanas** (Ranged Assassin)\n> Prioritize Black Arrows on the Immortal during the 20s burn phase to disable nearby structures for the follow-up push; focus 'Wailing Arrow' (R) on the enemy healer to secure the objective win.\n`[T1211221,Sylvanas]`\n**Gazlowe** (Bruiser)\n> Establish Turret City 15s before the Immortal centers; focus fire the enemy racer to force a retreat while your 3+ turrets deal consistent 98 DPS to the objective.\n`[T2112123,Gazlowe]`\n**Rehgar** (Healer)\n> Cycle Earthbind Totem (E) into a 2s slow window to peel for your racers; reserve Bloodlust (R) for the 50% HP mark of the enemy Immortal to secure the race victory.\n`[T2311321,Rehgar]`\n\n### TANK\n**E.T.C.** (Primary) - 50.0% WR (1 games)\n> Standard: `[T0000000,E.T.C.]`\n_Stitches (Alternative) - 50.0% WR (9 games)_\n> Standard: `[T1112113,Stitches]`\n\n### HEALER\n**Rehgar** (Primary) - 50.0% WR (10 games)\n> \ud83d\udee0\ufe0f **Plan**: Cycle Earthbind Totem (E) into a 2s slow window to peel for your racers; reserve Bloodlust (R) for the 50% HP mark of the enemy Immortal to secure the race victory.\n`[T2311321,Rehgar]`\n_Deckard (Alternative) - 50.0% WR (1 games)_\n> Standard: `[T0000000,Deckard]`\n\n### RANGED ASSASSIN\n**Raynor** (Primary) - 50.0% WR (21 games)\n> \ud83d\udee0\ufe0f **Plan**: Utilize 'Exterminator' at Level 1 to achieve elite Immortal race velocity (90+ DPS); maintain a 6.6 range positional tether to sieging Immortals to avoid the 1.5s stun telegraph.\n`[T1231214,Raynor]`\n> Standard: `[T1132112,Raynor]`\n_Jaina (Alternative) - 50.0% WR (2 games)_\n> Standard: `[T2221222,Jaina]`\n\n### BRUISER\n**Malthael** (Primary) - 50.0% WR (10 games)\n> \ud83d\udee0\ufe0f **Plan**: Utilize 'On a Pale Horse' at Level 1 to double-soak between phases; target the Immortal with 'Die Alone' (Q) procs to secure a 15% reduction in objective kill time.\n`[T2112114,Malthael]`\n_Gazlowe (Alternative) - 50.0% WR (62 games)_\n> Plan: Establish Turret City 15s before the Immortal centers; focus fire the enemy racer to force a retreat while your 3+ turrets deal consistent 98 DPS to the objective.\n`[T2112123,Gazlowe]`"
+      },
+      "action_taken": null,
+      "feedback": null
+    },
+    {
+      "id": "adv_46b0b9c4",
+      "timestamp": "2026-01-17T14:05:23.735517",
+      "context": {
+        "map": "Unknown"
+      },
+      "advice_given": {
+        "content": "## Infernal Shrines\n**Directives**: ZONE. AoE Clear for Shrines.\n\n\ud83d\udeab **TARGETED BANS**: **Kael'thas**, **Johanna**, **Tracer**\n\n### \ud83c\udfaf STRATEGIC PRIMARY\n**Johanna** (Tank)\n> Use Condemn (W) to group objective guardians for instant clear; reserve Shield Glare (E) to blind enemy racers during the 40-guardian burn phase.\n`[T1221234,Johanna]`\n\n### \ud83d\udd04 STRATEGIC BACKUPS\n**Gazlowe** (Bruiser)\n> Establish Turret City 15s before shrine activation to create a defensive perimeter; zone the objective pit to force enemy trades while you secure the 40 guardians.\n`[T2112123,Gazlowe]`\n**Kerrigan** (Melee Assassin)\n> Chain Ravage (Q) kills on shrine guardians to maintain 100% uptime; utilize Primal Grasp (W) into Impale (E) only when the enemy tank attempts to contest your 40-kill lead.\n`[T1211234,Kerrigan]`\n**Stitches** (Tank)\n> Utilize Putrid Bile (R) to zone enemies off Shrines for the full 10s duration; maintain a 12-unit positional tether to pull targets into the shrine pit for focused guardian clear.\n`[T1211214,Stitches]`\n\n### RANGED ASSASSIN\n**Zagara** (Primary) - 66.7% WR (6 games)\n> Standard: `[T0000000,Zagara]`\n_Li-Ming (Alternative) - 50.0% WR (3 games)_\n> Standard: `[T2221222,Li-Ming]`\n\n### HEALER\n**Kharazim** (Primary) - 60.5% WR (138 games)\n> Standard: `[T0000000,Kharazim]`\n_Uther (Alternative) - 50.0% WR (1 games)_\n> Standard: `[T0000000,Uther]`\n\n### TANK\n**Johanna** (Primary) - 54.6% WR (217 games)\n> \ud83d\udee0\ufe0f **Plan**: Use Condemn (W) to group objective guardians for instant clear; reserve Shield Glare (E) to blind enemy racers during the 40-guardian burn phase.\n`[T1221234,Johanna]`\n> Standard: `[T3122222,Johanna]`\n_Tyrael (Alternative) - 50.0% WR (14 games)_\n> Standard: `[T0000000,Tyrael]`\n\n### BRUISER\n**Malthael** (Primary) - 54.0% WR (266 games)\n> Standard: `[T2112114,Malthael]`\n_Gazlowe (Alternative) - 53.8% WR (1661 games)_\n> Plan: Establish Turret City 15s before shrine activation to create a defensive perimeter; zone the objective pit to force enemy trades while you secure the 40 guardians.\n`[T2112123,Gazlowe]`"
+      },
+      "action_taken": null,
+      "feedback": null
+    }
+  ],
+  "metadata": {
+    "created": "2026-01-16T00:00:57.932035",
+    "last_updated": "2026-01-17T14:05:23.735536",
+    "total_advice_given": 4,
+    "total_advice_followed": 0,
+    "total_advice_ignored": 0
+  },
+  "stats": {
+    "overall_effectiveness": {
+      "followed_win_rate": 0,
+      "ignored_win_rate": 0,
+      "total_games_tracked": 0
+    },
+    "by_hero": {},
+    "by_map": {}
+  }
+}

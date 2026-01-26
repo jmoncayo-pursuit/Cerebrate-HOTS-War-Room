@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+    <linearGradient id="cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#06b6d4"/>
+      <stop offset="100%" style="stop-color:#3b82f6"/>
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="50" cy="50" r="48" fill="url(#bg)" stroke="#06b6d4" stroke-width="2"/>
+  
+  <!-- Letter "C" for Cerebrate -->
+  <path d="M 30 30 Q 30 20 40 20 L 60 20 Q 70 20 70 30 L 70 40 Q 70 50 60 50 L 50 50 Q 40 50 40 40 L 40 30 Q 40 20 50 20" 
+        fill="none" 
+        stroke="url(#cyan)" 
+        stroke-width="5" 
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+  
+  <!-- Tactical dot in center -->
+  <circle cx="50" cy="50" r="6" fill="url(#cyan)"/>
+  
+  <!-- Small accent lines -->
+  <line x1="25" y1="50" x2="35" y2="50" stroke="url(#cyan)" stroke-width="2" stroke-linecap="round"/>
+  <line x1="65" y1="50" x2="75" y2="50" stroke="url(#cyan)" stroke-width="2" stroke-linecap="round"/>
+</svg>

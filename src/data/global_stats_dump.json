@@ -1,0 +1,794 @@
+[
+    {
+        "hero": "The Butcher",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Nazeebo",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Raynor",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Tyrael",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Li Li",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Rehgar",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Hogger",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Auriel",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Dehaka",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Genji",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Alarak",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Kharazim",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Brightwing",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Valeera",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Tassadar",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Deathwing",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Falstad",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Gul'dan",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Johanna",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Zul'jin",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Arthas",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Mephisto",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Sonya",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Rexxar",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "E.T.C.",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Li-Ming",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Kel'Thuzad",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Junkrat",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Tyrande",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Varian",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Ragnaros",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Zagara",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Qhira",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Abathur",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Zeratul",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Alexstrasza",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Leoric",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Murky",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Thrall",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Cassia",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Gazlowe",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Diablo",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Xul",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Samuro",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "D.Va",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Zarya",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Orphea",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "L\u00facio",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Stitches",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Artanis",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Deckard",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Yrel",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Mal'Ganis",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Lunara",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Garrosh",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Greymane",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Uther",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Gall",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Imperius",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Medivh",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Whitemane",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Azmodan",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Valla",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Sylvanas",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Lt. Morales",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Hanzo",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Ana",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Fenix",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Kerrigan",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Mei",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Chen",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Jaina",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Probius",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Malthael",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Sgt. Hammer",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Blaze",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Muradin",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Chromie",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Kael'thas",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Stukov",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Nova",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Anub'arak",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Illidan",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Maiev",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Anduin",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Tychus",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Malfurion",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    },
+    {
+        "hero": "Tracer",
+        "win_rate": 50.0,
+        "popularity": 10.0,
+        "ban_rate": 0.0,
+        "games_played": 1000,
+        "builds_json": "[]",
+        "updated_at": "2026-01-12 17:51:35"
+    }
+]

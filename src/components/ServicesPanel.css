@@ -1,0 +1,293 @@
+.services-container {
+    padding: 1rem;
+    animation: servicePageLoad 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    background: transparent;
+}
+
+/* Scoped overlay to prevent site-wide style collisions */
+.services-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(5, 5, 17, 0.4) 100%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+@keyframes servicePageLoad {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.services-header-card {
+    background: linear-gradient(135deg, rgba(15, 23, 42, 0.8) 0%, rgba(30, 41, 59, 0.6) 100%);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 1.5rem;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    backdrop-filter: blur(30px);
+    box-shadow: 0 15px 40px -10px rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+    animation: slideDown 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.services-header-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #06b6d4;
+    box-shadow: 0 0 15px #06b6d4;
+}
+
+.header-icon-box {
+    width: 3.5rem;
+    height: 3.5rem;
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    border-radius: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #22d3ee;
+    margin-right: 1.5rem;
+    box-shadow: 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+.header-title {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.02em;
+    margin: 0;
+    background: linear-gradient(to right, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-subtitle {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    max-width: 600px;
+}
+
+.status-pill {
+    background: rgba(6, 182, 212, 0.1);
+    border: 1px solid rgba(6, 182, 212, 0.2);
+    padding: 0.35rem 0.85rem;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #22d3ee;
+    box-shadow: 0 0 15px rgba(6, 182, 212, 0.1);
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.service-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+}
+
+.service-card {
+    background: rgba(15, 23, 42, 0.3);
+    border: 1px solid rgba(0, 242, 255, 0.1);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    backdrop-filter: blur(8px);
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.service-card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(0, 242, 255, 0.25);
+    background: rgba(15, 23, 42, 0.4);
+    box-shadow:
+        0 20px 40px -15px rgba(0, 0, 0, 0.6),
+        0 0 30px rgba(0, 242, 255, 0.1);
+}
+
+.service-status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    position: relative;
+}
+
+.service-status-dot.running {
+    background-color: #10b981;
+    box-shadow: 0 0 10px #10b981;
+}
+
+.service-status-dot.stopped {
+    background-color: #ef4444;
+    box-shadow: 0 0 10px #ef4444;
+}
+
+.service-status-dot::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+    opacity: 0.3;
+    animation: statusPulse 2s infinite;
+}
+
+@keyframes statusPulse {
+    0% {
+        transform: scale(1);
+        opacity: 0.8;
+    }
+
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+
+.service-action-btn {
+    position: relative;
+    z-index: 5;
+    padding: 0.5rem 1.25rem;
+    border-radius: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.75rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    border: 1px solid transparent;
+    user-select: none;
+}
+
+.service-action-btn:active {
+    transform: scale(0.95);
+    filter: brightness(0.9);
+}
+
+.btn-start {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.btn-start:hover {
+    background: rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.btn-stop {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-stop:hover {
+    background: rgba(239, 68, 68, 0.2);
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.15);
+}
+
+.activity-log {
+    margin-top: 1.5rem;
+    background: rgba(15, 23, 42, 0.2);
+    border-radius: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 1.5rem;
+    backdrop-filter: blur(4px);
+}
+
+.activity-log-header {
+    font-size: 0.7rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+}
+
+.info-box-enhanced {
+    margin-top: 1.5rem;
+    background: rgba(15, 23, 42, 0.25);
+    border: 1px solid rgba(59, 130, 246, 0.2);
+    border-radius: 1.25rem;
+    padding: 1.5rem;
+    display: flex;
+    gap: 1.25rem;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+}
+
+.info-box-enhanced::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 2px;
+    height: 100%;
+    background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+    opacity: 0.6;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+    width: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(0, 242, 255, 0.1);
+    border-radius: 2px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 242, 255, 0.2);
+}

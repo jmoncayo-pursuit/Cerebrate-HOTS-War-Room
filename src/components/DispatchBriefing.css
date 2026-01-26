@@ -1,0 +1,76 @@
+/* Dispatch Briefing Premium Styling */
+
+.briefing-container {
+    position: relative;
+    width: 100%;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+    background: transparent;
+}
+
+.briefing-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.briefing-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.briefing-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+}
+
+
+/* Briefing Header Card - Now using .cerebrate-header-card from index.css */
+
+.header-title {
+    font-size: 1.75rem;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -0.02em;
+    margin: 0;
+    background: linear-gradient(to right, #ffffff, #94a3b8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-subtitle {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-top: 0.25rem;
+    max-width: 600px;
+}
+
+/* Status Pill */
+.status-pill {
+    background: rgba(16, 185, 129, 0.1);
+    /* Green tint */
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: 0.35rem 0.85rem;
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #10b981;
+    box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
