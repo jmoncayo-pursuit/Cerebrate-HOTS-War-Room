@@ -6,7 +6,7 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "prestart": "lsof -i :8000,5173 -t | xargs kill -9 2>/dev/null || pkill -9 -f replay_watcher.py || true",
+    "prestart": "lsof -i :5001,5173 -t | xargs kill -9 2>/dev/null || pkill -9 -f replay_watcher.py || true",
     "start": "./start_server.sh"
   },
   "dependencies": {

@@ -67,9 +67,8 @@ Cerebrate is built to exploit the advanced capabilities of the Gemini 3 ecosyste
    ```
 
 ### Running the Application
-1. Start the backend server: `./start_server.sh`
-2. Start the frontend development server: `npm run dev`
-3. Open `http://localhost:5173` in your browser.
+1. Start the unified War Room environment: `npm start`
+2. Open `http://localhost:5173` in your browser.
 
 ## 📜 Strategic Directives
 - **Data is Truth**: Always prioritize verified stats over generic meta advice.
