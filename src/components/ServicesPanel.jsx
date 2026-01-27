@@ -155,9 +155,14 @@ export default function ServicesPanel() {
                 </div>
 
                 <div className="hidden md:flex flex-col items-end gap-2">
-                    <div className="status-indicator" style={{ background: 'rgba(234, 88, 12, 0.1)', borderColor: 'rgba(234, 88, 12, 0.2)', color: '#ea580c' }}>
-                        <span className="w-1.5 h-1.5 bg-orange-500 rounded-full animate-pulse" />
-                        System Link Active
+                    <div className={`status-indicator ${apiStatus === 'running' ? '' : 'opacity-50 grayscale'}`}
+                        style={{
+                            background: apiStatus === 'running' ? 'rgba(234, 88, 12, 0.1)' : 'rgba(100, 116, 139, 0.1)',
+                            borderColor: apiStatus === 'running' ? 'rgba(234, 88, 12, 0.2)' : 'rgba(100, 116, 139, 0.2)',
+                            color: apiStatus === 'running' ? '#ea580c' : '#94a3b8'
+                        }}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${apiStatus === 'running' ? 'bg-orange-500 animate-pulse' : 'bg-slate-500'}`} />
+                        {apiStatus === 'running' ? 'System Link Active' : 'System Link Offline'}
                     </div>
                     <span className="text-[10px] text-slate-600 font-mono tracking-widest opacity-60 uppercase">Node: Cerebrate-v2.7</span>
                 </div>
@@ -471,15 +476,22 @@ export default function ServicesPanel() {
             </div>
 
             {/* Activity Log - Cinematic View */}
-            {activities.length > 0 && (
-                <div className="activity-log">
-                    <div className="activity-log-header">
-                        <span>Telemetry Log</span>
-                        <span className="opacity-50 font-mono">ACTIVE SESSIONS: {activities.length}</span>
+            <div className="activity-log">
+                <div className="activity-log-header">
+                    <span>Telemetry Log</span>
+                    <span className="opacity-50 font-mono">ACTIVE SESSIONS: {activities.length}</span>
+                </div>
+
+                {activities.length === 0 ? (
+                    <div className="p-8 text-center text-slate-500 font-mono text-xs border border-white/5 rounded-lg bg-white/5">
+                        NO TELEMETRY SIGNATURES DETECTED
+                        <br />
+                        <span className="opacity-50">Provide replay files to initiate scan sequence.</span>
                     </div>
+                ) : (
                     <div className="space-y-3 h-[400px] overflow-y-auto custom-scrollbar pr-2">
                         {activities.map((activity) => (
-                            <div key={activity.filename} className="p-2 bg-white/5 rounded-lg border border-white/5 hover:border-cyan-500/30 transition-colors">
+                            <div key={activity.filename || Math.random()} className="p-2 bg-white/5 rounded-lg border border-white/5 hover:border-cyan-500/30 transition-colors min-h-[120px]">
                                 <FileProgressBar
                                     activity={activity}
                                     isWatcherRunning={watcherStatus === 'running'}
@@ -487,8 +499,8 @@ export default function ServicesPanel() {
                             </div>
                         ))}
                     </div>
-                </div>
-            )}
+                )}
+            </div>
 
             {/* Info Box - Premium Style */}
             <div className="info-box-enhanced">

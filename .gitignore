@@ -63,7 +63,9 @@ profile_dump.json
 match_result.json
 
 # Documentation with private details
-docs/SCHEMA.md
+docs/
+SCHEMA.md
+100_PERCENT_COMPLETE.md
 
 # ============================================
 # SHARED/PUBLIC DATA (OK TO COMMIT)

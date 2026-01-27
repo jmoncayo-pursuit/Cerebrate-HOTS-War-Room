@@ -1,0 +1,154 @@
+import unicodedata
+from . import talents
+from .talents import get_talent_from_index
+
+def process_tracker_events(events, players, stats_data):
+    """
+    Process all tracker events to extract KDA, Hero Stats, Talents, and map-specific metrics.
+    """
+    unit_tags = {}
+    active_boss_engagements = {}
+    bans = []
+    
+    # Trackers for map events (shared across players or specific to the archive)
+    if 'merc_captures' not in stats_data: stats_data['merc_captures'] = []
+    if 'structure_destructions' not in stats_data: stats_data['structure_destructions'] = []
+    if 'boss_captures' not in stats_data: stats_data['boss_captures'] = []
+    if 'objective_events' not in stats_data: stats_data['objective_events'] = []
+
+    for event in events:
+        etype = event['_event']
+        if '.' in etype: etype = etype.split('.')[-1]
+        gameloop = event['_gameloop']
+        
+        # --- UNIT TRACKING ---
+        if etype == 'SUnitBornEvent':
+            tag = event.get('m_unitTagIndex')
+            if tag is not None:
+                u_type = event.get('m_unitTypeName', b'').decode('utf-8') if isinstance(event.get('m_unitTypeName'), bytes) else str(event.get('m_unitTypeName', ''))
+                u_pid = event.get('m_controlPlayerId', event.get('m_upkeepPlayerId'))
+                unit_tags[tag] = {'type': u_type, 'pid': u_pid}
+                
+                # Boss spawn detection
+                boss_keywords = ['Boss', 'GraveyardBoss', 'ArchangelSiege', 'WebweaverQueen', 'SlimeBoss']
+                if any(kw in u_type for kw in boss_keywords) and u_pid is None:
+                    unit_tags[tag]['is_boss'] = True
+
+        # --- BANS ---
+        elif etype == 'SHeroBannedEvent':
+            team_id = event.get('m_controllingTeam')
+            if team_id is None:
+                user_wrapper = event.get('_userid', {})
+                if isinstance(user_wrapper, dict):
+                    uid = user_wrapper.get('m_userId')
+                    if uid is not None and 0 <= uid < len(players):
+                        team_id = players[uid]['team']
+            
+            bans.append({
+                'hero': event.get('m_hero', b'').decode('utf-8'),
+                'gameloop': gameloop,
+                'team': team_id
+            })
+
+        # --- TALENTS ---
+        elif etype == 'STalentChosenEvent':
+            pid = event.get('m_controlPlayerId') or event.get('m_userid')
+            if pid and pid in stats_data:
+                idx = event.get('m_talentNameIndex')
+                player_idx = pid - 1
+                if 0 <= player_idx < len(players):
+                    hero_n = players[player_idx]['hero']
+                    rich_id = get_talent_from_index(hero_n, idx, talents.TALENTS_DB)
+                    if rich_id:
+                        garbage = ['Vehicle', 'Mount', 'Hearthstone', 'Spray', 'Voice', 'Banner']
+                        if any(g in rich_id for g in garbage): continue
+                        
+                        stats_data[pid]['talents'].append({
+                            "timestamp": round(gameloop / 16.0, 1),
+                            "talent_name": rich_id,
+                            "source": "tracker_legacy"
+                        })
+
+        # --- SCORE RESULTS (KDA, Healing, etc.) ---
+        elif etype == 'SScoreResultEvent':
+            for entry in event.get('m_instanceList', []):
+                s_name = entry.get('m_name', b'').decode('utf-8')
+                for i, val_list in enumerate(entry.get('m_values', [])):
+                    if val_list:
+                        pid = i + 1
+                        if pid in stats_data:
+                            stats_data[pid]['stats'][s_name] = val_list[-1].get('m_value')
+
+        # --- STAT GAME EVENTS (Map Logic & XP) ---
+        elif etype == 'SStatGameEvent':
+            ename = event.get('m_eventName', b'').decode('utf-8')
+            data_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value') for d in (event.get('m_intData') or []) + (event.get('m_fixedData') or [])}
+            str_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value', b'').decode('utf-8') for d in (event.get('m_stringData') or [])}
+
+            if ename == 'JungleCampCapture':
+                team_raw = data_map.get('TeamID', 0)
+                team_id = 0 if team_raw == 4096 else 1 if team_raw == 8192 else None
+                camp_type = str_map.get('CampType', 'Merc Camp')
+                
+                is_boss = any(kw in camp_type for kw in ['Boss', 'GraveyardBoss', 'Archangel', 'Webweaver', 'SlimeBoss'])
+                event_entry = {
+                    'timestamp': round(gameloop / 16.0, 1),
+                    'captured_by_team': team_id,
+                    'unit_name': camp_type,
+                    'gameloop': gameloop
+                }
+                
+                if is_boss: stats_data['boss_captures'].append(event_entry)
+                else: stats_data['merc_captures'].append(event_entry)
+
+            elif ename == 'TownStructureDeath':
+                destroying_team = None
+                k_pid = data_map.get('KillingPlayer')
+                if k_pid and 0 < k_pid <= len(players):
+                    destroying_team = players[k_pid-1]['team']
+                
+                stats_data['structure_destructions'].append({
+                    'timestamp': round(gameloop / 16.0, 1),
+                    'structure_type': str_map.get('UnitType', 'Structure'),
+                    'destroyed_by_team': destroying_team,
+                    'gameloop': gameloop
+                })
+
+            elif ename == 'EndOfGameXPBreakdown':
+                pid = data_map.get('PlayerID')
+                if pid and pid in stats_data:
+                    for k in ['HeroXP', 'MinionXP', 'StructureXP', 'CreepXP', 'SiegeXP', 'TrickleXP']:
+                        stats_data[pid]['stats'][k] = round(data_map.get(k, 0) / 4096.0)
+
+    return stats_data, bans
+
+def process_game_events(events, players, stats_data):
+    """
+    Process game events to extract data not found in tracker events (e.g. talents in some replays).
+    """
+    for event in events:
+        etype = event['_event']
+        if '.' in etype: etype = etype.split('.')[-1]
+        gameloop = event['_gameloop']
+
+        if etype == 'SHeroTalentTreeSelectedEvent':
+            uid = event.get('_userid', {}).get('m_userId')
+            if uid is not None:
+                pid = uid + 1
+                if pid in stats_data:
+                    idx = event.get('m_index')
+                    player_idx = uid
+                    if 0 <= player_idx < len(players):
+                        hero_n = players[player_idx]['hero']
+                        # Game events use 1-based index for talent tiers usually
+                        # but heroprotocol m_index is raw.
+                        rich_id = get_talent_from_index(hero_n, idx, talents.TALENTS_DB)
+                        if rich_id:
+                            # Avoid duplicates if already found in tracker
+                            if not any(t['talent_name'] == rich_id for t in stats_data[pid]['talents']):
+                                stats_data[pid]['talents'].append({
+                                    "timestamp": round(gameloop / 16.0, 1),
+                                    "talent_name": rich_id,
+                                    "source": "game_event"
+                                })
+    return stats_data

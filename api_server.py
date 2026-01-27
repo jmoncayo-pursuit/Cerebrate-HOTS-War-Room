@@ -11,6 +11,8 @@ from api.routes.management_routes import management_bp
 from api.routes.replay_routes import replay_bp
 from api.routes.agent_routes import agent_bp
 from api.routes.social_routes import social_bp
+from api.routes.system_routes import system_bp
+from api.routes.watcher_routes import watcher_bp
 from api.services.database import DatabaseManager
 from api.services.mcp_bridge_service import mcp_bridge
 
@@ -34,7 +36,7 @@ def create_app():
     app.register_blueprint(system_bp)
     app.register_blueprint(watcher_bp)
     
-    @app.route('/health')
+    @app.route('/api/health')
     def health():
         return jsonify({"status": "healthy", "version": "elite-dx-v3"})
 

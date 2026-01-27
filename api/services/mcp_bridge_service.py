@@ -11,7 +11,7 @@ class MCPBridgeService:
         self._loop = None
         self.server_params = StdioServerParameters(
             command="npx",
-            args=["-y", "chrome-devtools-mcp", "--auto-connect"],
+            args=["-y", "chrome-devtools-mcp", "--autoConnect"],
             env=None
         )
 
@@ -44,7 +44,8 @@ class MCPBridgeService:
                             # Could do a heartbeat check here
             except Exception as e:
                 self._connected = False
-                ColoredLogger.error(f"Neural Link Connection Lost: {e}. Retrying in 10s...", "MCP")
+                ColoredLogger.error(f"Neural Link Linkage Failure: {e}", "MCP")
+                ColoredLogger.warn("Manual Action Required: Ensure 'Remote Debugging' is enabled at chrome://inspect/#remote-debugging", "MCP")
                 await asyncio.sleep(10)
 
     async def get_dom_snapshot(self):
@@ -53,14 +54,22 @@ class MCPBridgeService:
             return {"error": "Not connected to DevTools"}
         
         try:
-            # MCP Tool call to 'get_dom_snapshot' or similar
-            # We list tools first to find the exact name
-            tools = await self.session.list_tools()
-            # Find the tool that provides DOM info
-            # For @modelcontextprotocol/server-chrome-devtools, tool name might be 'capture_console_logs', 'inspect_dom', etc.
-            # Base implementation:
-            result = await self.session.call_tool("inspect_dom", arguments={})
-            return result
+            # Use 'evaluate_script' with a proper function declaration
+            # Schema requires a string that is a JS function declaration
+            result = await self.session.call_tool("evaluate_script", arguments={
+                "function": "() => { return document.documentElement.outerHTML }"
+            })
+            
+            if result.isError:
+                error_msg = result.content[0].text if result.content else "Unknown MCP Error"
+                return {"error": f"MCP Tool Error: {error_msg}"}
+                
+            # Parse the content
+            # The result is usually a JSON string wrapped in text
+            if result.content:
+                return {"dom": result.content[0].text}
+            return {"dom": ""}
+            
         except Exception as e:
             return {"error": str(e)}
 
@@ -70,7 +79,40 @@ class MCPBridgeService:
             return {"error": "Not connected to DevTools"}
         
         try:
-            result = await self.session.call_tool("get_console_logs", arguments={})
+            # Tool name: list_console_messages
+            result = await self.session.call_tool("list_console_messages", arguments={})
+            
+            if result.isError:
+                error_msg = result.content[0].text if result.content else "Unknown MCP Error"
+                return {"error": f"MCP Tool Error: {error_msg}"}
+
+            if result.content:
+                return {"logs": result.content[0].text}
+            return {"logs": []}
+            
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def start_performance_trace(self):
+        """Start a performance trace (requires Chrome >= 144)."""
+        if not self._connected or not self.session:
+            return {"error": "Not connected to DevTools"}
+        try:
+            # blog ref: reload=True, autoStop=True
+            result = await self.session.call_tool("performance_start_trace", arguments={
+                "reload": True,
+                "autoStop": True
+            })
+            return result
+        except Exception as e:
+            return {"error": str(e)}
+
+    async def get_performance_insights(self):
+        """Analyze trace for performance insights."""
+        if not self._connected or not self.session:
+            return {"error": "Not connected to DevTools"}
+        try:
+            result = await self.session.call_tool("performance_analyze_insight", arguments={})
             return result
         except Exception as e:
             return {"error": str(e)}

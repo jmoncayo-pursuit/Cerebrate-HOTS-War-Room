@@ -11,9 +11,25 @@ from api.agentic_brain import AgenticBrain
 class IntelligenceService:
     """Consolidated service for AI interaction, advice history, and temporal telemetry."""
     
+    # --- NEURAL TIERING CONFIG ---
+    TIERS = {
+        "REASONING": "gemini-1.5-flash", # DEV BACKUP (Switch to 'gemini-1.5-pro' for Demo)
+        "SENSING": "gemini-1.5-flash",   # Low-latency Proprioception
+        "CHAT": "gemini-1.5-flash"      # Standard Interaction
+    }
+
     def __init__(self, db_manager=None, api_key=None):
         self.db = db_manager or DatabaseManager()
         self.brain = AgenticBrain()
+        from api.services.mcp_bridge_service import mcp_bridge
+        self.mcp = mcp_bridge
+        self.quota = None
+        try:
+            from quota_manager import QuotaManager
+            self.quota = QuotaManager()
+        except ImportError:
+            pass
+
         if api_key:
             genai.configure(api_key=api_key)
             
@@ -24,26 +40,51 @@ class IntelligenceService:
                 with open(protocol_path, 'r') as f:
                     system_instruction = f.read()
             
+            # Default model for general tasks
             self.model = genai.GenerativeModel(
-                model_name='gemini-1.5-flash-latest',
+                model_name=self.TIERS["CHAT"],
                 system_instruction=system_instruction
             )
         else:
             self.model = None
 
+    def _get_model_for_tier(self, tier):
+        """Lazy load or return model for a specific tier."""
+        model_name = self.TIERS.get(tier, self.TIERS["CHAT"])
+        
+        # PRO TALLY ALERT LOGIC
+        if "pro" in model_name.lower() and self.quota:
+            status = self.quota.get_status().get(model_name, {})
+            used = status.get('used', 0)
+            limit = status.get('limit', 0)
+            ColoredLogger.warn(f"⚠️ NEURAL ALERT: Using PRO Model [{model_name}]. Daily Tally: {used+1}/{limit}", "INTEL")
+        
+        return genai.GenerativeModel(model_name=model_name)
+
     # --- CHAT & AI LOGIC ---
-    def generate_chat_response(self, message, history=None):
+    def generate_chat_response(self, message, history=None, tier="CHAT"):
         if not self.model: return "AI Not Initialized"
         try:
-            # 1. Agentic Pre-Computation
+            # 1. Select the appropriate Tier
+            active_model = self._get_model_for_tier(tier)
+            
+            # 2. Agentic Pre-Computation
             dossier = self.brain.process_request(message)
             
-            # 2. Inject Dossier into Prompt (Hidden from user UI, visible to LLM)
+            # 3. Inject Dossier into Prompt
             full_prompt = f"{dossier}\n\nUSER QUERY: {message}"
             
-            chat = self.model.start_chat(history=history or [])
+            chat = active_model.start_chat(history=history or [])
             response = chat.send_message(full_prompt)
+            
+            # 4. Record Quota
+            if self.quota:
+                self.quota.record_request(active_model.model_name)
+                
             return response.text
+        except Exception as e:
+            ColoredLogger.error(f"Generate Error: {e}")
+            return f"Error: {str(e)}"
         except Exception as e:
             ColoredLogger.error(f"Generate Error: {e}")
             return f"Error: {str(e)}"
