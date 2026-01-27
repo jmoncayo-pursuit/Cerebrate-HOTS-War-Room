@@ -13,9 +13,9 @@ class IntelligenceService:
     
     # --- NEURAL TIERING CONFIG ---
     TIERS = {
-        "REASONING": "gemini-1.5-flash", # DEV BACKUP (Switch to 'gemini-1.5-pro' for Demo)
-        "SENSING": "gemini-1.5-flash",   # Low-latency Proprioception
-        "CHAT": "gemini-1.5-flash"      # Standard Interaction
+        "REASONING": "gemini-2.5-flash", 
+        "SENSING": "gemini-2.5-flash",  
+        "CHAT": "gemini-2.5-flash"      
     }
 
     def __init__(self, db_manager=None, api_key=None):

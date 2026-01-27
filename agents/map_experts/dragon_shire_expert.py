@@ -53,9 +53,9 @@ class DragonShireExpert(BaseMapExpert):
         if gold_standards:
             gold_standard_prompt = "\n**FEW-SHOT GOLD STANDARD EXAMPLES (CRITICAL - MATCH THIS QUALITY):**\n"
             for i, gs in enumerate(gold_standards):
-                gold_standard_prompt += f"### Example {i+1} ({gs['map']} {gs['result']})\n"
-                gold_standard_prompt += f"Verdict: {gs['gold_verdict']}\n"
-                gold_standard_prompt += f"Summary: {gs['gold_summary']}\n\n"
+                gold_standard_prompt += f"### Example {i+1} ({gs['map_name']} {gs['result']})\n"
+                gold_standard_prompt += f"Verdict: {gs['verdict']}\n"
+                gold_standard_prompt += f"Summary: {gs['summary']}\n\n"
         
         is_general_query = result == "STRATEGIC_PLANNING"
         mode_instruction = "providing a comprehensive map strategy and win condition breakdown" if is_general_query else f"analyzing a {result} match"
