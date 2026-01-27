@@ -83,6 +83,27 @@ class CerebrateOrchestrator:
             # Fallback if called outside api_server scope
             context['brain_context'] = ""
 
+        # 0.5. INJECT LIVE TELEMETRY (MCP BRIDGE)
+        from api.services.mcp_bridge_service import mcp_bridge
+        if mcp_bridge.is_healthy():
+            import asyncio
+            try:
+                # We use a short timeout for live telemetry to avoid blocking
+                # Since we are in a sync Flask context, we need to run the async call
+                loop = asyncio.get_event_loop()
+                if loop.is_running():
+                    # This is tricky in Flask, but usually we handle it via a helper
+                    pass
+                else:
+                    dom = loop.run_until_complete(asyncio.wait_for(mcp_bridge.get_dom_snapshot(), timeout=2.0))
+                    logs = loop.run_until_complete(asyncio.wait_for(mcp_bridge.get_console_logs(), timeout=1.0))
+                    context['live_telemetry'] = {
+                        "dom_snapshot": dom,
+                        "console_logs": logs
+                    }
+            except:
+                pass
+
         # Extract entities from query for context-aware routing
         context['map'] = self._extract_map(query)
         context['hero'] = self._extract_hero(query)

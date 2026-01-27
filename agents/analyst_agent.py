@@ -90,9 +90,11 @@ class AnalystAgent(BaseAgent):
 **DATA SOURCES:**
 - Player Profile: {json.dumps(player_profile, indent=2)}
 - Recent Match Data (Telemetry): {json.dumps(recent_matches, indent=2)}
+- LIVE APP TELEMETRY (Neural Link): {json.dumps(context.get('live_telemetry', 'Disconnected'), indent=2)}
 
 **MISSION OBJECTIVE:**
 {'Analyze the specific match provided.' if target_match else 'Analyze the recent performance trends and patterns.'}
+If Live App Telemetry is available, prioritize identifying any UI errors or state inconsistencies currently visible to the user.
 Follow the mandatory formatting for {'Mode B: FORENSIC AUDIT' if not target_match else 'MATCH ANALYSIS'}.
 Identify if failures are Multiplicative or Additive.
 Cite win rates formatted as [XX.X]% WR [[Source]].

@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Activity } from 'lucide-react'
 import FileProgressBar from './FileProgressBar'
+import MCPStatus from './MCPStatus'
 import './ServicesPanel.css'
 
 export default function ServicesPanel() {
@@ -13,6 +14,8 @@ export default function ServicesPanel() {
     const [usage, setUsage] = useState(null)
     const [modelHealth, setModelHealth] = useState(null)
     const [selectedHistoryItem, setSelectedHistoryItem] = useState(null)
+    const [healerStatus, setHealerStatus] = useState({ running: false, last_pulse: null, mode: 'OFFLINE' })
+    const [mcpStatus, setMcpStatus] = useState('DISCONNECTED')
 
     useEffect(() => {
         checkStatus()
@@ -48,6 +51,15 @@ export default function ServicesPanel() {
                         quality: usageData.link_quality,
                         last_model: usageData.current_model
                     })
+                    if (usageData.services && usageData.services.mcp_bridge) {
+                        setMcpStatus(usageData.services.mcp_bridge)
+                    }
+                }
+
+                const healerRes = await fetch(`/api/healer/status?t=${timestamp}`)
+                if (healerRes.ok) {
+                    const healerData = await healerRes.ok ? await healerRes.json() : null
+                    if (healerData) setHealerStatus(healerData)
                 }
             } else {
                 setWatcherStatus('stopped')
@@ -55,6 +67,19 @@ export default function ServicesPanel() {
         } catch (error) {
             setApiStatus('stopped')
             setWatcherStatus('stopped')
+        }
+    }
+
+    const toggleHealer = async () => {
+        setLoading(true)
+        try {
+            const endpoint = healerStatus.running ? '/api/healer/stop' : '/api/healer/start'
+            await fetch(endpoint, { method: 'POST' })
+            await checkStatus() // Immediate update
+        } catch (err) {
+            console.error('Healer toggle failed:', err)
+        } finally {
+            setLoading(false)
         }
     }
 
@@ -279,7 +304,7 @@ export default function ServicesPanel() {
                             <h3 className="text-white font-bold text-lg tracking-tight">Intelligence Watcher</h3>
                             <p className="text-xs text-slate-500 font-mono uppercase">
                                 {watcherStatus === 'running'
-                                    ? `Synchronized with ${replayCount} replays`
+                                    ? `Synchronized with ${replayCount} matches`
                                     : 'Autonomous detection disabled'}
                             </p>
                         </div>
@@ -350,7 +375,7 @@ export default function ServicesPanel() {
                                                     />
                                                 </div>
                                                 <div className="text-[8px] text-slate-500 font-mono">
-                                                    Most files skip instantly (already complete)
+                                                    Most files skip instantly (analysis complete)
                                                 </div>
                                             </div>
 
@@ -374,7 +399,7 @@ export default function ServicesPanel() {
                                                     />
                                                 </div>
                                                 <div className="text-[8px] text-slate-500 font-mono">
-                                                    Only incomplete replays need API analysis
+                                                    Only new sessions need neural-link analysis
                                                 </div>
                                             </div>
                                         </div>
@@ -411,6 +436,40 @@ export default function ServicesPanel() {
                 )}
             </div>
 
+
+            {/* Healer Service */}
+            <div className="service-card group mt-4">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                        <div className={`service-status-dot ${healerStatus.running ? 'running' : 'stopped'}`} />
+                        <div>
+                            <h3 className="text-white font-bold text-lg tracking-tight">Cerebrate Healer</h3>
+                            <p className="text-xs text-slate-500 font-mono uppercase">
+                                {healerStatus.running ? healerStatus.mode : 'Integrity Guard Offline'}
+                            </p>
+                        </div>
+                    </div>
+                    <button
+                        onClick={toggleHealer}
+                        disabled={loading || apiStatus !== 'running'}
+                        className={`service-action-btn ${healerStatus.running ? 'btn-stop' : 'btn-start'} disabled:opacity-30`}
+                    >
+                        {healerStatus.running ? 'Halt Guard' : 'Deploy Healer'}
+                    </button>
+                </div>
+                {healerStatus.running && healerStatus.last_pulse && (
+                    <div className="text-[9px] font-mono text-emerald-500/80 mt-2 flex items-center gap-1.5 p-2 bg-emerald-500/5 rounded border border-emerald-500/10">
+                        <Activity size={10} className="animate-pulse" />
+                        Last Pulse: {new Date(healerStatus.last_pulse).toLocaleTimeString()} // Success
+                    </div>
+                )}
+            </div>
+
+            {/* Browser Neural Link (MCP) */}
+            <div className="mt-4">
+                <MCPStatus status={mcpStatus} />
+            </div>
+
             {/* Activity Log - Cinematic View */}
             {activities.length > 0 && (
                 <div className="activity-log">
@@ -441,7 +500,7 @@ export default function ServicesPanel() {
                 <div className="text-sm">
                     <p className="text-blue-400 font-bold uppercase tracking-widest text-[10px] mb-1 hots-text-glow">Operational Doctrine</p>
                     <p className="text-xs text-slate-300 leading-relaxed font-medium opacity-90">
-                        Watcher systems synchronize with your local Hots Replay archives. New telemetry is automatically captured, parsed via neural-link, and persisted to your central mission history without commander intervention.
+                        Watcher systems synchronize with your local Hots Replay archives. New telemetry is automatically captured, parsed via neural-link, and persisted to your central match history without commander intervention.
                     </p>
                 </div>
             </div>

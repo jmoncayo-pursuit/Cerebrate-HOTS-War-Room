@@ -11,7 +11,7 @@ from datetime import datetime
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
 sys.path.insert(0, PROJECT_ROOT)
 
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 from api.logger import ColoredLogger
 
 class CerebrateHealer:
@@ -89,29 +89,44 @@ class CerebrateHealer:
     def heal_outdated_pipelines(self):
         """Detect and re-analyze matches from older pipeline versions."""
         latest = self.get_latest_version()
-        matches = self.db.get_matches(limit=50)
+        # Use limit=10 to reduce scan impact
+        matches = self.db.get_matches(limit=10)
         
         for match in matches:
-            m_id = match.get('id')
+            # Table uses 'id' but dictionary might have 'match_id' depending on get_matches
+            m_id = match.get('id') or match.get('match_id')
             m_version = match.get('pipeline_version') or '1.0.0'
             m_map = match.get('map', '')
             
-            # Logic Upgrade: BoE matches with version < 2.1.0 are inherently broken (missing participation)
             should_heal = False
             
+            # Logic Upgrade: BoE matches with version < 2.1.0 are inherently broken
             if m_version < "2.1.0" and m_map == "Battlefield of Eternity":
-                ColoredLogger.warn(f"🎯 [HEALER] BoE Match {m_id} uses legacy version {m_version}. Scheduling re-analysis...", "HEAL")
-                should_heal = True
-            elif m_version < latest:
-                # Optional: Gradually update all matches to latest version
-                # For now, let's just stick to critical ones like BoE to save tokens/time
-                pass
-                
-            if should_heal:
+                # Only log if specifically healing (simulated for now since trigger_reanalysis is a stub)
+                # ColoredLogger.warn(f"🎯 [HEALER] BoE Match {m_id} uses legacy version. Ready for heal.", "HEAL")
+                should_heal = False # Disabled for now to prevent spam until tool is verified
+            
+            if should_heal and os.path.exists(f"{PROJECT_ROOT}/scripts/trigger_reanalysis.py"):
                 try:
                     subprocess.run([sys.executable, f"{PROJECT_ROOT}/scripts/trigger_reanalysis.py", "--match_id", str(m_id)], capture_output=True)
-                except Exception as e:
-                    ColoredLogger.error(f"Failed to heal BoE match: {e}", "HEAL")
+                except:
+                    pass
+
+    def monitor_watcher(self):
+        """Ensure the replay watcher process is running."""
+        watcher_pid_file = os.path.join(PROJECT_ROOT, ".watcher.pid")
+        if os.path.exists(watcher_pid_file):
+            try:
+                with open(watcher_pid_file, 'r') as f:
+                    pid = int(f.read().strip())
+                os.kill(pid, 0) # Check if process exists
+                return True
+            except (ProcessLookupError, ValueError, OSError):
+                pass # Process dead or PID file corrupted
+        
+        # If we are here, watcher is likely down
+        ColoredLogger.warn("👁️ [HEALER] Replay Watcher seems offline. Protocol requires it to be active.", "HEAL")
+        return False
 
     def run(self):
         # PID Lock to prevent recursive healers
@@ -131,8 +146,8 @@ class CerebrateHealer:
         with open(healer_pid_file, 'w') as f:
             f.write(str(my_pid))
 
-        ColoredLogger.success("🧊 Cerebrate Healer Protocol: ACTIVE", "HEAL")
-        ColoredLogger.info("⏳ Healer observing initialization (30s delay)...", "HEAL")
+        # ColoredLogger.success("🧊 Cerebrate Healer Protocol: ACTIVE", "HEAL")
+        # ColoredLogger.info("⏳ Healer observing initialization (30s delay)...", "HEAL")
         time.sleep(30) # Delay start to avoid race conditions with start_server.sh
         while True:
             try:
@@ -154,14 +169,14 @@ class CerebrateHealer:
                 curr_time = time.time()
                 if curr_time - self.last_integrity_check > 3600: # Every hour
                     self.repair_data_integrity()
-                    self.heal_outdated_pipelines() # Check for version drifts
+                    # self.heal_outdated_pipelines() # DISABLED - Prevents token usage
                     self.last_integrity_check = curr_time
                 
                 # 3. Pipeline Heartbeat (Watch for crashed sub-processes)
                 self.monitor_watcher()
                 
                 # 4. Ongoing Analysis Recovery (Failed Verdicts)
-                self.recover_failed_analyses()
+                # self.recover_failed_analyses() # DISABLED - Prevents token usage
                 
                 # 5. Heartbeat Log (for API transparency)
                 with open(os.path.join(PROJECT_ROOT, "healer.log"), "w") as f:
@@ -174,4 +189,16 @@ class CerebrateHealer:
 
 if __name__ == "__main__":
     healer = CerebrateHealer()
-    healer.run()
+    healer_pid_file = os.path.join(PROJECT_ROOT, ".healer.pid")
+    try:
+        healer.run()
+    except KeyboardInterrupt:
+        from api.logger import ColoredLogger
+        ColoredLogger.info("🛑 Healer Protocol stopped by user", "HEAL")
+    finally:
+        # Cleanup PID file on exit
+        if os.path.exists(healer_pid_file):
+            try:
+                os.remove(healer_pid_file)
+            except:
+                pass
