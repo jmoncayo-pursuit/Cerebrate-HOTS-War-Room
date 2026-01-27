@@ -49,6 +49,22 @@ src/data/hero_roster_levels.json
 src/data/cerebrate_config.json
 src/data/gold_standards.json
 
+# Strategic & Tactical Roadmaps (Private)
+ROADMAP_FINALIZED.md
+QUOTA_*.md
+FREE_TIER_PROTECTION.md
+Screenshotstobaseline1-26-26/
+.restart.lock
+.api_quota.json
+
+# Temporary Analysis Dumps
+*_result.json
+profile_dump.json
+match_result.json
+
+# Documentation with private details
+docs/SCHEMA.md
+
 # ============================================
 # SHARED/PUBLIC DATA (OK TO COMMIT)
 # ============================================
