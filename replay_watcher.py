@@ -222,10 +222,10 @@ def needs_processing(filename, match_history):
                     if not has_talents:
                         missing_fields.append('talents')
                 
-                # Check Parser Version - Only re-process on minor mismatches if analysis is missing
+                # Check Parser Version - FORCE re-parse on version change (new stats like DC tracking)
                 current_parser_ver = match.get('parser_version', "1.0")
-                if current_parser_ver != PARSER_VERSION and not match.get('analysis'):
-                     missing_fields.append(f'new_parser (v{current_parser_ver}->v{PARSER_VERSION})')
+                if current_parser_ver != PARSER_VERSION:
+                     missing_fields.append(f'parser_upgrade (v{current_parser_ver}→v{PARSER_VERSION})')
 
                 if missing_fields:
                     return ('process', f"Missing: {', '.join(missing_fields)}")

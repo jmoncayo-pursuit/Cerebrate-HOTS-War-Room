@@ -161,6 +161,9 @@ class AgenticBrain:
             dossier += f"MAP CONTEXT: {map_name.upper()}\n"
             assets = audit.get("all_assets", [])
             
+            if not assets:
+                dossier += "⚠️ CRITICAL: NO USER DATA FOUND. REQUEST GLOBAL META FALLBACK.\n"
+            
             # Roles for structured output
             roles = ["Bruiser", "Healer", "Tank", "Ranged Assassin"]
             

@@ -43,7 +43,7 @@ except ImportError:
 TALENTS_DB = None
 
 # Parser version - increment when parser logic changes
-PARSER_VERSION = "3.1"  # Logic upgrade: BoE Immortal Dmg + Stat Indentation fixes
+PARSER_VERSION = "3.2"  # DC Tracking: GameUserLeave events + forensic audit
 
 try:
     from api.logger import ColoredLogger
@@ -796,6 +796,44 @@ def parse_replay(replay_path, options=None):
                              'point': pt,
                              'gameloop': event['_gameloop']
                          })
+                     # --- DISCONNECT TRACKING (Forensics) ---
+                    elif ename == 'GameUserLeave':
+                        # This event triggers when a user disconnects or quits
+                        data_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value') for d in (event.get('m_intData') or []) + (event.get('m_fixedData') or [])}
+                        # The user ID who left? Usually in fixedData or intData
+                        # Note: Heroes replays are notoriously vague on this. 
+                        # We verify against 'm_userid' if present in the base event structure
+                        
+                        # However, UserLeave is often a specific Game Event. 
+                        # We will log it to the suspect player's stats for audit.
+                        # We need to map UserId -> PlayerId
+                        
+                        target_pid = None
+                        uid = data_map.get('User') # Sometimes it's 'User'
+                        if uid is not None:
+                            # Map UID to PID
+                             user_wrapper = event.get('_userid', {})
+                             if isinstance(user_wrapper, dict):
+                                real_uid = user_wrapper.get('m_userId')
+                                if real_uid is not None:
+                                     # Player list is 0-indexed, uid matches indices
+                                     if 0 <= real_uid < len(players):
+                                         target_pid = real_uid + 1
+
+                        if target_pid and target_pid in stats_data:
+                            stats_data[target_pid].setdefault('disconnects', []).append({
+                                'timestamp': round(event['_gameloop'] / 16.0, 1),
+                                'gameloop': event['_gameloop'],
+                                'type': 'DC'
+                            })
+                            # Also flag the match-level alert
+                            if 'disconnect_events' not in stats_data: stats_data['disconnect_events'] = []
+                            stats_data['disconnect_events'].append({
+                                'player': players[target_pid-1]['name'],
+                                'hero': players[target_pid-1]['hero'],
+                                'timestamp': round(event['_gameloop'] / 16.0, 1)
+                            })
+
                 # --- BOSS DAMAGE TRACKING (for kill speed) ---
                 elif 'SUnitDamageEvent' in event_type:
                     target_tag = event.get('m_targetUnitTagIndex')

@@ -8,7 +8,7 @@
   "name": "Gazlowe",
   "icon": "gazlowe.png",
   "role": "Warrior",
-  "expandedRole": "Bruiser",
+  "expandedRole": "Bruiser, Main Tank",
   "type": "Melee",
   "releaseDate": "2014-03-13",
   "releasePatch": "0.1.1.00000",

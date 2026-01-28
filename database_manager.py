@@ -428,6 +428,17 @@ class DatabaseManager:
             row = conn.execute('SELECT value FROM kv_store WHERE key = ?', (key,)).fetchone()
             return json.loads(row[0]) if row else None
 
+    def update_match_analysis(self, match_id, analysis_data):
+        """Update the analysis field for an existing match."""
+        with self._get_connection() as conn:
+            conn.execute(
+                'UPDATE matches SET analysis_json = ? WHERE id = ?',
+                (json.dumps(analysis_data), match_id)
+            )
+            conn.commit()
+            return True
+
+
     def get_hero_map_stats(self, hero):
         """Aggregate map statistics for a specific hero from match history."""
         with self._get_connection() as conn:

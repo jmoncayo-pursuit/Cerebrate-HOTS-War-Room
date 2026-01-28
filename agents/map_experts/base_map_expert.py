@@ -67,42 +67,82 @@ class BaseMapExpert(BaseAgent):
         Returns:
             dict: Map-specific analysis response
         """
-        # Get match data from context
-        match_id = context.get('match_id')
-        matches = context.get('matches', [])
+        from .map_summaries import get_quick_summary
         
-        if not match_id and matches:
-            match_id = matches[0].get('id') if isinstance(matches, list) else matches.get('id')
+        # INTENT DETECTION: Determine if user wants full analysis or quick strategy info
+        # Keywords that indicate the user wants to analyze a specific match
+        analysis_keywords = ['analyze', 'analysis', 'review', 'match', 'game', 'replay', 'what happened', 'why did', 'mistake']
+        query_lower = query.lower()
+        wants_analysis = any(kw in query_lower for kw in analysis_keywords)
         
-        if not match_id:
-            # Fallback to general map strategy if no match is provided
-            # This allows the expert to still provide tactical value for general queries
-            target_match = {
-                'map': self.map_name,
-                'hero': 'Generic',
-                'result': 'STRATEGIC_PLANNING',
-                'players': []
-            }
-        else:
-            # Get match data
-            target_match = None
-            if isinstance(matches, list):
-                target_match = next((m for m in matches if m.get('id') == match_id), None)
-            elif isinstance(matches, dict):
-                target_match = matches if matches.get('id') == match_id else None
-            
-            if not target_match:
-                # Try to load from database
-                if self.db:
-                    all_matches = self.db.get_matches(limit=10)
-                    target_match = next((m for m in all_matches if m.get('id') == match_id), None)
-            
-            if not target_match:
+        # Get EXPLICIT match_id from context (not auto-injected)
+        explicit_match_id = context.get('match_id')
+        
+        # QUICK QUERY MODE: User didn't explicitly request analysis, just info about the map
+        # This prevents hallucination by returning static data instead of calling LLM
+        if not wants_analysis and not explicit_match_id:
+            quick_summary = get_quick_summary(self.map_name)
+            if quick_summary:
+                return {
+                    'agent': self.name,
+                    'success': True,
+                    'analysis_type': 'quick_strategy_summary',
+                    'data_provenance': 'STATIC_VERIFIED',
+                    'map': self.map_name,
+                    'analysis': {
+                        'win_condition': quick_summary.get('win_condition'),
+                        'critical_objective': quick_summary.get('critical_objective'),
+                        'key_timings': quick_summary.get('key_timings'),
+                        'macro_priority': quick_summary.get('macro_priority'),
+                        'draft_focus': quick_summary.get('draft_focus'),
+                        'summary': f"{self.map_name}: {quick_summary.get('win_condition')}"
+                    }
+                }
+            else:
                 return {
                     'agent': self.name,
                     'success': False,
-                    'error': f'Match {match_id} not found'
+                    'error': f'No strategy data available for {self.map_name}',
+                    'data_provenance': 'INSUFFICIENT'
                 }
+        
+        # FULL ANALYSIS MODE: User explicitly requested analysis
+        # Now we can use auto-injected matches from the context
+        matches = context.get('matches', [])
+        match_id = explicit_match_id
+        
+        # If no explicit match_id but user wants analysis, use latest match for this map
+        if not match_id and matches:
+            # Find the latest match on THIS map
+            for m in (matches if isinstance(matches, list) else [matches]):
+                if m.get('map', '').lower() == self.map_name.lower():
+                    match_id = m.get('id')
+                    break
+            # Fallback to most recent if no map-specific match found
+            if not match_id:
+                match_id = matches[0].get('id') if isinstance(matches, list) else matches.get('id')
+
+        
+        # FULL ANALYSIS MODE: Match context provided
+        target_match = None
+        if isinstance(matches, list):
+            target_match = next((m for m in matches if m.get('id') == match_id), None)
+        elif isinstance(matches, dict):
+            target_match = matches if matches.get('id') == match_id else None
+        
+        if not target_match:
+            # Try to load from database
+            if self.db:
+                all_matches = self.db.get_matches(limit=10)
+                target_match = next((m for m in all_matches if m.get('id') == match_id), None)
+        
+        if not target_match:
+            return {
+                'agent': self.name,
+                'success': False,
+                'error': f'Match {match_id} not found'
+            }
+
         
         # Build map-specific prompt
         prompt = self._build_map_specific_prompt(target_match, context)

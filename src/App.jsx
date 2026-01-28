@@ -18,6 +18,7 @@ const AlphaSpec = lazy(() => import('./pages/AlphaSpec'))
 const AgentDashboard = lazy(() => import('./components/AgentDashboard'))
 const DraftSimulation = lazy(() => import('./components/DraftSimulation'))
 const TemporalAnalysis = lazy(() => import('./components/TemporalAnalysis'))
+const CompositionMatrix = lazy(() => import('./components/tactical/CompositionMatrix'))
 
 function App() {
   const { matches, heroes, profile, loading, error, refresh } = useReplayData()
@@ -161,6 +162,7 @@ function App() {
               { id: 'agents', label: 'Agents', icon: '🤖', activeClass: 'bg-pink-600/20 text-pink-400 border-pink-500/30 shadow-[0_0_20px_rgba(236,72,153,0.3)]' },
               { id: 'live-draft', label: 'Strategic Vision', icon: '👁️', activeClass: 'bg-cyan-600/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_20px_rgba(6,182,212,0.3)]' },
               { id: 'provenance', label: 'Sources', icon: '📊', activeClass: 'bg-indigo-600/20 text-indigo-400 border-indigo-500/30 shadow-[0_0_20px_rgba(99,102,241,0.3)]' },
+              { id: 'compositions', label: 'Compositions', icon: '⚖️', activeClass: 'bg-red-600/20 text-red-400 border-red-500/30 shadow-[0_0_20px_rgba(239,68,68,0.3)]' },
               { id: 'alpha-spec', label: 'Alpha Spec', icon: '👑', activeClass: 'bg-gradient-to-r from-cyan-600/20 to-purple-600/20 text-cyan-400 border-cyan-500/30 shadow-[0_0_20px_rgba(168,85,247,0.3)] animate-pulse' }
             ].map((btn) => (
               <button
@@ -258,6 +260,12 @@ function App() {
             <div className="h-full overflow-y-auto custom-scrollbar">
               <Suspense fallback={<LoadingSpinner text="Loading Data Sources..." />}>
                 <DataProvenance />
+              </Suspense>
+            </div>
+          ) : viewMode === 'compositions' ? (
+            <div className="h-full overflow-y-auto custom-scrollbar">
+              <Suspense fallback={<LoadingSpinner text="Loading Tactical Matrix..." />}>
+                <CompositionMatrix />
               </Suspense>
             </div>
           ) : viewMode === 'alpha-spec' ? (

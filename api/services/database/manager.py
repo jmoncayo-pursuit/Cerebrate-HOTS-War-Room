@@ -135,6 +135,17 @@ class DatabaseManager:
     def save_match(self, match_data):
         return self.upsert_match(match_data)
 
+    def update_match_analysis(self, match_id, analysis_data):
+        """Update the analysis field for an existing match."""
+        with self._get_connection() as conn:
+            conn.execute(
+                "UPDATE matches SET analysis = ? WHERE id = ?",
+                (json.dumps(analysis_data), match_id)
+            )
+            conn.commit()
+            return True
+
+
     def get_hero_map_stats(self, hero):
         query = """
             SELECT m.map as game_map, COUNT(*) as games, SUM(p.win) as wins
