@@ -7,7 +7,7 @@ from collections import defaultdict
 # Add project root to path
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 def main():
     print("--- Rebuilding Player Profile from SQL ---")

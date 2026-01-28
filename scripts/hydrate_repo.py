@@ -1,7 +1,7 @@
 import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 import json
 
 def main():

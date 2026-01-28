@@ -5,7 +5,7 @@ import os
 
 # Ensure we can import from the root directory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 def reanalyze_all():
     db = DatabaseManager()

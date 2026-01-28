@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 def seed_gold_standards():
     """Seed initial gold standard examples from documentation"""
@@ -69,7 +69,7 @@ def seed_gold_standards():
     
     print(f"\n✅ Successfully seeded {len(examples)} gold standard examples!")
     print("\nTo verify, run:")
-    print("  python3 -c \"from database_manager import DatabaseManager; DB = DatabaseManager(); print(DB.get_gold_standards())\"")
+    print("  python3 -c \"from api.services.database import DatabaseManager; DB = DatabaseManager(); print(DB.get_gold_standards())\"")
 
 if __name__ == '__main__':
     seed_gold_standards()

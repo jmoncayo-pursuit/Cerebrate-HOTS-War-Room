@@ -11,7 +11,7 @@ from collections import defaultdict
 # Add project root to path for database_manager
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, PROJECT_ROOT)
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 def extract_build_from_player(player):
     """Extract talent build string from player data"""

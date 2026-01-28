@@ -15,7 +15,7 @@ from datetime import datetime
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.abspath(os.path.join(SCRIPT_DIR, '..'))
 sys.path.insert(0, PROJECT_ROOT)
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 FORENSICS_FILE = os.path.join(PROJECT_ROOT, 'src/data/nemesis_forensics.json')
 

@@ -14,7 +14,7 @@ from datetime import datetime
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 PROJECT_ROOT = os.path.dirname(SCRIPT_DIR)
 sys.path.insert(0, PROJECT_ROOT)
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 class IngestionLogger:
     def __init__(self):

@@ -65,6 +65,17 @@ class DatabaseManager:
         
         with self._get_connection() as conn:
             matches = [dict(row) for row in conn.execute(query, params).fetchall()]
+            
+            # Alias duration to game_length for frontend compatibility
+            for m in matches:
+                if 'duration' in m and m['duration'] is not None:
+                    try:
+                        m['game_length'] = int(m['duration'])
+                    except:
+                        m['game_length'] = 0
+                else:
+                    m['game_length'] = 0
+                    
             if include_players and matches:
                 # 1. Collect all match IDs
                 match_ids = [m['id'] for m in matches]
@@ -81,6 +92,10 @@ class DatabaseManager:
                     # Pre-process JSON fields
                     p['stats'] = json.loads(p['stats']) if p['stats'] else {}
                     p['talents'] = json.loads(p['talents']) if p['talents'] else []
+                    
+                    # Alias for frontend compatibility: restore name field
+                    if 'player_name' in p:
+                        p['name'] = p['player_name']
                     
                     m_id = p['match_id']
                     if m_id not in players_by_match:
@@ -135,20 +150,22 @@ class DatabaseManager:
         with self._get_connection() as conn:
             conn.row_factory = sqlite3.Row
             # 1. Get Commander (Discerning)
-            commander = conn.execute("SELECT team, win FROM match_players WHERE match_id = ? AND player_name = 'Discerning'", (match_id,)).fetchone()
+            commander = conn.execute("SELECT team, win, toon_handle FROM match_players WHERE match_id = ? AND player_name = 'Discerning'", (match_id,)).fetchone()
             if not commander: return # Only track if commander is in match
             
             commander_team = commander['team']
             commander_won = commander['win']
+            commander_toon = commander['toon_handle']
             
             # 2. Update all other players
-            others = conn.execute("SELECT player_name, hero, team, win, stats FROM match_players WHERE match_id = ? AND player_name != 'Discerning'", (match_id,)).fetchall()
+            others = conn.execute("SELECT player_name, toon_handle, hero, team, win, stats FROM match_players WHERE match_id = ? AND toon_handle != ?", (match_id, commander_toon)).fetchall()
             for p in others:
                 name = p['player_name']
-                if name == "Player": continue
+                handle = p['toon_handle']
+                if not handle or handle == "0-0-0": continue # Skip non-unique/AI
                 
                 # Check for existing profile
-                row = conn.execute("SELECT total_games, hero_pool, tags, kda_avg FROM social_profiles WHERE player_name = ?", (name,)).fetchone()
+                row = conn.execute("SELECT total_games, hero_pool, tags, kda_avg FROM social_profiles WHERE toon_handle = ?", (handle,)).fetchone()
                 
                 # Calculate KDA
                 try:
@@ -166,6 +183,7 @@ class DatabaseManager:
                     if p['team'] == commander_team:
                         conn.execute("""
                             UPDATE social_profiles SET 
+                                player_name = ?,
                                 total_games = total_games + 1,
                                 games_as_teammate = games_as_teammate + 1,
                                 wins_as_teammate = wins_as_teammate + ?,
@@ -173,11 +191,12 @@ class DatabaseManager:
                                 kda_avg = (kda_avg * ? + ?) / ?,
                                 last_seen = CURRENT_TIMESTAMP,
                                 updated_at = CURRENT_TIMESTAMP
-                            WHERE player_name = ?
-                        """, (1 if p['win'] else 0, json.dumps(list(hero_pool)), row['total_games'], kda, total, name))
+                            WHERE toon_handle = ?
+                        """, (name, 1 if p['win'] else 0, json.dumps(list(hero_pool)), row['total_games'], kda, total, handle))
                     else:
                         conn.execute("""
                             UPDATE social_profiles SET 
+                                player_name = ?,
                                 total_games = total_games + 1,
                                 games_as_enemy = games_as_enemy + 1,
                                 wins_against = wins_against + ?,
@@ -185,22 +204,21 @@ class DatabaseManager:
                                 kda_avg = (kda_avg * ? + ?) / ?,
                                 last_seen = CURRENT_TIMESTAMP,
                                 updated_at = CURRENT_TIMESTAMP
-                            WHERE player_name = ?
-                        """, (1 if commander_won else 0, json.dumps(list(hero_pool)), row['total_games'], kda, total, name))
+                            WHERE toon_handle = ?
+                        """, (name, 1 if commander_won else 0, json.dumps(list(hero_pool)), row['total_games'], kda, total, handle))
                 else:
-                    # Insert new (only if recurring? No, let's track everyone, but rebuild script filters)
-                    # Actually, better to insert everyone and let UI/Brain decide minimum games.
+                    # Insert new
                     hero_pool = json.dumps([p['hero']])
                     if p['team'] == commander_team:
                         conn.execute("""
-                            INSERT INTO social_profiles (player_name, total_games, games_as_teammate, wins_as_teammate, kda_avg, hero_pool, last_seen)
-                            VALUES (?, 1, 1, ?, ?, ?, CURRENT_TIMESTAMP)
-                        """, (name, 1 if p['win'] else 0, kda, hero_pool))
+                            INSERT INTO social_profiles (toon_handle, player_name, total_games, games_as_teammate, wins_as_teammate, kda_avg, hero_pool, last_seen)
+                            VALUES (?, ?, 1, 1, ?, ?, ?, CURRENT_TIMESTAMP)
+                        """, (handle, name, 1 if p['win'] else 0, kda, hero_pool))
                     else:
                         conn.execute("""
-                            INSERT INTO social_profiles (player_name, total_games, games_as_enemy, wins_against, kda_avg, hero_pool, last_seen)
-                            VALUES (?, 1, 1, ?, ?, ?, CURRENT_TIMESTAMP)
-                        """, (name, 1 if commander_won else 0, kda, hero_pool))
+                            INSERT INTO social_profiles (toon_handle, player_name, total_games, games_as_enemy, wins_against, kda_avg, hero_pool, last_seen)
+                            VALUES (?, ?, 1, 1, ?, ?, ?, CURRENT_TIMESTAMP)
+                        """, (handle, name, 1 if commander_won else 0, kda, hero_pool))
             conn.commit()
 
     def save_summary_grade(self, match_id, attempt_number, grades, feedback):

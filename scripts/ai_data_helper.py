@@ -18,7 +18,7 @@ USAGE:
     # Get global meta WR
     meta_wr = helper.get_global_meta_wr('Deckard')
 """
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 import json
 
 class AIDataHelper:

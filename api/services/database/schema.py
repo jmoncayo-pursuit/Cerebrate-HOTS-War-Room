@@ -20,6 +20,7 @@ SCHEMA = [
     CREATE TABLE IF NOT EXISTS match_players (
         match_id TEXT,
         player_name TEXT,
+        toon_handle TEXT, -- Format: region-realm-id
         hero TEXT,
         team INTEGER,
         win INTEGER,
@@ -34,6 +35,7 @@ SCHEMA = [
     "CREATE INDEX IF NOT EXISTS idx_player_match ON match_players(match_id)",
     "CREATE INDEX IF NOT EXISTS idx_player_hero ON match_players(hero)",
     "CREATE INDEX IF NOT EXISTS idx_player_name ON match_players(player_name)",
+    "CREATE INDEX IF NOT EXISTS idx_player_toon ON match_players(toon_handle)",
     """
     CREATE TABLE IF NOT EXISTS kv_store (
         key TEXT PRIMARY KEY,
@@ -110,7 +112,8 @@ SCHEMA = [
     """,
     """
     CREATE TABLE IF NOT EXISTS social_profiles (
-        player_name TEXT PRIMARY KEY,
+        toon_handle TEXT PRIMARY KEY,
+        player_name TEXT, -- Last seen display name
         total_games INTEGER DEFAULT 0,
         games_as_teammate INTEGER DEFAULT 0,
         wins_as_teammate INTEGER DEFAULT 0,

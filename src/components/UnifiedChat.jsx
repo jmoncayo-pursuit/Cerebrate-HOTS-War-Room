@@ -1315,9 +1315,12 @@ export default function UnifiedChat({
     if (isMatchQuery && latestMatch) {
       const match = latestMatch
       const userPlayer = match.players?.find(p =>
+        p.name === 'Discerning' ||
+        p.name === 'CerebrateUser' ||
         p.name?.toLowerCase().includes('cerebrate') ||
         p.name?.toLowerCase().includes('player') ||
-        p.is_user
+        p.is_user ||
+        p.hero === match.hero
       ) || match.players?.[0]
 
       const stats = userPlayer?.stats || {}

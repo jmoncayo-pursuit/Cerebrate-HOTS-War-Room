@@ -18,7 +18,7 @@ MATCH_HISTORY_FILE = os.path.join(PROJECT_ROOT, 'src/data', 'match_history.json'
 
 import sys
 sys.path.insert(0, PROJECT_ROOT)
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 def load_match_history():
     """Load match history from database."""

@@ -10,7 +10,7 @@ import os
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 def check_accountability():
     """Check match summaries for external-blame patterns"""

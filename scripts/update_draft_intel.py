@@ -12,7 +12,7 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(script_dir)
 sys.path.insert(0, project_root)
 
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 from collections import defaultdict
 import json
 

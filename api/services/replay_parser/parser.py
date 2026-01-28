@@ -16,7 +16,7 @@ from .header import get_match_id
 from .tracker import process_tracker_events, process_game_events
 
 # Increment when parser logic changes
-PARSER_VERSION = "3.3" 
+PARSER_VERSION = "3.4" 
 
 def parse_replay(replay_path, options=None):
     setup_imp_shim()
@@ -60,12 +60,17 @@ def parse_replay(replay_path, options=None):
             h_raw = p['m_hero'].decode('utf-8')
             p_name = p['m_name'].decode('utf-8')
             
+            # toon mapping for unique ID: region-realm-id
+            toon = p.get('m_toon', {})
+            t_handle = f"{toon.get('m_region', 0)}-{toon.get('m_realm', 0)}-{toon.get('m_id', 0)}"
+            
             # Debug log for critical user
             if 'Discerning' in p_name:
                 pass # ColoredLogger.info(f"DEBUG: Discerning Result: {result}", "PARSER")
 
             players.append({
                 'name': p_name,
+                'toon_handle': t_handle,
                 'hero': get_hero_display_name(h_raw),
                 'team': p['m_teamId'],
                 'win': (result == 1),
@@ -133,6 +138,7 @@ def parse_replay(replay_path, options=None):
             "hero": user_player['hero'],
             "players": players,
             "user_name": user_player['name'],
+            "user_toon_handle": user_player['toon_handle'],
             "parser_version": PARSER_VERSION,
             "advanced_stats": {
                 "bans": bans,

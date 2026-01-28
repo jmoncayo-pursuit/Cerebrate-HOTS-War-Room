@@ -445,7 +445,12 @@ function StatsScoreboard({ match, players, onDiscuss }) {
     }
 
     // Identify user
-    const userPlayer = players.find(p => p.name === (typeof PLAYER_NAME !== 'undefined' ? PLAYER_NAME : 'CerebrateUser') || p.hero === match.hero);
+    const userPlayer = players.find(p =>
+        p.name === 'Discerning' ||
+        p.name === 'CerebrateUser' ||
+        (p.name && p.name.includes('CerebrateUser')) ||
+        p.hero === match.hero
+    );
     const userTeamId = userPlayer ? userPlayer.team : 0;
 
     // Sort ALL players together (mixed teams)
@@ -704,7 +709,12 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
     const [isVerifying, setIsVerifying] = useState(false)
 
     // Get user's stats and team stats for comparison
-    const userPlayer = match.players?.find(p => p.name === (typeof PLAYER_NAME !== 'undefined' ? PLAYER_NAME : 'CerebrateUser') || p.hero === match.hero);
+    const userPlayer = match.players?.find(p =>
+        p.name === 'Discerning' ||
+        p.name === 'CerebrateUser' ||
+        (p.name && p.name.includes('CerebrateUser')) ||
+        p.hero === match.hero
+    );
     const userStats = userPlayer?.stats || {};
     const userTeam = match.players?.filter(p => p.team === userPlayer?.team) || [];
 
@@ -945,7 +955,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                         {/* Extract unique stats from match data (not in Stats tab) - Fallback if no AI insights */}
                         {(!analysis?.key_insights) && (() => {
-                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || p.name.includes('CerebrateUser'))?.stats;
+                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || (p.name && p.name.includes('CerebrateUser')) || p.hero === match.hero)?.stats;
                             if (!playerStats) return null;
 
                             const uniqueInsights = [];
@@ -1166,7 +1176,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                         {/* Structure Damage */}
                         {(() => {
-                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || p.name.includes('CerebrateUser'))?.stats;
+                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || (p.name && p.name.includes('CerebrateUser')) || p.hero === match.hero)?.stats;
                             if (!playerStats?.SiegeDamage) return null;
 
                             const siegeDmg = playerStats.SiegeDamage;
@@ -1281,7 +1291,12 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
     const playerInteractions = useEncounteredPlayers()
 
     // Identify user
-    const userPlayer = players.find(p => p.name === 'CerebrateUser')
+    const userPlayer = players.find(p =>
+        p.name === 'Discerning' ||
+        p.name === 'CerebrateUser' ||
+        (p.name && p.name.includes('CerebrateUser')) ||
+        p.hero === match.hero
+    );
     const userTeamId = userPlayer ? userPlayer.team : 0
 
     // Sort players

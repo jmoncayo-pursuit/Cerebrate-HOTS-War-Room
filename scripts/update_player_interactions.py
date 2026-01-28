@@ -5,7 +5,7 @@ from datetime import datetime
 
 # Add root directory to path to import database_manager
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 # Handle paths relative to script location
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -64,11 +64,17 @@ def update_interactions():
         user_won = match.get('result') == 'WIN' or match.get('win') == True
         
         for p in players:
-            p_name = p.get('name')
-            p_toon = p.get('toon_id')
+            p_name = p.get('name') or p.get('player_name')
+            p_toon = p.get('toon_handle')
             
-            # Use toon_id as primary key to avoid name collisions (e.g. many people named "Player")
-            p_key = p_toon if p_toon else p_name
+            # Use toon_handle as primary key to avoid name collisions
+            p_key = p_toon if p_toon and p_toon != "0-0-0" else p_name
+            
+            if p_toon and p_toon != "0-0-0" and "1-1-" in p_toon:
+                # Debug sample
+                if not hasattr(update_interactions, '_debug_done'):
+                    print(f"DEBUG: Found toon {p_toon} for {p_name}, using as key.")
+                    update_interactions._debug_done = True
             
             if not p_name or p_name == user_name: continue
             
@@ -76,7 +82,7 @@ def update_interactions():
                 interactions[p_key] = {
                     "id": p_key,
                     "name": p_name,
-                    "toon_id": p_toon,
+                    "toon_handle": p_toon,
                     "matches": [],
                     "total_with": 0,
                     "total_against": 0,
@@ -85,6 +91,10 @@ def update_interactions():
                 }
             
             player_record = interactions[p_key]
+            # Refresh name if it was previously "Player" or unknown
+            if player_record['name'] == "Player" and p_name != "Player":
+                player_record['name'] = p_name
+
             is_teammate = p.get('team') == user_team
             
             # Check if match already recorded for this specific player

@@ -27,7 +27,7 @@ def generate_map_recommendations(verbose=False):
     
     # Load data
     # Try to load from database instead of JSON file
-    from database_manager import DatabaseManager
+    from api.services.database import DatabaseManager
     DB = DatabaseManager()
     profile_data = DB.get_kv('player_profile')
     if not profile_data:

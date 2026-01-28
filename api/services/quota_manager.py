@@ -128,3 +128,7 @@ class QuotaManager:
                 'percent': round((current / limit * 100), 1) if limit > 0 else 0
             }
         return status
+
+    def can_process_replay(self):
+        """Allow replay processing (separate from AI quota for now)"""
+        return True

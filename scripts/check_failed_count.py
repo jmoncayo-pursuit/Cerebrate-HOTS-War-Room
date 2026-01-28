@@ -8,7 +8,7 @@ import sys
 import os
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 db = DatabaseManager()
 matches = db.get_matches(limit=1000)

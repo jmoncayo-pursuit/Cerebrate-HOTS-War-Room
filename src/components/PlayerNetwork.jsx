@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { normalizeHeroName } from '../utils/heroUtils';
-import { ChevronRight, Activity, Users, Target, Sword, AlertTriangle, Search, Info, BarChart3, Shield, Zap, TrendingUp, History, BrainCircuit } from 'lucide-react';
+import { ChevronRight, Activity, Users, Target, Sword, Swords, AlertTriangle, Search, Info, BarChart3, Shield, Zap, TrendingUp, History, BrainCircuit } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroText from './HeroText';
+import SelfHealingErrorBoundary from './SelfHealingErrorBoundary';
 import './PlayerNetwork.css';
 
 // StrategyContent now uses HeroText component
@@ -11,11 +12,11 @@ const StrategyContent = ({ text, heroData }) => {
     return <div className="strategy-content text-slate-300 leading-relaxed whitespace-pre-wrap"><HeroText text={text} heroData={heroData} /></div>;
 };
 
-const PlayerNetwork = () => {
+const PlayerNetworkContent = () => {
     const [players, setPlayers] = useState([]);
     const [heroData, setHeroData] = useState(null);
     const [filter, setFilter] = useState('all');
-    const [sortBy, setSortBy] = useState('total');
+    const [sortConfig, setSortConfig] = useState({ key: 'total', direction: 'desc' });
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [expandedPlayer, setExpandedPlayer] = useState(null);
@@ -33,13 +34,13 @@ const PlayerNetwork = () => {
                 // Optimized single-pass processing
                 const playerList = Object.values(data).map(p => {
                     const matches = p.matches || [];
-                    
+
                     // Use backend-calculated values if available (faster)
                     let winsWith = p.wins_with;
                     let totalWith = p.total_with;
                     let winsAgainst = p.wins_against;
                     let totalAgainst = p.total_against;
-                    
+
                     // Only recalculate if backend values are missing (single pass through matches)
                     if (winsWith === undefined || totalWith === undefined) {
                         let ww = 0, tw = 0;
@@ -52,7 +53,7 @@ const PlayerNetwork = () => {
                         winsWith = ww;
                         totalWith = tw;
                     }
-                    
+
                     if (winsAgainst === undefined || totalAgainst === undefined) {
                         let wa = 0, ta = 0;
                         for (const m of matches) {
@@ -223,7 +224,14 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
         }
     };
 
-    const filteredPlayers = useMemo(() => {
+    const handleSort = (key) => {
+        setSortConfig(prev => ({
+            key,
+            direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
+        }));
+    };
+
+    const sortedPlayers = useMemo(() => {
         let filtered = [...players];
 
         // Apply Search
@@ -236,29 +244,49 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
         }
 
         if (filter === 'allies') {
-            // Show players you've played WITH more than AGAINST, or at least played with
             filtered = filtered.filter(p => p.total_with > p.total_against || (p.total_with > 0 && p.total_against === 0));
         } else if (filter === 'enemies') {
-            // Show players you've played AGAINST more than WITH, or at least played against
             filtered = filtered.filter(p => p.total_against > p.total_with || (p.total_against > 0 && p.total_with === 0));
         } else if (filter === 'frequent') {
             filtered = filtered.filter(p => p.total_games >= 2);
         }
 
-        if (sortBy === 'total') {
-            filtered.sort((a, b) => b.total_games - a.total_games);
-        } else if (sortBy === 'winrate') {
-            filtered.sort((a, b) => {
-                const aWR = a.total_with > 0 ? a.winrate_with : a.winrate_against;
-                const bWR = b.total_with > 0 ? b.winrate_with : b.winrate_against;
-                return bWR - aWR;
-            });
-        } else if (sortBy === 'recent') {
-            filtered.sort((a, b) => new Date(b.last_played) - new Date(a.last_played));
-        }
+        return filtered.sort((a, b) => {
+            let comparison = 0;
+            const { key } = sortConfig;
 
-        return filtered;
-    }, [players, filter, sortBy, searchTerm]);
+            switch (key) {
+                case 'name':
+                    comparison = a.name.localeCompare(b.name);
+                    break;
+                case 'total':
+                    comparison = a.total_games - b.total_games;
+                    break;
+                case 'winrate':
+                    // Sort by highest winrate (with or against)
+                    const aWR = a.total_with > 0 ? a.winrate_with : a.winrate_against;
+                    const bWR = b.total_with > 0 ? b.winrate_with : b.winrate_against;
+                    comparison = aWR - bWR;
+                    break;
+                case 'recent':
+                    comparison = new Date(a.last_played) - new Date(b.last_played);
+                    break;
+                case 'affinity':
+                    // Custom sort for affinity (Ally > Mixed > Enemy)
+                    const getScore = (p) => {
+                        if (p.total_with > p.total_against) return 3;
+                        if (p.total_against > p.total_with) return 1;
+                        return 2;
+                    };
+                    comparison = getScore(a) - getScore(b);
+                    break;
+                default:
+                    comparison = 0;
+            }
+
+            return sortConfig.direction === 'asc' ? comparison : -comparison;
+        });
+    }, [players, filter, sortConfig, searchTerm]);
 
     const getRelationshipColor = (player) => {
         if (player.total_with > player.total_against) {
@@ -364,7 +392,7 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
         <div className="player-network-container">
             <div className="cinematic-overlay" />
 
-            <div className="cerebrate-header-card">
+            <div className="network-header-card">
                 <div className="flex items-center">
                     <div className="header-icon-box" style={{ background: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.2)', color: '#a855f7' }}>
                         <Users size={28} />
@@ -388,94 +416,100 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                             />
                         </div>
                     </div>
-                    <div className="status-indicator hidden md:flex" style={{ background: 'rgba(168, 85, 247, 0.1)', borderColor: 'rgba(168, 85, 247, 0.2)', color: '#a855f7' }}>
-                        <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-pulse" />
-                        Network Live
-                    </div>
                 </div>
             </div>
 
-            {/* Quick Insights Dashboard */}
-            <div className="insights-dashboard">
-                <div className="insight-card ally">
-                    <div className="insight-icon"><Users /></div>
-                    <div className="insight-content">
-                        <div className="insight-value">{summaryStats.strongAllies}</div>
-                        <div className="insight-label">Strong Allies</div>
-                        <div className="insight-detail">60%+ WR together</div>
+            {/* Top Intelligence Section - Unified "Perfect Rectangle" Grid */}
+            <div className="intelligence-summary-wrapper">
+                <div className="intelligence-grid">
+                    {/* Row 1 & 2 Left Half: Counters (1x1 each) */}
+                    <div className="insight-card ally span-1">
+                        <div className="card-icon"><Users size={20} /></div>
+                        <div className="card-identity">
+                            <div className="label-main">Strong Allies</div>
+                            <div className="label-sub">60%+ Win Rate</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-xl">{summaryStats.strongAllies}</div>
+                        </div>
                     </div>
-                </div>
-                <div className="insight-card warning">
-                    <div className="insight-icon"><AlertTriangle /></div>
-                    <div className="insight-content">
-                        <div className="insight-value">{summaryStats.weakLinks}</div>
-                        <div className="insight-label">Weak Links</div>
-                        <div className="insight-detail">&lt;40% WR together</div>
+
+                    <div className="insight-card enemy span-1">
+                        <div className="card-icon"><Target size={20} /></div>
+                        <div className="card-identity">
+                            <div className="label-main">Nemeses</div>
+                            <div className="label-sub">&lt;40% Win Rate</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-xl">{summaryStats.nemeses}</div>
+                        </div>
                     </div>
-                </div>
-                <div className="insight-card enemy">
-                    <div className="insight-icon"><Target /></div>
-                    <div className="insight-content">
-                        <div className="insight-value">{summaryStats.nemeses}</div>
-                        <div className="insight-label">Nemeses</div>
-                        <div className="insight-detail">&lt;40% WR vs them</div>
+
+                    {/* Row 1 & 2 Right Half: Primary Rival (2x2) */}
+                    <div className="insight-card enemy span-2 row-span-2 primary-rival">
+                        <div className="card-icon"><Swords size={24} /></div>
+                        <div className="card-identity">
+                            <div className="label-main text-red-400">Primary Rival</div>
+                            <div className="identity-name-anchor">{summaryStats.frequentRival ? summaryStats.frequentRival.name : 'Analyzing...'}</div>
+                            <div className="identity-badge-neural">Captured in Replay Analysis</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-huge text-red-400">{summaryStats.frequentRival ? summaryStats.frequentRival.total_games : '--'}</div>
+                            <div className="stat-unit">Engages</div>
+                        </div>
                     </div>
-                </div>
-                <div className="insight-card easy">
-                    <div className="insight-icon"><Zap /></div>
-                    <div className="insight-content">
-                        <div className="insight-value">{summaryStats.easyOpponents}</div>
-                        <div className="insight-label">Easy Opponents</div>
-                        <div className="insight-detail">60%+ WR vs them</div>
+
+                    {/* Row 2 Left Half: Remaining Counters */}
+                    <div className="insight-card warning span-1">
+                        <div className="card-icon"><AlertTriangle size={20} /></div>
+                        <div className="card-identity">
+                            <div className="label-main">Weak Links</div>
+                            <div className="label-sub">&lt;40% Win Rate</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-xl">{summaryStats.weakLinks}</div>
+                        </div>
+                    </div>
+
+                    <div className="insight-card easy span-1">
+                        <div className="card-icon"><Zap size={20} /></div>
+                        <div className="card-identity">
+                            <div className="label-main">Easy Prey</div>
+                            <div className="label-sub">60%+ Win Rate</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-xl">{summaryStats.easyOpponents}</div>
+                        </div>
+                    </div>
+
+                    {/* Row 3 & 4: Complex Wide Tiles (2x2 each) */}
+                    <div className="insight-card easy span-2 row-span-2 optimized-synergy">
+                        <div className="card-icon"><TrendingUp size={24} /></div>
+                        <div className="card-identity">
+                            <div className="label-main text-blue-400">Optimized Synergy</div>
+                            <div className="identity-name-anchor">{summaryStats.topAlly ? summaryStats.topAlly.name : 'Calculating...'}</div>
+                            <div className="identity-badge-neural">{summaryStats.topAlly ? `${summaryStats.topAlly.total_with} Games Linked` : 'Scanning Network...'}</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-huge text-blue-400">{summaryStats.topAlly ? `${(summaryStats.topAlly.winrate_with).toFixed(0)}%` : '--'}</div>
+                            <div className="stat-unit">Win Prob</div>
+                        </div>
+                    </div>
+
+                    <div className="insight-card warning span-2 row-span-2 critical-threat">
+                        <div className="card-icon"><AlertTriangle size={24} /></div>
+                        <div className="card-identity">
+                            <div className="label-main text-amber-500">Critical Threat</div>
+                            <div className="identity-name-anchor">{summaryStats.topNemesis ? summaryStats.topNemesis.name : 'Monitoring...'}</div>
+                            <div className="identity-badge-neural">{summaryStats.topNemesis ? `${summaryStats.topNemesis.total_against} Engages Detected` : 'No Critical Risks'}</div>
+                        </div>
+                        <div className="card-stats">
+                            <div className="value-huge text-amber-400">{summaryStats.topNemesis ? `${(summaryStats.topNemesis.winrate_against).toFixed(0)}%` : '--'}</div>
+                            <div className="stat-unit">Loss Prob</div>
+                        </div>
                     </div>
                 </div>
             </div>
-
-            {/* Top Players Spotlight */}
-            {(summaryStats.topAlly || summaryStats.topNemesis || summaryStats.frequentRival) && (
-                <div className="spotlight-section">
-                    {summaryStats.frequentRival && (
-                        <div className="spotlight-card rival">
-                            <div className="spotlight-header">
-                                <span className="spotlight-icon"><History size={16} /></span>
-                                <span className="spotlight-title">Frequent Rival</span>
-                            </div>
-                            <div className="spotlight-player">{summaryStats.frequentRival.name}</div>
-                            <div className="spotlight-stats">
-                                <div className="spotlight-stat-item">
-                                    <span className="stat-label">With:</span>
-                                    <span className="stat-value">{summaryStats.frequentRival.winrate_with.toFixed(1)}%</span>
-                                </div>
-                                <div className="spotlight-stat-item">
-                                    <span className="stat-label">Vs:</span>
-                                    <span className="stat-value">{summaryStats.frequentRival.winrate_against.toFixed(1)}%</span>
-                                </div>
-                            </div>
-                            <div className="spotlight-total">{summaryStats.frequentRival.total_games} Engagements</div>
-                        </div>
-                    )}
-                    {summaryStats.topAlly && (
-                        <div className="spotlight-card ally">
-                            <div className="spotlight-header">
-                                <span className="spotlight-icon"><TrendingUp size={16} /></span>
-                                <span className="spotlight-title">Optimized Synergy</span>
-                            </div>
-                            <div className="spotlight-player">{summaryStats.topAlly.name}</div>
-                            <div className="spotlight-stat">{summaryStats.topAlly.winrate_with.toFixed(1)}% Synergy Rating</div>
-                        </div>
-                    )}
-                    {summaryStats.topNemesis && (
-                        <div className="spotlight-card enemy">
-                            <div className="spotlight-header">
-                                <span className="spotlight-icon"><Target size={16} /></span>
-                                <span className="spotlight-title">Critical Threat</span>
-                            </div>
-                            <div className="spotlight-player">{summaryStats.topNemesis.name}</div>
-                            <div className="spotlight-stat">{summaryStats.topNemesis.winrate_against.toFixed(1)}% Avoidance Required</div>
-                        </div>
-                    )}
-                </div>
-            )}
 
             <div className="network-controls">
                 <div className="filter-group">
@@ -494,29 +528,38 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                     </button>
                 </div>
 
-                <div className="sort-group">
-                    <label>Sort:</label>
-                    <select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                        <option value="total">Total Games</option>
-                        <option value="winrate">Win Rate</option>
-                        <option value="recent">Recently Played</option>
-                    </select>
+                <div className="sort-group hidden">
+                    {/* Replaced by column headers */}
                 </div>
             </div>
 
             {/* Tactical Ledger (Condensed List) */}
             <div className="player-ledger">
                 <div className="ledger-header">
-                    <div className="col-name">Commander</div>
-                    <div className="col-relation">Affinity</div>
-                    <div className="col-stats">With (WR)</div>
-                    <div className="col-stats">Vs (WR)</div>
-                    <div className="col-total">Total</div>
+                    <div className="col-name flex items-center gap-1 hover:text-white transition-colors" onClick={() => handleSort('name')}>
+                        Commander
+                        {sortConfig.key === 'name' && (sortConfig.direction === 'asc' ? <span className="text-purple-400">↑</span> : <span className="text-purple-400">↓</span>)}
+                    </div>
+                    <div className="col-relation flex items-center gap-1 hover:text-white transition-colors" onClick={() => handleSort('affinity')}>
+                        Affinity
+                        {sortConfig.key === 'affinity' && (sortConfig.direction === 'asc' ? <span className="text-purple-400">↑</span> : <span className="text-purple-400">↓</span>)}
+                    </div>
+                    <div className="col-stats flex items-center gap-1 hover:text-white transition-colors" onClick={() => handleSort('winrate')}>
+                        With (WR)
+                        {sortConfig.key === 'winrate' && (sortConfig.direction === 'asc' ? <span className="text-purple-400">↑</span> : <span className="text-purple-400">↓</span>)}
+                    </div>
+                    <div className="col-stats flex items-center gap-1 hover:text-white transition-colors" onClick={() => handleSort('winrate')}>
+                        Vs (WR)
+                    </div>
+                    <div className="col-total flex items-center gap-1 hover:text-white transition-colors" onClick={() => handleSort('total')}>
+                        Total
+                        {sortConfig.key === 'total' && (sortConfig.direction === 'asc' ? <span className="text-purple-400">↑</span> : <span className="text-purple-400">↓</span>)}
+                    </div>
                     <div className="col-action"></div>
                 </div>
 
                 <div className="ledger-body">
-                    {filteredPlayers.map(player => {
+                    {sortedPlayers.map(player => {
                         const relationColor = getRelationshipColor(player);
                         const relationLabel = getRelationshipLabel(player);
                         const isExpanded = expandedPlayer === player.id;
@@ -541,7 +584,7 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                                             <div className="flex flex-col">
                                                 <span className="font-black text-slate-100 leading-tight">{player.name}</span>
                                                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-tighter">
-                                                    Last Active: {formatDate(player.last_played)}
+                                                    Captured in Replay Analysis
                                                 </span>
                                             </div>
                                         </div>
@@ -688,7 +731,7 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                 </div>
             </div>
 
-            {filteredPlayers.length === 0 && (
+            {sortedPlayers.length === 0 && (
                 <div className="no-players">
                     No players match the current filter
                 </div>
@@ -696,5 +739,11 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
         </div>
     );
 };
+
+const PlayerNetwork = () => (
+    <SelfHealingErrorBoundary>
+        <PlayerNetworkContent />
+    </SelfHealingErrorBoundary>
+);
 
 export default PlayerNetwork;
