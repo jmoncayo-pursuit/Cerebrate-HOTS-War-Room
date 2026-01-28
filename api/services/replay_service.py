@@ -78,16 +78,21 @@ class ReplayService:
             # Upsert
             success = self.db.upsert_match(db_data)
             
-            # 5. IMMEDIATE ANALYSIS (within quota)
+            # 5. CONDITIONAL ANALYSIS - Only when notable events detected
             analysis_result = None
-            if success and self.quota.can_make_request():
+            has_dc = any(p.get('disconnected') for p in result.get('players', []))
+            # Add more conditions here as needed (e.g., close games, comebacks)
+            
+            if success and has_dc and self.quota.can_make_request():
                 try:
+                    ColoredLogger.info("DC detected - generating analysis", "REPLAY")
                     analysis_result = self._generate_match_summary(db_data)
                     if analysis_result and analysis_result.get('success'):
                         self.db.update_match_analysis(result['match_id'], analysis_result['analysis'])
                         self.quota.record_request()
                 except Exception as e:
                     ColoredLogger.warn(f"Analysis generation failed: {e}", "REPLAY")
+
             
             os.remove(temp_path)
             return {
