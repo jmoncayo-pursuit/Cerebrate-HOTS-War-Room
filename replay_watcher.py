@@ -722,7 +722,18 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Cerebrate Replay Watcher')
     parser.add_argument('--once', action='store_true', help='Run once and exit')
+    parser.add_argument('--force-reparse', action='store_true', 
+                        help='Clear processed log and re-parse ALL replays (use with caution)')
     args = parser.parse_args()
+    
+    # Handle force reparse
+    if args.force_reparse:
+        ColoredLogger.warn("⚠️  FORCE REPARSE: Clearing processed replays log...", "WATCH")
+        if os.path.exists(PROCESSED_LOG):
+            os.remove(PROCESSED_LOG)
+            ColoredLogger.success(f"✓ Cleared {PROCESSED_LOG}", "WATCH")
+        ColoredLogger.info("All replays will be re-processed on next scan.", "WATCH")
+        ColoredLogger.warn("⚠️  This will use API quota for each replay summary.", "WATCH")
     
     try:
         main(once=args.once)
@@ -731,3 +742,4 @@ if __name__ == "__main__":
         if os.path.exists(pid_file):
             try: os.remove(pid_file)
             except: pass
+
