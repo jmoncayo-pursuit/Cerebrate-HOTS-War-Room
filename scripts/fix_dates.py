@@ -90,12 +90,12 @@ def fix_dates():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     
-    # 3. Get all match IDs from database with wrong dates (today's date)
-    today = datetime.now().strftime('%Y-%m-%d')
-    cursor = conn.execute("SELECT id, date FROM matches WHERE date LIKE ?", (f"{today}%",))
+    # 3. Get all match IDs from database with wrong dates (2026 is clearly wrong - real games are from 2025)
+    cursor = conn.execute("SELECT id, date FROM matches WHERE date LIKE '2026-%'")
     wrong_dates = {row['id']: row['date'] for row in cursor.fetchall()}
     
-    print(f"📊 Found {len(wrong_dates)} matches with today's date (likely wrong)")
+    print(f"📊 Found {len(wrong_dates)} matches with wrong dates (2026)")
+
     
     if not wrong_dates:
         print("✅ No dates need fixing!")
