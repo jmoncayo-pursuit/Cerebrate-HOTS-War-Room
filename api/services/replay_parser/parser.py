@@ -40,11 +40,26 @@ def parse_replay(replay_path, options=None):
         
         # Time Calibration
         time_utc = header.get('m_timeUTC', 0)
-        if time_utc:
+        if time_utc and time_utc > 0:
             unix_ts = (time_utc - 116444736000000000) / 10000000
             timestamp_iso = datetime.fromtimestamp(unix_ts, tz=timezone.utc).isoformat()
         else:
-            timestamp_iso = datetime.now(timezone.utc).isoformat()
+            # Fallback: Extract from filename (e.g., "2025-12-25 05.45.56 Battlefield of Eternity.StormReplay")
+            import re
+            filename = os.path.basename(replay_path)
+            match = re.search(r'(\d{4})-(\d{2})-(\d{2})\s+(\d{2})\.(\d{2})\.(\d{2})', filename)
+            if match:
+                year, month, day, hour, minute, second = match.groups()
+                match_datetime = datetime(int(year), int(month), int(day), 
+                                         int(hour), int(minute), int(second), 
+                                         tzinfo=timezone.utc)
+                timestamp_iso = match_datetime.isoformat()
+            else:
+                # Last resort: use file modification time
+                import pathlib
+                mtime = pathlib.Path(replay_path).stat().st_mtime
+                timestamp_iso = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
+
         
         # 2. Details
         details = protocol.decode_replay_details(archive.read_file('replay.details'))
