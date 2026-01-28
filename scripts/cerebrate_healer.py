@@ -112,6 +112,28 @@ class CerebrateHealer:
                 except:
                     pass
 
+    def heal_invalid_dates(self):
+        """
+        Auto-detect matches with invalid dates (parsing used datetime.now()).
+        Runs fix_dates.py to correct them.
+        """
+        # Check for dates that look wrong (far future or today when replays are old)
+        with self.db._get_connection() as conn:
+            # Find matches from this year with today's date (likely wrong)
+            today = datetime.now().strftime('%Y-%m-%d')
+            cursor = conn.execute(
+                "SELECT COUNT(*) as cnt FROM matches WHERE date LIKE ?", 
+                (f"{today}%",)
+            )
+            wrong_count = cursor.fetchone()['cnt']
+            
+            if wrong_count > 5:  # More than 5 matches with today's date = suspicious
+                ColoredLogger.warn(f"🔧 [HEALER] {wrong_count} matches have today's date - running fix_dates.py", "HEAL")
+                fix_script = os.path.join(PROJECT_ROOT, "scripts", "fix_dates.py")
+                if os.path.exists(fix_script):
+                    subprocess.run([sys.executable, fix_script], capture_output=True)
+
+
     def monitor_watcher(self):
         """Ensure the replay watcher process is running."""
         watcher_pid_file = os.path.join(PROJECT_ROOT, ".watcher.pid")
@@ -169,6 +191,7 @@ class CerebrateHealer:
                 curr_time = time.time()
                 if curr_time - self.last_integrity_check > 3600: # Every hour
                     self.repair_data_integrity()
+                    self.heal_invalid_dates()  # Auto-fix wrong dates
                     # self.heal_outdated_pipelines() # DISABLED - Prevents token usage
                     self.last_integrity_check = curr_time
                 
