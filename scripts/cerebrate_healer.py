@@ -114,24 +114,15 @@ class CerebrateHealer:
 
     def heal_invalid_dates(self):
         """
-        Auto-detect matches with invalid dates (parsing used datetime.now()).
-        Runs fix_dates.py to correct them.
+        Compare DB dates to replay filenames. Fix any mismatches.
         """
-        # Check for dates that look wrong (far future or today when replays are old)
-        with self.db._get_connection() as conn:
-            # Find matches from this year with today's date (likely wrong)
-            today = datetime.now().strftime('%Y-%m-%d')
-            cursor = conn.execute(
-                "SELECT COUNT(*) as cnt FROM matches WHERE date LIKE ?", 
-                (f"{today}%",)
-            )
-            wrong_count = cursor.fetchone()['cnt']
-            
-            if wrong_count > 5:  # More than 5 matches with today's date = suspicious
-                ColoredLogger.warn(f"🔧 [HEALER] {wrong_count} matches have today's date - running fix_dates.py", "HEAL")
-                fix_script = os.path.join(PROJECT_ROOT, "scripts", "fix_dates.py")
-                if os.path.exists(fix_script):
-                    subprocess.run([sys.executable, fix_script], capture_output=True)
+        fix_script = os.path.join(PROJECT_ROOT, "scripts", "fix_dates.py")
+        if os.path.exists(fix_script):
+            # Just run fix_dates.py - it handles the comparison logic
+            result = subprocess.run([sys.executable, fix_script], capture_output=True, text=True)
+            if "Fixed" in result.stdout and "Fixed 0" not in result.stdout:
+                ColoredLogger.warn(f"🔧 [HEALER] Date corrections applied", "HEAL")
+
 
 
     def monitor_watcher(self):

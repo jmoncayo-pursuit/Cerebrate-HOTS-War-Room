@@ -75,65 +75,54 @@ def find_all_replays():
     return replays
 
 def fix_dates():
-    """Main function to fix dates in database."""
-    print("🔧 Fixing replay dates (no API calls)...")
+    """Compare all DB dates against replay filenames. Fix mismatches."""
+    print("🔧 Checking replay dates (no API calls)...")
     
-    # 1. Get all replays on disk
+    # 1. Get all replays on disk with their dates
     replays = find_all_replays()
-    print(f"📁 Found {len(replays)} replay files on disk")
-    
     if not replays:
         print("❌ No replay files found!")
         return
     
-    # 2. Connect to database
-    conn = sqlite3.connect(DB_PATH)
-    conn.row_factory = sqlite3.Row
-    
-    # 3. Get all match IDs from database with wrong dates (2026 is clearly wrong - real games are from 2025)
-    cursor = conn.execute("SELECT id, date FROM matches WHERE date LIKE '2026-%'")
-    wrong_dates = {row['id']: row['date'] for row in cursor.fetchall()}
-    
-    print(f"📊 Found {len(wrong_dates)} matches with wrong dates (2026)")
-
-    
-    if not wrong_dates:
-        print("✅ No dates need fixing!")
-        conn.close()
-        return
-    
-    # 4. Build match_id -> filename mapping for affected matches
-    fixed = 0
-    errors = 0
-    
+    # 2. Build match_id -> correct_date mapping from files
+    file_dates = {}
     for replay_path in replays:
         filename = os.path.basename(replay_path)
-        
-        # Extract date from filename
         correct_date = extract_date_from_filename(filename)
         if not correct_date:
             continue
-        
-        # Get match_id
         match_id = get_match_id_fast(replay_path)
-        if not match_id:
-            continue
-        
-        # Check if this match needs fixing
-        if match_id in wrong_dates:
-            # Update database
-            conn.execute("UPDATE matches SET date = ? WHERE id = ?", (correct_date, match_id))
-            print(f"  ✓ {filename[:40]}... → {correct_date[:10]}")
-            fixed += 1
-            del wrong_dates[match_id]  # Remove from pending
+        if match_id:
+            file_dates[match_id] = correct_date
+    
+    print(f"📁 Found {len(file_dates)} replay files with valid dates")
+    
+    # 3. Compare against database
+    conn = sqlite3.connect(DB_PATH)
+    conn.row_factory = sqlite3.Row
+    
+    cursor = conn.execute("SELECT id, date FROM matches")
+    db_dates = {row['id']: row['date'] for row in cursor.fetchall()}
+    
+    # 4. Find mismatches
+    fixed = 0
+    for match_id, db_date in db_dates.items():
+        if match_id in file_dates:
+            file_date = file_dates[match_id]
+            # Compare just the date portion (YYYY-MM-DD)
+            db_date_short = db_date[:10] if db_date else ""
+            file_date_short = file_date[:10] if file_date else ""
             
-            if not wrong_dates:  # All fixed
-                break
+            if db_date_short != file_date_short:
+                conn.execute("UPDATE matches SET date = ? WHERE id = ?", (file_date, match_id))
+                print(f"  ✓ {match_id}: {db_date_short} → {file_date_short}")
+                fixed += 1
     
     conn.commit()
     conn.close()
     
-    print(f"\n✅ Fixed {fixed} dates, {len(wrong_dates)} remaining (files not found on disk)")
+    print(f"\n✅ Fixed {fixed} dates")
+
 
 if __name__ == "__main__":
     fix_dates()
