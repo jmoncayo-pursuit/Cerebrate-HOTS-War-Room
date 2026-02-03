@@ -22,6 +22,45 @@ const extractText = (children) => {
   return String(children || '');
 }
 
+// Helper to render content with talent builds and hero icons
+const renderTacticalContent = (text, talentMapData) => {
+  if (!text) return null;
+
+  // 1. Handle Talent Codes [T1234567,Hero]
+  if (text.includes('[T') && text.includes(']')) {
+    const parts = text.split(/(\[T\d{1,7}\s*,\s*[^\]]+\])/g);
+    return parts.map((part, idx) => {
+      const buildMatch = part.match(/\[T(\d{1,7})\s*,\s*([^\]]+)\]/);
+      if (buildMatch) {
+        const [, buildStr, heroName] = buildMatch;
+        return (
+          <span key={idx} className="inline-block align-middle transform scale-90 origin-left mx-1 my-1">
+            <BuildDisplay
+              hero={heroName.trim()}
+              buildStr={buildStr.trim()}
+              compact={true}
+              source="META"
+              talentMap={talentMapData}
+            />
+          </span>
+        );
+      }
+      return <HeroText key={idx} text={part} />;
+    });
+  }
+
+  // 2. Fallback to standard lines with hero icons
+  const lines = text.split('\n');
+  if (lines.length > 1) {
+    return lines.map((line, idx) => (
+      <React.Fragment key={idx}>
+        {line.trim() === '' ? <br /> : <span className="block mb-1 last:mb-0"><HeroText text={line} /></span>}
+      </React.Fragment>
+    ));
+  }
+
+  return <HeroText text={text} />;
+};
 
 // --- Constants ---
 const getSystemPrompt = (profile) => `You are the War Room AI, a tactical intelligence system providing detailed, analytical insights.
@@ -223,7 +262,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
                   ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-3 space-y-1" {...props} />,
                   li: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    return <li className="mb-1"><HeroText text={text} /></li>;
+                    return <li className="mb-1 leading-relaxed">{renderTacticalContent(text, talentMapData)}</li>;
                   },
                   code: ({ node, inline, className, children, ...props }) => {
                     // Extract text content from ReactMarkdown children
@@ -276,67 +315,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
                   },
                   p: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    // Check if paragraph contains talent codes and render them
-                    if (text.includes('[T') && text.includes(']')) {
-                      // Split by talent codes and render each part
-                      const parts = text.split(/(\[T\d{1,7}\s*,\s*[^\]]+\])/g);
-                      return (
-                        <div className="mb-3 last:mb-0 leading-relaxed whitespace-pre-wrap">
-                          {parts.map((part, idx) => {
-                            const buildMatch = part.match(/\[T(\d{1,7})\s*,\s*([^\]]+)\]/);
-                            if (buildMatch) {
-                              const [, buildStr, heroName] = buildMatch;
-                              const isLastPart = idx === parts.length - 1;
-                              return (
-                                <React.Fragment key={idx}>
-                                  <span className="inline-block align-middle transform scale-90 origin-left mx-1 my-1">
-                                    <BuildDisplay
-                                      hero={heroName.trim()}
-                                      buildStr={buildStr.trim()}
-                                      compact={true}
-                                      source="META"
-                                      talentMap={talentMapData}
-                                    />
-                                  </span>
-                                  {/* Add line break after talent build if there's more content */}
-                                  {!isLastPart && parts[idx + 1] && parts[idx + 1].trim() && <br />}
-                                </React.Fragment>
-                              );
-                            }
-                            // If this part comes after a talent code, render on new line
-                            const prevIsTalent = idx > 0 && parts[idx - 1].match(/\[T(\d{1,7})\s*,\s*([^\]]+)\]/);
-                            if (prevIsTalent && part.trim()) {
-                              return (
-                                <span key={idx} className="block mt-1">
-                                  <HeroText text={part} />
-                                </span>
-                              );
-                            }
-                            return <HeroText key={idx} text={part} />;
-                          })}
-                        </div>
-                      );
-                    }
-                    // Preserve all line breaks (including empty lines for spacing)
-                    const lines = text.split('\n');
-                    if (lines.length > 1) {
-                      return (
-                        <div className="mb-3 last:mb-0 leading-relaxed whitespace-pre-wrap">
-                          {lines.map((line, idx) => {
-                            if (line.trim() === '') {
-                              // Preserve empty lines as spacing
-                              return <br key={idx} />;
-                            }
-                            return (
-                              <span key={idx} className="block mb-1 last:mb-0">
-                                <HeroText text={line} />
-                              </span>
-                            );
-                          })}
-                        </div>
-                      );
-                    }
-                    return <div className="mb-3 last:mb-0 leading-relaxed whitespace-pre-wrap"><HeroText text={text} /></div>;
+                    return <div className="mb-3 last:mb-0 leading-relaxed whitespace-pre-wrap">{renderTacticalContent(text, talentMapData)}</div>;
                   },
                   strong: ({ node, children, ...props }) => {
                     const text = extractText(children);
@@ -1046,11 +1025,13 @@ export default function UnifiedChat({
       if (data.global_usage) setGlobalUsage(data.global_usage)
 
       // Format agent response
-      let content = data.response || data.error || data.message || JSON.stringify(data, null, 2)
+      let content = data.response || data.error || data.message;
 
-      // Try to extract a formatted response from agent data
-      if (data.analysis_type) {
+      // Try to extract a formatted response if no direct 'response' field exists
+      if (!content && data.analysis_type) {
         content = formatAgentResponse(data)
+      } else if (!content) {
+        content = JSON.stringify(data, null, 2);
       }
 
       // Add agent metadata to message
@@ -1212,6 +1193,21 @@ export default function UnifiedChat({
       if (recommendations?.length > 0) {
         content += `### 💡 Strategic Advice\n`;
         content += recommendations.map(r => `- ${r}`).join('\n');
+      }
+      return content;
+    }
+
+    if (data.analysis_type === 'quick_strategy_summary') {
+      const { map, analysis } = data;
+      let content = `## ${map} Tactical Overview\n`;
+      content += `*Directives from STATIC_VERIFIED intelligence.*\n\n`;
+
+      if (analysis) {
+        if (analysis.win_condition) content += `**🏆 Win Condition:** ${analysis.win_condition}\n\n`;
+        if (analysis.critical_objective) content += `**🎯 Critical Objective:** ${analysis.critical_objective}\n`;
+        if (analysis.key_timings) content += `**🕒 Key Timings:** ${analysis.key_timings}\n`;
+        if (analysis.macro_priority) content += `**⚙️ Macro Priority:** ${analysis.macro_priority}\n`;
+        if (analysis.draft_focus) content += `**👥 Draft Focus:** ${analysis.draft_focus}\n`;
       }
       return content;
     }

@@ -1,6 +1,7 @@
 import { Shield, Target, Zap, AlertTriangle, Crown, Map as MapIcon, BarChart3, TrendingUp } from 'lucide-react';
 import { useReplayData } from '../hooks/useReplayData';
 import RankIcon from '../components/RankIcon';
+import ServiceRecord from '../components/ServiceRecord';
 
 const AlphaSpec = () => {
     const { profile, loading } = useReplayData();
@@ -18,8 +19,14 @@ const AlphaSpec = () => {
             { name: "Infernal Shrines", wr: 70.0, status: "DOMINANT" },
             { name: "Tomb of the Spider Queen", wr: 66.7, status: "ELITE" },
             { name: "Alterac Pass", wr: 66.7, status: "ELITE" },
-            { name: "Garden of Terror", wr: 60.0, status: "STRONG" }
+            { name: "Garden of Terror", wr: 60.0, status: "STRONG" },
+            { name: "Blackheart's Bay", wr: 52.9, status: "THE PIRATE KING" } // Verified 17 games
         ],
+        medals: {
+            'Cannoneer': 6,
+            'Bosun Medals': 10, // Combined Coins + Bosun
+            'MVP': 12
+        },
         risks: [
             { name: "Diablo", wr: 30.4, type: "Neural Desync" },
             { name: "Illidan", wr: 36.4, type: "Neural Desync" }
@@ -118,6 +125,8 @@ const AlphaSpec = () => {
                                 <div className="text-2xl font-bold text-white">{stats.totalGames} <span className="text-sm font-normal text-slate-400 text-xs">Verified Samples</span></div>
                             </div>
                         </div>
+                        {/* Service Record */}
+                        <ServiceRecord medals={stats.medals} />
                     </div>
 
                     <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6 relative overflow-hidden">

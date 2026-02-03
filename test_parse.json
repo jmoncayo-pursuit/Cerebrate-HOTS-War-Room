@@ -1,0 +1,7020 @@
+{
+  "status": "success",
+  "match_id": "9d85230a3ead0cd5",
+  "map": "Battlefield of Eternity",
+  "game_length": 1547,
+  "timestamp_iso": "2026-01-28T18:51:09+00:00",
+  "result": "Loss",
+  "hero": "Raynor",
+  "players": [
+    {
+      "name": "MTminded",
+      "hero": "Thrall",
+      "team": 0,
+      "win": false,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 12,
+        "Deaths": 8,
+        "TownKills": 2,
+        "SoloKill": 5,
+        "Assists": 7,
+        "MetaExperience": 106298,
+        "Level": 23,
+        "TeamTakedowns": 26,
+        "ExperienceContribution": 16782,
+        "Healing": 0,
+        "SiegeDamage": 100565,
+        "StructureDamage": 5767,
+        "MinionDamage": 64709,
+        "HeroDamage": 82442,
+        "MercCampCaptures": 3,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 53365,
+        "TimeSpentDead": 328,
+        "TimeCCdEnemyHeroes": 128,
+        "CreepDamage": 20381,
+        "SummonDamage": 4890,
+        "Tier1Talent": 1,
+        "Tier2Talent": 3,
+        "Tier3Talent": 1,
+        "Tier4Talent": 1,
+        "Tier5Talent": 2,
+        "Tier6Talent": 2,
+        "Tier7Talent": 1,
+        "DamageTaken": 108781,
+        "DamageSoaked": 80927,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 3,
+        "TeamLevel": 23,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 56,
+        "TimeStunningEnemyHeroes": 28,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 0,
+        "VengeancesPerformed": 2,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 5,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 73960,
+        "TeamfightHeroDamage": 63332,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 1,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 0,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 0,
+        "WinsMale": 0,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 1,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 1,
+        "PlaysAssassin": 0,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 0,
+        "LessThan3TownStructuresLost": 0,
+        "PhysicalDamage": 71834,
+        "SpellDamage": 138417,
+        "Multikill": 2,
+        "MinionKills": 50,
+        "RegenGlobes": 40,
+        "DamageDoneToImmortal": 2220,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "StructureXP": 2100,
+        "CreepXP": 8931,
+        "SiegeXP": 0,
+        "TrickleXP": 41421
+      },
+      "talents": [
+        {
+          "timestamp": 82.0,
+          "talent_name": "ThrallEchooftheElements",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 183.1,
+          "talent_name": "ThrallManaTideTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 309.8,
+          "talent_name": "ThrallMaelstromWeapon",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 484.2,
+          "talent_name": "Sundering",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 622.9,
+          "talent_name": "ThrallFrostwolfResilienceSurgeOfHealing",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 787.0,
+          "talent_name": "ThrallThunderstorm",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1075.0,
+          "talent_name": "ThrallWorldbreakerTalent",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 121.5,
+          "gameloop": 1944,
+          "killer_pid": 7,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 6.3
+        },
+        {
+          "timestamp": 456.2,
+          "gameloop": 7300,
+          "killer_pid": 8,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 3.6
+        },
+        {
+          "timestamp": 571.1,
+          "gameloop": 9138,
+          "killer_pid": 6,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 12.2
+        },
+        {
+          "timestamp": 699.9,
+          "gameloop": 11199,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 10.8
+        },
+        {
+          "timestamp": 828.3,
+          "gameloop": 13253,
+          "killer_pid": 7,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.4
+        },
+        {
+          "timestamp": 907.1,
+          "gameloop": 14513,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 2.2
+        },
+        {
+          "timestamp": 1184.6,
+          "gameloop": 18953,
+          "killer_pid": 7,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 61.3
+        },
+        {
+          "timestamp": 1317.9,
+          "gameloop": 21087,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 15.8
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 90.0,
+          "x": 114,
+          "y": 66
+        },
+        {
+          "timestamp": 105.0,
+          "x": 105,
+          "y": 63
+        },
+        {
+          "timestamp": 120.0,
+          "x": 116,
+          "y": 65
+        },
+        {
+          "timestamp": 165.0,
+          "x": 110,
+          "y": 64
+        },
+        {
+          "timestamp": 180.0,
+          "x": 104,
+          "y": 67
+        },
+        {
+          "timestamp": 195.0,
+          "x": 96,
+          "y": 77
+        },
+        {
+          "timestamp": 210.0,
+          "x": 101,
+          "y": 69
+        },
+        {
+          "timestamp": 225.0,
+          "x": 109,
+          "y": 66
+        },
+        {
+          "timestamp": 240.0,
+          "x": 129,
+          "y": 82
+        },
+        {
+          "timestamp": 255.0,
+          "x": 134,
+          "y": 70
+        },
+        {
+          "timestamp": 270.0,
+          "x": 133,
+          "y": 65
+        },
+        {
+          "timestamp": 285.0,
+          "x": 138,
+          "y": 80
+        },
+        {
+          "timestamp": 300.0,
+          "x": 131,
+          "y": 64
+        },
+        {
+          "timestamp": 315.0,
+          "x": 144,
+          "y": 66
+        },
+        {
+          "timestamp": 330.0,
+          "x": 141,
+          "y": 61
+        },
+        {
+          "timestamp": 345.0,
+          "x": 125,
+          "y": 57
+        },
+        {
+          "timestamp": 360.0,
+          "x": 121,
+          "y": 56
+        },
+        {
+          "timestamp": 375.0,
+          "x": 145,
+          "y": 67
+        },
+        {
+          "timestamp": 390.0,
+          "x": 132,
+          "y": 62
+        },
+        {
+          "timestamp": 405.0,
+          "x": 110,
+          "y": 63
+        },
+        {
+          "timestamp": 435.0,
+          "x": 116,
+          "y": 140
+        },
+        {
+          "timestamp": 450.0,
+          "x": 119,
+          "y": 115
+        },
+        {
+          "timestamp": 495.0,
+          "x": 119,
+          "y": 95
+        },
+        {
+          "timestamp": 510.0,
+          "x": 131,
+          "y": 76
+        },
+        {
+          "timestamp": 525.0,
+          "x": 154,
+          "y": 64
+        },
+        {
+          "timestamp": 540.0,
+          "x": 172,
+          "y": 74
+        },
+        {
+          "timestamp": 555.0,
+          "x": 180,
+          "y": 82
+        },
+        {
+          "timestamp": 570.0,
+          "x": 168,
+          "y": 82
+        },
+        {
+          "timestamp": 630.0,
+          "x": 132,
+          "y": 68
+        },
+        {
+          "timestamp": 645.0,
+          "x": 107,
+          "y": 82
+        },
+        {
+          "timestamp": 660.0,
+          "x": 95,
+          "y": 97
+        },
+        {
+          "timestamp": 675.0,
+          "x": 131,
+          "y": 69
+        },
+        {
+          "timestamp": 690.0,
+          "x": 148,
+          "y": 103
+        },
+        {
+          "timestamp": 765.0,
+          "x": 131,
+          "y": 124
+        },
+        {
+          "timestamp": 780.0,
+          "x": 140,
+          "y": 140
+        },
+        {
+          "timestamp": 795.0,
+          "x": 164,
+          "y": 136
+        },
+        {
+          "timestamp": 810.0,
+          "x": 167,
+          "y": 137
+        },
+        {
+          "timestamp": 825.0,
+          "x": 173,
+          "y": 129
+        },
+        {
+          "timestamp": 900.0,
+          "x": 155,
+          "y": 118
+        },
+        {
+          "timestamp": 975.0,
+          "x": 85,
+          "y": 72
+        },
+        {
+          "timestamp": 990.0,
+          "x": 87,
+          "y": 72
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 110,
+          "y": 96
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 115,
+          "y": 77
+        },
+        {
+          "timestamp": 1035.0,
+          "x": 119,
+          "y": 64
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 81,
+          "y": 127
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 80,
+          "y": 136
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 94,
+          "y": 91
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 94,
+          "y": 94
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 103,
+          "y": 73
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 131,
+          "y": 61
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 136,
+          "y": 56
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 154,
+          "y": 74
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 154,
+          "y": 65
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 145,
+          "y": 140
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 160,
+          "y": 135
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 122,
+          "y": 146
+        },
+        {
+          "timestamp": 1395.0,
+          "x": 82,
+          "y": 74
+        },
+        {
+          "timestamp": 1425.0,
+          "x": 78,
+          "y": 74
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 84,
+          "y": 71
+        },
+        {
+          "timestamp": 1455.0,
+          "x": 92,
+          "y": 70
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 81,
+          "y": 72
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 74,
+          "y": 75
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 59,
+          "y": 96
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 46,
+          "y": 94
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 49,
+          "y": 94
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 23,
+        "Takedowns": 12,
+        "Kills": 5,
+        "Assists": 7,
+        "Deaths": 8,
+        "HighestKillStreak": 3,
+        "Multikill": 2,
+        "HeroDamage": 82442,
+        "SiegeDamage": 100565,
+        "StructureDamage": 5767,
+        "MinionDamage": 64709,
+        "CreepDamage": 20381,
+        "SummonDamage": 4890,
+        "DamageTaken": 108781,
+        "PhysicalDamage": 71834,
+        "SpellDamage": 138417,
+        "Healing": 0,
+        "SelfHealing": 53365,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 63332,
+        "TeamfightDamageTaken": 73960,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 128,
+        "TimeStunningEnemyHeroes": 28,
+        "TimeRootingEnemyHeroes": 56,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 16782,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "MercCampCaptures": 3,
+        "RegenGlobes": 40,
+        "MinionKills": 50,
+        "TimeSpentDead": 328,
+        "OnFireTimeOnFire": 0,
+        "OutnumberedDeaths": 5,
+        "EscapesPerformed": 0,
+        "VengeancesPerformed": 2,
+        "TownKills": 2,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 2220
+      }
+    },
+    {
+      "name": "SoulCast",
+      "hero": "Tassadar",
+      "team": 0,
+      "win": false,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 11,
+        "Deaths": 3,
+        "TownKills": 1,
+        "SoloKill": 3,
+        "Assists": 8,
+        "MetaExperience": 106298,
+        "Level": 23,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 18640,
+        "Healing": 0,
+        "SiegeDamage": 154415,
+        "StructureDamage": 21715,
+        "MinionDamage": 103203,
+        "HeroDamage": 51788,
+        "MercCampCaptures": 2,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 20354,
+        "TimeSpentDead": 127,
+        "TimeCCdEnemyHeroes": 331,
+        "CreepDamage": 25263,
+        "SummonDamage": 17768,
+        "Tier1Talent": 3,
+        "Tier2Talent": 3,
+        "Tier3Talent": 3,
+        "Tier4Talent": 1,
+        "Tier5Talent": 1,
+        "Tier6Talent": 2,
+        "Tier7Talent": 1,
+        "DamageTaken": 53418,
+        "DamageSoaked": 44425,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 8,
+        "TeamLevel": 23,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 0,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 0,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 2,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 22007,
+        "TeamfightHeroDamage": 26442,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 84,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 0,
+        "WinsMale": 0,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 1,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 0,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 0,
+        "PlaysAssassin": 1,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 1,
+        "LessThan3TownStructuresLost": 0,
+        "PhysicalDamage": 70424,
+        "SpellDamage": 161993,
+        "Multikill": 2,
+        "MinionKills": 113,
+        "RegenGlobes": 20,
+        "DamageDoneToImmortal": 11280,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "StructureXP": 2100,
+        "CreepXP": 8931,
+        "SiegeXP": 0,
+        "TrickleXP": 41421
+      },
+      "talents": [
+        {
+          "timestamp": 43.5,
+          "talent_name": "TassadarKhaydarinAmulet",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 182.0,
+          "talent_name": "TassadarPlasmaShieldTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 304.1,
+          "talent_name": "TassadarArcDischarge",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 502.1,
+          "talent_name": "TassadarArchon",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 632.3,
+          "talent_name": "TassadarFeedback",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 786.7,
+          "talent_name": "TassadarPsychicShock",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1074.5,
+          "talent_name": "TassadarArchonTwilightArchonTalent",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 381.8,
+          "gameloop": 6109,
+          "killer_pid": 7,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 83.9
+        },
+        {
+          "timestamp": 763.2,
+          "gameloop": 12211,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 5.1
+        },
+        {
+          "timestamp": 1208.1,
+          "gameloop": 19330,
+          "killer_pid": 14,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 12.8
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 75.0,
+          "x": 130,
+          "y": 143
+        },
+        {
+          "timestamp": 90.0,
+          "x": 115,
+          "y": 144
+        },
+        {
+          "timestamp": 105.0,
+          "x": 129,
+          "y": 143
+        },
+        {
+          "timestamp": 120.0,
+          "x": 114,
+          "y": 142
+        },
+        {
+          "timestamp": 135.0,
+          "x": 132,
+          "y": 144
+        },
+        {
+          "timestamp": 150.0,
+          "x": 117,
+          "y": 142
+        },
+        {
+          "timestamp": 165.0,
+          "x": 134,
+          "y": 143
+        },
+        {
+          "timestamp": 180.0,
+          "x": 123,
+          "y": 143
+        },
+        {
+          "timestamp": 195.0,
+          "x": 140,
+          "y": 145
+        },
+        {
+          "timestamp": 210.0,
+          "x": 122,
+          "y": 144
+        },
+        {
+          "timestamp": 225.0,
+          "x": 119,
+          "y": 126
+        },
+        {
+          "timestamp": 240.0,
+          "x": 107,
+          "y": 105
+        },
+        {
+          "timestamp": 255.0,
+          "x": 104,
+          "y": 105
+        },
+        {
+          "timestamp": 270.0,
+          "x": 118,
+          "y": 65
+        },
+        {
+          "timestamp": 285.0,
+          "x": 132,
+          "y": 69
+        },
+        {
+          "timestamp": 300.0,
+          "x": 134,
+          "y": 63
+        },
+        {
+          "timestamp": 315.0,
+          "x": 112,
+          "y": 137
+        },
+        {
+          "timestamp": 330.0,
+          "x": 122,
+          "y": 147
+        },
+        {
+          "timestamp": 345.0,
+          "x": 123,
+          "y": 142
+        },
+        {
+          "timestamp": 360.0,
+          "x": 125,
+          "y": 145
+        },
+        {
+          "timestamp": 375.0,
+          "x": 133,
+          "y": 150
+        },
+        {
+          "timestamp": 435.0,
+          "x": 130,
+          "y": 74
+        },
+        {
+          "timestamp": 450.0,
+          "x": 113,
+          "y": 111
+        },
+        {
+          "timestamp": 465.0,
+          "x": 102,
+          "y": 103
+        },
+        {
+          "timestamp": 480.0,
+          "x": 90,
+          "y": 104
+        },
+        {
+          "timestamp": 495.0,
+          "x": 116,
+          "y": 106
+        },
+        {
+          "timestamp": 510.0,
+          "x": 131,
+          "y": 74
+        },
+        {
+          "timestamp": 525.0,
+          "x": 147,
+          "y": 64
+        },
+        {
+          "timestamp": 540.0,
+          "x": 168,
+          "y": 75
+        },
+        {
+          "timestamp": 555.0,
+          "x": 175,
+          "y": 77
+        },
+        {
+          "timestamp": 570.0,
+          "x": 153,
+          "y": 75
+        },
+        {
+          "timestamp": 585.0,
+          "x": 31,
+          "y": 100
+        },
+        {
+          "timestamp": 615.0,
+          "x": 118,
+          "y": 62
+        },
+        {
+          "timestamp": 630.0,
+          "x": 131,
+          "y": 65
+        },
+        {
+          "timestamp": 645.0,
+          "x": 100,
+          "y": 86
+        },
+        {
+          "timestamp": 660.0,
+          "x": 93,
+          "y": 104
+        },
+        {
+          "timestamp": 675.0,
+          "x": 126,
+          "y": 68
+        },
+        {
+          "timestamp": 690.0,
+          "x": 134,
+          "y": 100
+        },
+        {
+          "timestamp": 705.0,
+          "x": 130,
+          "y": 101
+        },
+        {
+          "timestamp": 720.0,
+          "x": 109,
+          "y": 105
+        },
+        {
+          "timestamp": 735.0,
+          "x": 107,
+          "y": 113
+        },
+        {
+          "timestamp": 750.0,
+          "x": 118,
+          "y": 116
+        },
+        {
+          "timestamp": 825.0,
+          "x": 98,
+          "y": 60
+        },
+        {
+          "timestamp": 840.0,
+          "x": 122,
+          "y": 46
+        },
+        {
+          "timestamp": 855.0,
+          "x": 128,
+          "y": 62
+        },
+        {
+          "timestamp": 870.0,
+          "x": 94,
+          "y": 94
+        },
+        {
+          "timestamp": 885.0,
+          "x": 125,
+          "y": 146
+        },
+        {
+          "timestamp": 900.0,
+          "x": 152,
+          "y": 123
+        },
+        {
+          "timestamp": 915.0,
+          "x": 154,
+          "y": 117
+        },
+        {
+          "timestamp": 945.0,
+          "x": 79,
+          "y": 71
+        },
+        {
+          "timestamp": 960.0,
+          "x": 59,
+          "y": 75
+        },
+        {
+          "timestamp": 990.0,
+          "x": 105,
+          "y": 92
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 103,
+          "y": 102
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 116,
+          "y": 106
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 76,
+          "y": 129
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 68,
+          "y": 124
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 100,
+          "y": 141
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 110,
+          "y": 113
+        },
+        {
+          "timestamp": 1335.0,
+          "x": 98,
+          "y": 139
+        },
+        {
+          "timestamp": 1350.0,
+          "x": 63,
+          "y": 120
+        },
+        {
+          "timestamp": 1380.0,
+          "x": 84,
+          "y": 130
+        },
+        {
+          "timestamp": 1395.0,
+          "x": 98,
+          "y": 140
+        },
+        {
+          "timestamp": 1410.0,
+          "x": 100,
+          "y": 141
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 74,
+          "y": 127
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 50,
+          "y": 104
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 23,
+        "Takedowns": 11,
+        "Kills": 3,
+        "Assists": 8,
+        "Deaths": 3,
+        "HighestKillStreak": 8,
+        "Multikill": 2,
+        "HeroDamage": 51788,
+        "SiegeDamage": 154415,
+        "StructureDamage": 21715,
+        "MinionDamage": 103203,
+        "CreepDamage": 25263,
+        "SummonDamage": 17768,
+        "DamageTaken": 53418,
+        "PhysicalDamage": 70424,
+        "SpellDamage": 161993,
+        "Healing": 0,
+        "SelfHealing": 20354,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 26442,
+        "TeamfightDamageTaken": 22007,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 331,
+        "TimeStunningEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 18640,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "MercCampCaptures": 2,
+        "RegenGlobes": 20,
+        "MinionKills": 113,
+        "TimeSpentDead": 127,
+        "OnFireTimeOnFire": 84,
+        "OutnumberedDeaths": 2,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 0,
+        "TownKills": 1,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 11280
+      }
+    },
+    {
+      "name": "Random",
+      "hero": "Tyrande",
+      "team": 0,
+      "win": false,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 11,
+        "Deaths": 7,
+        "TownKills": 2,
+        "SoloKill": 5,
+        "Assists": 6,
+        "MetaExperience": 106298,
+        "Level": 23,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 8880,
+        "Healing": 81511,
+        "SiegeDamage": 30829,
+        "StructureDamage": 6526,
+        "MinionDamage": 16278,
+        "HeroDamage": 53460,
+        "MercCampCaptures": 5,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 9595,
+        "TimeSpentDead": 271,
+        "TimeCCdEnemyHeroes": 239,
+        "CreepDamage": 23852,
+        "SummonDamage": 5324,
+        "Tier1Talent": 3,
+        "Tier2Talent": 1,
+        "Tier3Talent": 1,
+        "Tier4Talent": 2,
+        "Tier5Talent": 3,
+        "Tier6Talent": 1,
+        "Tier7Talent": 4,
+        "DamageTaken": 70707,
+        "DamageSoaked": 52430,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 6,
+        "TeamLevel": 23,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 21,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 2,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 3,
+        "TeamfightHealingDone": 12999,
+        "TeamfightDamageTaken": 42777,
+        "TeamfightHeroDamage": 31008,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 0,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 0,
+        "WinsMale": 0,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 1,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 0,
+        "PlaysAssassin": 0,
+        "PlaysSupport": 1,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 0,
+        "PlaysFemale": 1,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 0,
+        "LessThan3TownStructuresLost": 0,
+        "PhysicalDamage": 56153,
+        "SpellDamage": 56332,
+        "Multikill": 1,
+        "MinionKills": 13,
+        "RegenGlobes": 31,
+        "DamageDoneToImmortal": 14591,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "StructureXP": 2100,
+        "CreepXP": 8931,
+        "SiegeXP": 0,
+        "TrickleXP": 41421
+      },
+      "talents": [
+        {
+          "timestamp": 24.6,
+          "talent_name": "TyrandeHuntersMarkTrueshotAuraTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 214.4,
+          "talent_name": "TyrandeLightOfEluneEverlastingLight",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 315.3,
+          "talent_name": "TyrandeMoonlitArrows",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 510.2,
+          "talent_name": "TyrandeStarfall",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 645.8,
+          "talent_name": "TyrandeHuntersMarkRangersMarkTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 808.7,
+          "talent_name": "TyrandeLightOfEluneCelestialAttunementTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1100.9,
+          "talent_name": "TyrandeIcebladeArrows",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 122.5,
+          "gameloop": 1960,
+          "killer_pid": 6,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.0
+        },
+        {
+          "timestamp": 168.2,
+          "gameloop": 2691,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 3.0
+        },
+        {
+          "timestamp": 480.0,
+          "gameloop": 7680,
+          "killer_pid": 7,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 3.0
+        },
+        {
+          "timestamp": 563.2,
+          "gameloop": 9011,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 2.8
+        },
+        {
+          "timestamp": 960.4,
+          "gameloop": 15367,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 6.7
+        },
+        {
+          "timestamp": 1356.7,
+          "gameloop": 21707,
+          "killer_pid": 8,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.0
+        },
+        {
+          "timestamp": 1508.8,
+          "gameloop": 24141,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 7.3
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 75.0,
+          "x": 113,
+          "y": 60
+        },
+        {
+          "timestamp": 90.0,
+          "x": 114,
+          "y": 62
+        },
+        {
+          "timestamp": 105.0,
+          "x": 102,
+          "y": 62
+        },
+        {
+          "timestamp": 120.0,
+          "x": 110,
+          "y": 63
+        },
+        {
+          "timestamp": 165.0,
+          "x": 110,
+          "y": 61
+        },
+        {
+          "timestamp": 210.0,
+          "x": 93,
+          "y": 91
+        },
+        {
+          "timestamp": 225.0,
+          "x": 118,
+          "y": 119
+        },
+        {
+          "timestamp": 240.0,
+          "x": 120,
+          "y": 106
+        },
+        {
+          "timestamp": 255.0,
+          "x": 106,
+          "y": 105
+        },
+        {
+          "timestamp": 270.0,
+          "x": 122,
+          "y": 95
+        },
+        {
+          "timestamp": 285.0,
+          "x": 131,
+          "y": 67
+        },
+        {
+          "timestamp": 300.0,
+          "x": 136,
+          "y": 63
+        },
+        {
+          "timestamp": 315.0,
+          "x": 140,
+          "y": 64
+        },
+        {
+          "timestamp": 330.0,
+          "x": 136,
+          "y": 63
+        },
+        {
+          "timestamp": 345.0,
+          "x": 121,
+          "y": 57
+        },
+        {
+          "timestamp": 360.0,
+          "x": 131,
+          "y": 47
+        },
+        {
+          "timestamp": 375.0,
+          "x": 141,
+          "y": 63
+        },
+        {
+          "timestamp": 390.0,
+          "x": 132,
+          "y": 65
+        },
+        {
+          "timestamp": 405.0,
+          "x": 103,
+          "y": 66
+        },
+        {
+          "timestamp": 435.0,
+          "x": 117,
+          "y": 142
+        },
+        {
+          "timestamp": 450.0,
+          "x": 119,
+          "y": 119
+        },
+        {
+          "timestamp": 465.0,
+          "x": 97,
+          "y": 113
+        },
+        {
+          "timestamp": 480.0,
+          "x": 87,
+          "y": 104
+        },
+        {
+          "timestamp": 540.0,
+          "x": 168,
+          "y": 76
+        },
+        {
+          "timestamp": 555.0,
+          "x": 178,
+          "y": 75
+        },
+        {
+          "timestamp": 615.0,
+          "x": 120,
+          "y": 63
+        },
+        {
+          "timestamp": 630.0,
+          "x": 138,
+          "y": 67
+        },
+        {
+          "timestamp": 645.0,
+          "x": 105,
+          "y": 85
+        },
+        {
+          "timestamp": 660.0,
+          "x": 97,
+          "y": 104
+        },
+        {
+          "timestamp": 675.0,
+          "x": 127,
+          "y": 67
+        },
+        {
+          "timestamp": 690.0,
+          "x": 138,
+          "y": 99
+        },
+        {
+          "timestamp": 705.0,
+          "x": 131,
+          "y": 101
+        },
+        {
+          "timestamp": 720.0,
+          "x": 110,
+          "y": 107
+        },
+        {
+          "timestamp": 735.0,
+          "x": 99,
+          "y": 120
+        },
+        {
+          "timestamp": 750.0,
+          "x": 120,
+          "y": 122
+        },
+        {
+          "timestamp": 765.0,
+          "x": 126,
+          "y": 121
+        },
+        {
+          "timestamp": 780.0,
+          "x": 139,
+          "y": 140
+        },
+        {
+          "timestamp": 795.0,
+          "x": 161,
+          "y": 132
+        },
+        {
+          "timestamp": 810.0,
+          "x": 162,
+          "y": 136
+        },
+        {
+          "timestamp": 825.0,
+          "x": 175,
+          "y": 134
+        },
+        {
+          "timestamp": 840.0,
+          "x": 141,
+          "y": 138
+        },
+        {
+          "timestamp": 855.0,
+          "x": 99,
+          "y": 137
+        },
+        {
+          "timestamp": 885.0,
+          "x": 128,
+          "y": 143
+        },
+        {
+          "timestamp": 900.0,
+          "x": 151,
+          "y": 119
+        },
+        {
+          "timestamp": 915.0,
+          "x": 154,
+          "y": 119
+        },
+        {
+          "timestamp": 945.0,
+          "x": 121,
+          "y": 117
+        },
+        {
+          "timestamp": 960.0,
+          "x": 106,
+          "y": 114
+        },
+        {
+          "timestamp": 1035.0,
+          "x": 100,
+          "y": 136
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 71,
+          "y": 130
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 77,
+          "y": 133
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 112,
+          "y": 159
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 116,
+          "y": 140
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 155,
+          "y": 137
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 155,
+          "y": 119
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 173,
+          "y": 137
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 156,
+          "y": 108
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 118,
+          "y": 126
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 122,
+          "y": 126
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 102,
+          "y": 103
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 96,
+          "y": 105
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 75,
+          "y": 85
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 120,
+          "y": 63
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 143,
+          "y": 60
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 164,
+          "y": 80
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 147,
+          "y": 50
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 133,
+          "y": 43
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 152,
+          "y": 74
+        },
+        {
+          "timestamp": 1335.0,
+          "x": 128,
+          "y": 62
+        },
+        {
+          "timestamp": 1350.0,
+          "x": 125,
+          "y": 43
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 80,
+          "y": 70
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 74,
+          "y": 80
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 64,
+          "y": 90
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 23,
+        "Takedowns": 11,
+        "Kills": 5,
+        "Assists": 6,
+        "Deaths": 7,
+        "HighestKillStreak": 6,
+        "Multikill": 1,
+        "HeroDamage": 53460,
+        "SiegeDamage": 30829,
+        "StructureDamage": 6526,
+        "MinionDamage": 16278,
+        "CreepDamage": 23852,
+        "SummonDamage": 5324,
+        "DamageTaken": 70707,
+        "PhysicalDamage": 56153,
+        "SpellDamage": 56332,
+        "Healing": 81511,
+        "SelfHealing": 9595,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 31008,
+        "TeamfightDamageTaken": 42777,
+        "TeamfightHealingDone": 12999,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 239,
+        "TimeStunningEnemyHeroes": 21,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 8880,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "MercCampCaptures": 5,
+        "RegenGlobes": 31,
+        "MinionKills": 13,
+        "TimeSpentDead": 271,
+        "OnFireTimeOnFire": 0,
+        "OutnumberedDeaths": 3,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 2,
+        "TownKills": 2,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 14591
+      }
+    },
+    {
+      "name": "Discerning",
+      "hero": "Raynor",
+      "team": 0,
+      "win": false,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 13,
+        "Deaths": 4,
+        "TownKills": 1,
+        "SoloKill": 4,
+        "Assists": 9,
+        "MetaExperience": 106298,
+        "Level": 23,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 17615,
+        "Healing": 0,
+        "SiegeDamage": 110478,
+        "StructureDamage": 12913,
+        "MinionDamage": 58319,
+        "HeroDamage": 72945,
+        "MercCampCaptures": 5,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 21391,
+        "TimeSpentDead": 129,
+        "TimeCCdEnemyHeroes": 56,
+        "CreepDamage": 116915,
+        "SummonDamage": 30103,
+        "Tier1Talent": 1,
+        "Tier2Talent": 1,
+        "Tier3Talent": 2,
+        "Tier4Talent": 1,
+        "Tier5Talent": 3,
+        "Tier6Talent": 2,
+        "Tier7Talent": 3,
+        "DamageTaken": 43488,
+        "DamageSoaked": 34495,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 7,
+        "TeamLevel": 23,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 0,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 2,
+        "VengeancesPerformed": 1,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 2,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 15069,
+        "TeamfightHeroDamage": 39351,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 1,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 108,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 0,
+        "WinsMale": 0,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 1,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 0,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 0,
+        "PlaysAssassin": 1,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 0,
+        "LessThan3TownStructuresLost": 0,
+        "PhysicalDamage": 274696,
+        "SpellDamage": 56806,
+        "Multikill": 2,
+        "MinionKills": 73,
+        "RegenGlobes": 40,
+        "DamageDoneToImmortal": 64124,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "StructureXP": 2100,
+        "CreepXP": 8931,
+        "SiegeXP": 0,
+        "TrickleXP": 41421
+      },
+      "talents": [
+        {
+          "timestamp": 28.2,
+          "talent_name": "RaynorExterminator",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 193.6,
+          "talent_name": "RaynorAdrenalineRushFightOrFlightTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 309.4,
+          "talent_name": "RaynorInspireFuelTheRush",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 483.9,
+          "talent_name": "RaynorHyperion",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 620.8,
+          "talent_name": "RaynorAdrenalineRushGiveMeMoreTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 787.6,
+          "talent_name": "RaynorInspireRallyingCry",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1070.7,
+          "talent_name": "RaynorAdrenalineRushRaidersRoll",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 91.8,
+          "gameloop": 1469,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 7.3
+        },
+        {
+          "timestamp": 167.2,
+          "gameloop": 2675,
+          "killer_pid": 15,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 30.0
+        },
+        {
+          "timestamp": 649.9,
+          "gameloop": 10398,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 78.3
+        },
+        {
+          "timestamp": 1362.7,
+          "gameloop": 21803,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.0
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 75.0,
+          "x": 114,
+          "y": 61
+        },
+        {
+          "timestamp": 90.0,
+          "x": 121,
+          "y": 64
+        },
+        {
+          "timestamp": 120.0,
+          "x": 92,
+          "y": 94
+        },
+        {
+          "timestamp": 150.0,
+          "x": 84,
+          "y": 84
+        },
+        {
+          "timestamp": 165.0,
+          "x": 92,
+          "y": 88
+        },
+        {
+          "timestamp": 210.0,
+          "x": 97,
+          "y": 87
+        },
+        {
+          "timestamp": 225.0,
+          "x": 120,
+          "y": 113
+        },
+        {
+          "timestamp": 240.0,
+          "x": 111,
+          "y": 98
+        },
+        {
+          "timestamp": 255.0,
+          "x": 106,
+          "y": 92
+        },
+        {
+          "timestamp": 270.0,
+          "x": 125,
+          "y": 82
+        },
+        {
+          "timestamp": 285.0,
+          "x": 133,
+          "y": 72
+        },
+        {
+          "timestamp": 300.0,
+          "x": 137,
+          "y": 63
+        },
+        {
+          "timestamp": 315.0,
+          "x": 144,
+          "y": 63
+        },
+        {
+          "timestamp": 330.0,
+          "x": 132,
+          "y": 60
+        },
+        {
+          "timestamp": 345.0,
+          "x": 135,
+          "y": 47
+        },
+        {
+          "timestamp": 360.0,
+          "x": 118,
+          "y": 58
+        },
+        {
+          "timestamp": 375.0,
+          "x": 132,
+          "y": 64
+        },
+        {
+          "timestamp": 390.0,
+          "x": 138,
+          "y": 64
+        },
+        {
+          "timestamp": 405.0,
+          "x": 120,
+          "y": 109
+        },
+        {
+          "timestamp": 420.0,
+          "x": 109,
+          "y": 147
+        },
+        {
+          "timestamp": 435.0,
+          "x": 117,
+          "y": 140
+        },
+        {
+          "timestamp": 450.0,
+          "x": 117,
+          "y": 124
+        },
+        {
+          "timestamp": 465.0,
+          "x": 116,
+          "y": 136
+        },
+        {
+          "timestamp": 480.0,
+          "x": 134,
+          "y": 109
+        },
+        {
+          "timestamp": 510.0,
+          "x": 133,
+          "y": 68
+        },
+        {
+          "timestamp": 525.0,
+          "x": 147,
+          "y": 66
+        },
+        {
+          "timestamp": 540.0,
+          "x": 164,
+          "y": 79
+        },
+        {
+          "timestamp": 555.0,
+          "x": 176,
+          "y": 77
+        },
+        {
+          "timestamp": 570.0,
+          "x": 148,
+          "y": 71
+        },
+        {
+          "timestamp": 600.0,
+          "x": 103,
+          "y": 140
+        },
+        {
+          "timestamp": 615.0,
+          "x": 103,
+          "y": 142
+        },
+        {
+          "timestamp": 630.0,
+          "x": 108,
+          "y": 142
+        },
+        {
+          "timestamp": 645.0,
+          "x": 119,
+          "y": 162
+        },
+        {
+          "timestamp": 705.0,
+          "x": 124,
+          "y": 105
+        },
+        {
+          "timestamp": 720.0,
+          "x": 111,
+          "y": 122
+        },
+        {
+          "timestamp": 735.0,
+          "x": 102,
+          "y": 118
+        },
+        {
+          "timestamp": 750.0,
+          "x": 113,
+          "y": 117
+        },
+        {
+          "timestamp": 765.0,
+          "x": 125,
+          "y": 115
+        },
+        {
+          "timestamp": 780.0,
+          "x": 106,
+          "y": 142
+        },
+        {
+          "timestamp": 810.0,
+          "x": 168,
+          "y": 134
+        },
+        {
+          "timestamp": 825.0,
+          "x": 174,
+          "y": 136
+        },
+        {
+          "timestamp": 840.0,
+          "x": 147,
+          "y": 128
+        },
+        {
+          "timestamp": 855.0,
+          "x": 82,
+          "y": 119
+        },
+        {
+          "timestamp": 870.0,
+          "x": 112,
+          "y": 159
+        },
+        {
+          "timestamp": 885.0,
+          "x": 122,
+          "y": 145
+        },
+        {
+          "timestamp": 900.0,
+          "x": 149,
+          "y": 126
+        },
+        {
+          "timestamp": 915.0,
+          "x": 155,
+          "y": 116
+        },
+        {
+          "timestamp": 945.0,
+          "x": 114,
+          "y": 117
+        },
+        {
+          "timestamp": 960.0,
+          "x": 112,
+          "y": 117
+        },
+        {
+          "timestamp": 975.0,
+          "x": 74,
+          "y": 98
+        },
+        {
+          "timestamp": 990.0,
+          "x": 106,
+          "y": 92
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 104,
+          "y": 89
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 119,
+          "y": 108
+        },
+        {
+          "timestamp": 1035.0,
+          "x": 107,
+          "y": 146
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 70,
+          "y": 130
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 78,
+          "y": 131
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 111,
+          "y": 158
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 126,
+          "y": 144
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 153,
+          "y": 138
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 151,
+          "y": 117
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 166,
+          "y": 136
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 153,
+          "y": 118
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 116,
+          "y": 127
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 117,
+          "y": 125
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 101,
+          "y": 103
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 89,
+          "y": 103
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 78,
+          "y": 80
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 116,
+          "y": 65
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 147,
+          "y": 72
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 163,
+          "y": 75
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 134,
+          "y": 107
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 117,
+          "y": 161
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 111,
+          "y": 130
+        },
+        {
+          "timestamp": 1350.0,
+          "x": 126,
+          "y": 42
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 79,
+          "y": 74
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 76,
+          "y": 82
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 71,
+          "y": 88
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 54,
+          "y": 104
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 51,
+          "y": 103
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 23,
+        "Takedowns": 13,
+        "Kills": 4,
+        "Assists": 9,
+        "Deaths": 4,
+        "HighestKillStreak": 7,
+        "Multikill": 2,
+        "HeroDamage": 72945,
+        "SiegeDamage": 110478,
+        "StructureDamage": 12913,
+        "MinionDamage": 58319,
+        "CreepDamage": 116915,
+        "SummonDamage": 30103,
+        "DamageTaken": 43488,
+        "PhysicalDamage": 274696,
+        "SpellDamage": 56806,
+        "Healing": 0,
+        "SelfHealing": 21391,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 39351,
+        "TeamfightDamageTaken": 15069,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 56,
+        "TimeStunningEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 17615,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "MercCampCaptures": 5,
+        "RegenGlobes": 40,
+        "MinionKills": 73,
+        "TimeSpentDead": 129,
+        "OnFireTimeOnFire": 108,
+        "OutnumberedDeaths": 2,
+        "EscapesPerformed": 2,
+        "VengeancesPerformed": 1,
+        "TownKills": 1,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 64124
+      }
+    },
+    {
+      "name": "Geedorah",
+      "hero": "Muradin",
+      "team": 0,
+      "win": false,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 16,
+        "Deaths": 5,
+        "TownKills": 1,
+        "SoloKill": 0,
+        "Assists": 16,
+        "MetaExperience": 106298,
+        "Level": 23,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 12684,
+        "Healing": 0,
+        "SiegeDamage": 29196,
+        "StructureDamage": 7703,
+        "MinionDamage": 14702,
+        "HeroDamage": 31926,
+        "MercCampCaptures": 5,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 45224,
+        "TimeSpentDead": 198,
+        "TimeCCdEnemyHeroes": 171,
+        "CreepDamage": 52192,
+        "SummonDamage": 4657,
+        "Tier1Talent": 1,
+        "Tier2Talent": 1,
+        "Tier3Talent": 3,
+        "Tier4Talent": 1,
+        "Tier5Talent": 2,
+        "Tier6Talent": 1,
+        "Tier7Talent": 1,
+        "DamageTaken": 134956,
+        "DamageSoaked": 110181,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 10,
+        "TeamLevel": 23,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 46,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 0,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 3,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 109427,
+        "TeamfightHeroDamage": 25564,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 1,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 0,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 0,
+        "WinsMale": 0,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 1,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 1,
+        "PlaysAssassin": 0,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 0,
+        "LessThan3TownStructuresLost": 0,
+        "PhysicalDamage": 44759,
+        "SpellDamage": 70286,
+        "Multikill": 2,
+        "MinionKills": 12,
+        "RegenGlobes": 30,
+        "DamageDoneToImmortal": 33897,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "StructureXP": 2100,
+        "CreepXP": 8931,
+        "SiegeXP": 0,
+        "TrickleXP": 41421
+      },
+      "talents": [
+        {
+          "timestamp": 45.2,
+          "talent_name": "MuradinStormboltPerfectStormTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 204.5,
+          "talent_name": "MuradinStormboltSledgehammerTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 308.5,
+          "talent_name": "MuradinSecondWindSkullcrackerTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 527.8,
+          "talent_name": "MuradinAvatar",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 657.4,
+          "talent_name": "MuradinThunderclapHealingStaticTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 802.1,
+          "talent_name": "MuradinDwarfTossDwarfLaunchTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1095.1,
+          "talent_name": "MuradinAvatarUnstoppableForceTalent",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 96.1,
+          "gameloop": 1538,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 4.0
+        },
+        {
+          "timestamp": 497.0,
+          "gameloop": 7952,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 10.0
+        },
+        {
+          "timestamp": 561.9,
+          "gameloop": 8990,
+          "killer_pid": 12,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 5.0
+        },
+        {
+          "timestamp": 1364.5,
+          "gameloop": 21832,
+          "killer_pid": 9,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.0
+        },
+        {
+          "timestamp": 1497.8,
+          "gameloop": 23965,
+          "killer_pid": 10,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 3.6
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 60.0,
+          "x": 118,
+          "y": 64
+        },
+        {
+          "timestamp": 75.0,
+          "x": 122,
+          "y": 60
+        },
+        {
+          "timestamp": 90.0,
+          "x": 110,
+          "y": 62
+        },
+        {
+          "timestamp": 135.0,
+          "x": 106,
+          "y": 63
+        },
+        {
+          "timestamp": 165.0,
+          "x": 111,
+          "y": 64
+        },
+        {
+          "timestamp": 180.0,
+          "x": 103,
+          "y": 67
+        },
+        {
+          "timestamp": 195.0,
+          "x": 31,
+          "y": 100
+        },
+        {
+          "timestamp": 225.0,
+          "x": 119,
+          "y": 87
+        },
+        {
+          "timestamp": 240.0,
+          "x": 122,
+          "y": 106
+        },
+        {
+          "timestamp": 255.0,
+          "x": 109,
+          "y": 99
+        },
+        {
+          "timestamp": 270.0,
+          "x": 129,
+          "y": 83
+        },
+        {
+          "timestamp": 285.0,
+          "x": 135,
+          "y": 65
+        },
+        {
+          "timestamp": 300.0,
+          "x": 139,
+          "y": 65
+        },
+        {
+          "timestamp": 315.0,
+          "x": 147,
+          "y": 66
+        },
+        {
+          "timestamp": 330.0,
+          "x": 140,
+          "y": 62
+        },
+        {
+          "timestamp": 345.0,
+          "x": 124,
+          "y": 67
+        },
+        {
+          "timestamp": 360.0,
+          "x": 122,
+          "y": 47
+        },
+        {
+          "timestamp": 375.0,
+          "x": 143,
+          "y": 62
+        },
+        {
+          "timestamp": 390.0,
+          "x": 140,
+          "y": 67
+        },
+        {
+          "timestamp": 405.0,
+          "x": 31,
+          "y": 100
+        },
+        {
+          "timestamp": 435.0,
+          "x": 114,
+          "y": 130
+        },
+        {
+          "timestamp": 450.0,
+          "x": 121,
+          "y": 118
+        },
+        {
+          "timestamp": 465.0,
+          "x": 108,
+          "y": 103
+        },
+        {
+          "timestamp": 480.0,
+          "x": 97,
+          "y": 104
+        },
+        {
+          "timestamp": 495.0,
+          "x": 126,
+          "y": 103
+        },
+        {
+          "timestamp": 555.0,
+          "x": 183,
+          "y": 86
+        },
+        {
+          "timestamp": 615.0,
+          "x": 126,
+          "y": 67
+        },
+        {
+          "timestamp": 630.0,
+          "x": 140,
+          "y": 66
+        },
+        {
+          "timestamp": 645.0,
+          "x": 135,
+          "y": 72
+        },
+        {
+          "timestamp": 675.0,
+          "x": 128,
+          "y": 63
+        },
+        {
+          "timestamp": 690.0,
+          "x": 136,
+          "y": 108
+        },
+        {
+          "timestamp": 705.0,
+          "x": 135,
+          "y": 106
+        },
+        {
+          "timestamp": 720.0,
+          "x": 109,
+          "y": 104
+        },
+        {
+          "timestamp": 735.0,
+          "x": 130,
+          "y": 113
+        },
+        {
+          "timestamp": 750.0,
+          "x": 123,
+          "y": 120
+        },
+        {
+          "timestamp": 765.0,
+          "x": 123,
+          "y": 114
+        },
+        {
+          "timestamp": 780.0,
+          "x": 146,
+          "y": 143
+        },
+        {
+          "timestamp": 795.0,
+          "x": 161,
+          "y": 131
+        },
+        {
+          "timestamp": 810.0,
+          "x": 169,
+          "y": 138
+        },
+        {
+          "timestamp": 825.0,
+          "x": 172,
+          "y": 130
+        },
+        {
+          "timestamp": 840.0,
+          "x": 136,
+          "y": 135
+        },
+        {
+          "timestamp": 855.0,
+          "x": 99,
+          "y": 135
+        },
+        {
+          "timestamp": 870.0,
+          "x": 119,
+          "y": 164
+        },
+        {
+          "timestamp": 885.0,
+          "x": 127,
+          "y": 143
+        },
+        {
+          "timestamp": 900.0,
+          "x": 156,
+          "y": 120
+        },
+        {
+          "timestamp": 915.0,
+          "x": 152,
+          "y": 122
+        },
+        {
+          "timestamp": 945.0,
+          "x": 121,
+          "y": 119
+        },
+        {
+          "timestamp": 960.0,
+          "x": 116,
+          "y": 109
+        },
+        {
+          "timestamp": 975.0,
+          "x": 79,
+          "y": 101
+        },
+        {
+          "timestamp": 990.0,
+          "x": 116,
+          "y": 96
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 108,
+          "y": 101
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 129,
+          "y": 90
+        },
+        {
+          "timestamp": 1035.0,
+          "x": 123,
+          "y": 63
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 79,
+          "y": 121
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 63,
+          "y": 126
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 107,
+          "y": 151
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 110,
+          "y": 146
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 151,
+          "y": 113
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 174,
+          "y": 132
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 155,
+          "y": 109
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 125,
+          "y": 119
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 125,
+          "y": 117
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 106,
+          "y": 100
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 76,
+          "y": 98
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 126,
+          "y": 64
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 139,
+          "y": 54
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 164,
+          "y": 82
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 130,
+          "y": 92
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 133,
+          "y": 46
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 154,
+          "y": 77
+        },
+        {
+          "timestamp": 1335.0,
+          "x": 137,
+          "y": 51
+        },
+        {
+          "timestamp": 1350.0,
+          "x": 126,
+          "y": 43
+        },
+        {
+          "timestamp": 1455.0,
+          "x": 100,
+          "y": 70
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 79,
+          "y": 74
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 71,
+          "y": 73
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 23,
+        "Takedowns": 16,
+        "Kills": 0,
+        "Assists": 16,
+        "Deaths": 5,
+        "HighestKillStreak": 10,
+        "Multikill": 2,
+        "HeroDamage": 31926,
+        "SiegeDamage": 29196,
+        "StructureDamage": 7703,
+        "MinionDamage": 14702,
+        "CreepDamage": 52192,
+        "SummonDamage": 4657,
+        "DamageTaken": 134956,
+        "PhysicalDamage": 44759,
+        "SpellDamage": 70286,
+        "Healing": 0,
+        "SelfHealing": 45224,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 25564,
+        "TeamfightDamageTaken": 109427,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 171,
+        "TimeStunningEnemyHeroes": 46,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 12684,
+        "HeroXP": 15449,
+        "MinionXP": 38398,
+        "MercCampCaptures": 5,
+        "RegenGlobes": 30,
+        "MinionKills": 12,
+        "TimeSpentDead": 198,
+        "OnFireTimeOnFire": 0,
+        "OutnumberedDeaths": 3,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 0,
+        "TownKills": 1,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 33897
+      }
+    },
+    {
+      "name": "slim",
+      "hero": "Li Li",
+      "team": 1,
+      "win": true,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 24,
+        "Deaths": 1,
+        "TownKills": 2,
+        "SoloKill": 3,
+        "Assists": 21,
+        "MetaExperience": 115567,
+        "Level": 24,
+        "TeamTakedowns": 17,
+        "ExperienceContribution": 13924,
+        "Healing": 182619,
+        "SiegeDamage": 10126,
+        "StructureDamage": 3491,
+        "MinionDamage": 3819,
+        "HeroDamage": 46473,
+        "MercCampCaptures": 8,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 0,
+        "TimeSpentDead": 24,
+        "TimeCCdEnemyHeroes": 139,
+        "CreepDamage": 12288,
+        "SummonDamage": 0,
+        "Tier1Talent": 1,
+        "Tier2Talent": 2,
+        "Tier3Talent": 1,
+        "Tier4Talent": 1,
+        "Tier5Talent": 2,
+        "Tier6Talent": 1,
+        "Tier7Talent": 1,
+        "DamageTaken": 77185,
+        "DamageSoaked": 74964,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 16,
+        "TeamLevel": 24,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 0,
+        "ClutchHealsPerformed": 4,
+        "EscapesPerformed": 3,
+        "VengeancesPerformed": 1,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 0,
+        "TeamfightHealingDone": 45176,
+        "TeamfightDamageTaken": 56380,
+        "TeamfightHeroDamage": 32647,
+        "EndOfMatchAwardMVPBoolean": 1,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 0,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 0,
+        "WinsSupport": 1,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 1,
+        "WinsMale": 0,
+        "WinsFemale": 1,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 1,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 0,
+        "PlaysAssassin": 0,
+        "PlaysSupport": 1,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 0,
+        "PlaysFemale": 1,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 1,
+        "LessThan3TownStructuresLost": 1,
+        "PhysicalDamage": 39402,
+        "SpellDamage": 34471,
+        "Multikill": 4,
+        "MinionKills": 8,
+        "RegenGlobes": 37,
+        "DamageDoneToImmortal": 5967,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "StructureXP": 1700,
+        "CreepXP": 10977,
+        "SiegeXP": 0,
+        "TrickleXP": 39085
+      },
+      "talents": [
+        {
+          "timestamp": 24.9,
+          "talent_name": "LiLiFreeDrinks",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 175.6,
+          "talent_name": "LiLiSurgingWindsTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 351.2,
+          "talent_name": "LiLiHealingBrewTheGoodStuffTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 508.1,
+          "talent_name": "LiLiJugof1000Cups",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 658.4,
+          "talent_name": "LiLiBlindingWindGaleForceTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 859.9,
+          "talent_name": "LiLiHealingBrewTwoForOneTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1107.1,
+          "talent_name": "LiLiJugof1000CupsJugof1000000CupsTalent",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 494.5,
+          "gameloop": 7912,
+          "killer_pid": 1,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 3.0
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 75.0,
+          "x": 122,
+          "y": 64
+        },
+        {
+          "timestamp": 90.0,
+          "x": 121,
+          "y": 67
+        },
+        {
+          "timestamp": 105.0,
+          "x": 120,
+          "y": 64
+        },
+        {
+          "timestamp": 120.0,
+          "x": 123,
+          "y": 64
+        },
+        {
+          "timestamp": 135.0,
+          "x": 120,
+          "y": 58
+        },
+        {
+          "timestamp": 150.0,
+          "x": 128,
+          "y": 63
+        },
+        {
+          "timestamp": 165.0,
+          "x": 118,
+          "y": 66
+        },
+        {
+          "timestamp": 180.0,
+          "x": 110,
+          "y": 63
+        },
+        {
+          "timestamp": 195.0,
+          "x": 107,
+          "y": 67
+        },
+        {
+          "timestamp": 210.0,
+          "x": 110,
+          "y": 61
+        },
+        {
+          "timestamp": 225.0,
+          "x": 144,
+          "y": 67
+        },
+        {
+          "timestamp": 255.0,
+          "x": 113,
+          "y": 99
+        },
+        {
+          "timestamp": 270.0,
+          "x": 150,
+          "y": 85
+        },
+        {
+          "timestamp": 285.0,
+          "x": 145,
+          "y": 68
+        },
+        {
+          "timestamp": 300.0,
+          "x": 150,
+          "y": 64
+        },
+        {
+          "timestamp": 315.0,
+          "x": 152,
+          "y": 74
+        },
+        {
+          "timestamp": 330.0,
+          "x": 146,
+          "y": 64
+        },
+        {
+          "timestamp": 345.0,
+          "x": 151,
+          "y": 70
+        },
+        {
+          "timestamp": 360.0,
+          "x": 150,
+          "y": 67
+        },
+        {
+          "timestamp": 375.0,
+          "x": 148,
+          "y": 69
+        },
+        {
+          "timestamp": 405.0,
+          "x": 138,
+          "y": 65
+        },
+        {
+          "timestamp": 420.0,
+          "x": 154,
+          "y": 107
+        },
+        {
+          "timestamp": 450.0,
+          "x": 119,
+          "y": 108
+        },
+        {
+          "timestamp": 465.0,
+          "x": 113,
+          "y": 105
+        },
+        {
+          "timestamp": 480.0,
+          "x": 108,
+          "y": 107
+        },
+        {
+          "timestamp": 540.0,
+          "x": 183,
+          "y": 88
+        },
+        {
+          "timestamp": 570.0,
+          "x": 172,
+          "y": 83
+        },
+        {
+          "timestamp": 585.0,
+          "x": 162,
+          "y": 73
+        },
+        {
+          "timestamp": 600.0,
+          "x": 123,
+          "y": 44
+        },
+        {
+          "timestamp": 615.0,
+          "x": 130,
+          "y": 65
+        },
+        {
+          "timestamp": 630.0,
+          "x": 154,
+          "y": 75
+        },
+        {
+          "timestamp": 690.0,
+          "x": 145,
+          "y": 70
+        },
+        {
+          "timestamp": 705.0,
+          "x": 144,
+          "y": 105
+        },
+        {
+          "timestamp": 720.0,
+          "x": 117,
+          "y": 111
+        },
+        {
+          "timestamp": 735.0,
+          "x": 112,
+          "y": 115
+        },
+        {
+          "timestamp": 750.0,
+          "x": 125,
+          "y": 119
+        },
+        {
+          "timestamp": 765.0,
+          "x": 140,
+          "y": 123
+        },
+        {
+          "timestamp": 780.0,
+          "x": 216,
+          "y": 107
+        },
+        {
+          "timestamp": 810.0,
+          "x": 175,
+          "y": 129
+        },
+        {
+          "timestamp": 825.0,
+          "x": 178,
+          "y": 122
+        },
+        {
+          "timestamp": 840.0,
+          "x": 147,
+          "y": 135
+        },
+        {
+          "timestamp": 855.0,
+          "x": 119,
+          "y": 120
+        },
+        {
+          "timestamp": 870.0,
+          "x": 152,
+          "y": 113
+        },
+        {
+          "timestamp": 900.0,
+          "x": 162,
+          "y": 115
+        },
+        {
+          "timestamp": 915.0,
+          "x": 167,
+          "y": 109
+        },
+        {
+          "timestamp": 930.0,
+          "x": 172,
+          "y": 130
+        },
+        {
+          "timestamp": 945.0,
+          "x": 125,
+          "y": 119
+        },
+        {
+          "timestamp": 960.0,
+          "x": 117,
+          "y": 113
+        },
+        {
+          "timestamp": 975.0,
+          "x": 108,
+          "y": 102
+        },
+        {
+          "timestamp": 990.0,
+          "x": 113,
+          "y": 94
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 111,
+          "y": 98
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 135,
+          "y": 96
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 77,
+          "y": 137
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 87,
+          "y": 133
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 141,
+          "y": 118
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 181,
+          "y": 86
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 127,
+          "y": 42
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 175,
+          "y": 116
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 187,
+          "y": 133
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 162,
+          "y": 121
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 152,
+          "y": 66
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 177,
+          "y": 70
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 103,
+          "y": 104
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 129,
+          "y": 99
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 127,
+          "y": 65
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 159,
+          "y": 77
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 176,
+          "y": 89
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 170,
+          "y": 130
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 134,
+          "y": 146
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 130,
+          "y": 148
+        },
+        {
+          "timestamp": 1350.0,
+          "x": 128,
+          "y": 45
+        },
+        {
+          "timestamp": 1380.0,
+          "x": 97,
+          "y": 88
+        },
+        {
+          "timestamp": 1395.0,
+          "x": 95,
+          "y": 94
+        },
+        {
+          "timestamp": 1410.0,
+          "x": 120,
+          "y": 116
+        },
+        {
+          "timestamp": 1425.0,
+          "x": 126,
+          "y": 101
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 112,
+          "y": 97
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 98,
+          "y": 79
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 84,
+          "y": 74
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 65,
+          "y": 81
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 51,
+          "y": 87
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 53,
+          "y": 91
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 24,
+        "Takedowns": 24,
+        "Kills": 3,
+        "Assists": 21,
+        "Deaths": 1,
+        "HighestKillStreak": 16,
+        "Multikill": 4,
+        "HeroDamage": 46473,
+        "SiegeDamage": 10126,
+        "StructureDamage": 3491,
+        "MinionDamage": 3819,
+        "CreepDamage": 12288,
+        "SummonDamage": 0,
+        "DamageTaken": 77185,
+        "PhysicalDamage": 39402,
+        "SpellDamage": 34471,
+        "Healing": 182619,
+        "SelfHealing": 0,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 4,
+        "TeamfightHeroDamage": 32647,
+        "TeamfightDamageTaken": 56380,
+        "TeamfightHealingDone": 45176,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 139,
+        "TimeStunningEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 13924,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "MercCampCaptures": 8,
+        "RegenGlobes": 37,
+        "MinionKills": 8,
+        "TimeSpentDead": 24,
+        "OnFireTimeOnFire": 0,
+        "OutnumberedDeaths": 0,
+        "EscapesPerformed": 3,
+        "VengeancesPerformed": 1,
+        "TownKills": 2,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 5967
+      }
+    },
+    {
+      "name": "thokk",
+      "hero": "Ragnaros",
+      "team": 1,
+      "win": true,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 16,
+        "Deaths": 8,
+        "TownKills": 1,
+        "SoloKill": 5,
+        "Assists": 11,
+        "MetaExperience": 115567,
+        "Level": 24,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 21583,
+        "Healing": 0,
+        "SiegeDamage": 179477,
+        "StructureDamage": 22560,
+        "MinionDamage": 146311,
+        "HeroDamage": 71850,
+        "MercCampCaptures": 2,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 15266,
+        "TimeSpentDead": 287,
+        "TimeCCdEnemyHeroes": 58,
+        "CreepDamage": 33332,
+        "SummonDamage": 0,
+        "Tier1Talent": 1,
+        "Tier2Talent": 2,
+        "Tier3Talent": 3,
+        "Tier4Talent": 2,
+        "Tier5Talent": 1,
+        "Tier6Talent": 1,
+        "Tier7Talent": 2,
+        "DamageTaken": 74933,
+        "DamageSoaked": 47034,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 5,
+        "TeamLevel": 24,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 3,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 1,
+        "TeamfightEscapesPerformed": 1,
+        "OutnumberedDeaths": 3,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 49583,
+        "TeamfightHeroDamage": 36450,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 38,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 1,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 1,
+        "WinsMale": 1,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 1,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 1,
+        "PlaysAssassin": 0,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 0,
+        "LessThan3TownStructuresLost": 1,
+        "PhysicalDamage": 49201,
+        "SpellDamage": 243613,
+        "Multikill": 3,
+        "MinionKills": 160,
+        "RegenGlobes": 27,
+        "DamageDoneToImmortal": 27711,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "StructureXP": 1700,
+        "CreepXP": 10977,
+        "SiegeXP": 0,
+        "TrickleXP": 39085
+      },
+      "talents": [
+        {
+          "timestamp": 19.6,
+          "talent_name": "RagnarosEmpowerSulfurasSulfurasHungers",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 219.5,
+          "talent_name": "RagnarosBlastWaveSlowBurn",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 330.3,
+          "talent_name": "RagnarosBlisteringAttacks",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 494.7,
+          "talent_name": "RagnarosLavaWaveTargetPoint",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 626.0,
+          "talent_name": "RagnarosEmpowerSulfurasCauterizeWounds",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 889.4,
+          "talent_name": "RagnarosEmpowerSulfurasGiantScorcher",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1119.8,
+          "talent_name": "RagnarosLavaWaveLavaSurge",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 211.0,
+          "gameloop": 3376,
+          "killer_pid": 11,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 2.2
+        },
+        {
+          "timestamp": 322.6,
+          "gameloop": 5162,
+          "killer_pid": 4,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 3.6
+        },
+        {
+          "timestamp": 481.1,
+          "gameloop": 7698,
+          "killer_pid": 11,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 17.0
+        },
+        {
+          "timestamp": 612.7,
+          "gameloop": 9803,
+          "killer_pid": 3,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 6.4
+        },
+        {
+          "timestamp": 675.9,
+          "gameloop": 10814,
+          "killer_pid": 3,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 8.6
+        },
+        {
+          "timestamp": 759.1,
+          "gameloop": 12146,
+          "killer_pid": 1,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 20.0
+        },
+        {
+          "timestamp": 1063.7,
+          "gameloop": 17019,
+          "killer_pid": 4,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 14.3
+        },
+        {
+          "timestamp": 1323.6,
+          "gameloop": 21178,
+          "killer_pid": 3,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 63.3
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 75.0,
+          "x": 130,
+          "y": 64
+        },
+        {
+          "timestamp": 90.0,
+          "x": 125,
+          "y": 65
+        },
+        {
+          "timestamp": 105.0,
+          "x": 116,
+          "y": 66
+        },
+        {
+          "timestamp": 120.0,
+          "x": 122,
+          "y": 65
+        },
+        {
+          "timestamp": 135.0,
+          "x": 118,
+          "y": 64
+        },
+        {
+          "timestamp": 150.0,
+          "x": 120,
+          "y": 69
+        },
+        {
+          "timestamp": 165.0,
+          "x": 118,
+          "y": 69
+        },
+        {
+          "timestamp": 180.0,
+          "x": 111,
+          "y": 61
+        },
+        {
+          "timestamp": 195.0,
+          "x": 130,
+          "y": 66
+        },
+        {
+          "timestamp": 210.0,
+          "x": 103,
+          "y": 65
+        },
+        {
+          "timestamp": 285.0,
+          "x": 139,
+          "y": 68
+        },
+        {
+          "timestamp": 300.0,
+          "x": 149,
+          "y": 66
+        },
+        {
+          "timestamp": 315.0,
+          "x": 155,
+          "y": 72
+        },
+        {
+          "timestamp": 390.0,
+          "x": 128,
+          "y": 157
+        },
+        {
+          "timestamp": 405.0,
+          "x": 111,
+          "y": 157
+        },
+        {
+          "timestamp": 420.0,
+          "x": 123,
+          "y": 142
+        },
+        {
+          "timestamp": 435.0,
+          "x": 139,
+          "y": 141
+        },
+        {
+          "timestamp": 450.0,
+          "x": 130,
+          "y": 125
+        },
+        {
+          "timestamp": 465.0,
+          "x": 109,
+          "y": 109
+        },
+        {
+          "timestamp": 480.0,
+          "x": 89,
+          "y": 104
+        },
+        {
+          "timestamp": 525.0,
+          "x": 156,
+          "y": 64
+        },
+        {
+          "timestamp": 540.0,
+          "x": 186,
+          "y": 84
+        },
+        {
+          "timestamp": 555.0,
+          "x": 180,
+          "y": 90
+        },
+        {
+          "timestamp": 570.0,
+          "x": 167,
+          "y": 83
+        },
+        {
+          "timestamp": 585.0,
+          "x": 144,
+          "y": 64
+        },
+        {
+          "timestamp": 600.0,
+          "x": 119,
+          "y": 49
+        },
+        {
+          "timestamp": 675.0,
+          "x": 134,
+          "y": 69
+        },
+        {
+          "timestamp": 825.0,
+          "x": 174,
+          "y": 106
+        },
+        {
+          "timestamp": 840.0,
+          "x": 149,
+          "y": 136
+        },
+        {
+          "timestamp": 855.0,
+          "x": 110,
+          "y": 123
+        },
+        {
+          "timestamp": 870.0,
+          "x": 140,
+          "y": 66
+        },
+        {
+          "timestamp": 885.0,
+          "x": 143,
+          "y": 65
+        },
+        {
+          "timestamp": 900.0,
+          "x": 114,
+          "y": 62
+        },
+        {
+          "timestamp": 915.0,
+          "x": 99,
+          "y": 71
+        },
+        {
+          "timestamp": 930.0,
+          "x": 83,
+          "y": 74
+        },
+        {
+          "timestamp": 945.0,
+          "x": 84,
+          "y": 71
+        },
+        {
+          "timestamp": 960.0,
+          "x": 89,
+          "y": 66
+        },
+        {
+          "timestamp": 975.0,
+          "x": 120,
+          "y": 87
+        },
+        {
+          "timestamp": 990.0,
+          "x": 146,
+          "y": 102
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 145,
+          "y": 106
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 180,
+          "y": 129
+        },
+        {
+          "timestamp": 1035.0,
+          "x": 152,
+          "y": 136
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 104,
+          "y": 135
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 177,
+          "y": 82
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 167,
+          "y": 76
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 179,
+          "y": 69
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 138,
+          "y": 96
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 136,
+          "y": 98
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 141,
+          "y": 90
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 150,
+          "y": 70
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 163,
+          "y": 74
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 180,
+          "y": 85
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 158,
+          "y": 75
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 136,
+          "y": 48
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 153,
+          "y": 83
+        },
+        {
+          "timestamp": 1410.0,
+          "x": 126,
+          "y": 119
+        },
+        {
+          "timestamp": 1425.0,
+          "x": 129,
+          "y": 101
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 112,
+          "y": 103
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 104,
+          "y": 74
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 72,
+          "y": 64
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 61,
+          "y": 82
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 53,
+          "y": 88
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 55,
+          "y": 96
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 24,
+        "Takedowns": 16,
+        "Kills": 5,
+        "Assists": 11,
+        "Deaths": 8,
+        "HighestKillStreak": 5,
+        "Multikill": 3,
+        "HeroDamage": 71850,
+        "SiegeDamage": 179477,
+        "StructureDamage": 22560,
+        "MinionDamage": 146311,
+        "CreepDamage": 33332,
+        "SummonDamage": 0,
+        "DamageTaken": 74933,
+        "PhysicalDamage": 49201,
+        "SpellDamage": 243613,
+        "Healing": 0,
+        "SelfHealing": 15266,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 36450,
+        "TeamfightDamageTaken": 49583,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 1,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 58,
+        "TimeStunningEnemyHeroes": 3,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 21583,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "MercCampCaptures": 2,
+        "RegenGlobes": 27,
+        "MinionKills": 160,
+        "TimeSpentDead": 287,
+        "OnFireTimeOnFire": 38,
+        "OutnumberedDeaths": 3,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 1,
+        "TownKills": 1,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 27711
+      }
+    },
+    {
+      "name": "Weyandt",
+      "hero": "Garrosh",
+      "team": 1,
+      "win": true,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 23,
+        "Deaths": 4,
+        "TownKills": 1,
+        "SoloKill": 3,
+        "Assists": 20,
+        "MetaExperience": 115567,
+        "Level": 24,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 15467,
+        "Healing": 0,
+        "SiegeDamage": 25977,
+        "StructureDamage": 3576,
+        "MinionDamage": 21073,
+        "HeroDamage": 46853,
+        "MercCampCaptures": 5,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 13784,
+        "TimeSpentDead": 166,
+        "TimeCCdEnemyHeroes": 260,
+        "CreepDamage": 19136,
+        "SummonDamage": 0,
+        "Tier1Talent": 1,
+        "Tier2Talent": 3,
+        "Tier3Talent": 2,
+        "Tier4Talent": 1,
+        "Tier5Talent": 1,
+        "Tier6Talent": 2,
+        "Tier7Talent": 1,
+        "DamageTaken": 103927,
+        "DamageSoaked": 89117,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 8,
+        "TeamLevel": 24,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 26,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 36,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 4,
+        "VengeancesPerformed": 1,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 3,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 80361,
+        "TeamfightHeroDamage": 32478,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 23,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 1,
+        "WinsAssassin": 0,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 1,
+        "WinsMale": 1,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 1,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 1,
+        "PlaysAssassin": 0,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 0,
+        "LessThan3TownStructuresLost": 1,
+        "PhysicalDamage": 46177,
+        "SpellDamage": 46181,
+        "Multikill": 4,
+        "MinionKills": 25,
+        "RegenGlobes": 34,
+        "DamageDoneToImmortal": 9426,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "StructureXP": 1700,
+        "CreepXP": 10977,
+        "SiegeXP": 0,
+        "TrickleXP": 39085
+      },
+      "talents": [
+        {
+          "timestamp": 8.9,
+          "talent_name": "GarroshGroundbreakerWarbreaker",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 174.8,
+          "talent_name": "GarroshIndomitable",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 323.2,
+          "talent_name": "GarroshOppressor",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 505.8,
+          "talent_name": "GarroshWarlordsChallenge",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 636.5,
+          "talent_name": "GarroshGroundbreakerDefensiveMeasures",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 854.3,
+          "talent_name": "GarroshWreckingBallEarthshaker",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1122.4,
+          "talent_name": "GarroshWarlordsChallengeDeathWish",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 497.7,
+          "gameloop": 7963,
+          "killer_pid": 1,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 5.0
+        },
+        {
+          "timestamp": 762.2,
+          "gameloop": 12196,
+          "killer_pid": 1,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.4
+        },
+        {
+          "timestamp": 906.9,
+          "gameloop": 14511,
+          "killer_pid": 3,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 2.2
+        },
+        {
+          "timestamp": 1008.2,
+          "gameloop": 16132,
+          "killer_pid": 2,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 4.2
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 60.0,
+          "x": 131,
+          "y": 56
+        },
+        {
+          "timestamp": 75.0,
+          "x": 127,
+          "y": 65
+        },
+        {
+          "timestamp": 90.0,
+          "x": 116,
+          "y": 65
+        },
+        {
+          "timestamp": 105.0,
+          "x": 136,
+          "y": 64
+        },
+        {
+          "timestamp": 120.0,
+          "x": 119,
+          "y": 63
+        },
+        {
+          "timestamp": 135.0,
+          "x": 127,
+          "y": 43
+        },
+        {
+          "timestamp": 150.0,
+          "x": 120,
+          "y": 62
+        },
+        {
+          "timestamp": 165.0,
+          "x": 114,
+          "y": 63
+        },
+        {
+          "timestamp": 180.0,
+          "x": 109,
+          "y": 63
+        },
+        {
+          "timestamp": 195.0,
+          "x": 102,
+          "y": 63
+        },
+        {
+          "timestamp": 210.0,
+          "x": 115,
+          "y": 66
+        },
+        {
+          "timestamp": 225.0,
+          "x": 134,
+          "y": 77
+        },
+        {
+          "timestamp": 240.0,
+          "x": 132,
+          "y": 78
+        },
+        {
+          "timestamp": 255.0,
+          "x": 138,
+          "y": 65
+        },
+        {
+          "timestamp": 270.0,
+          "x": 140,
+          "y": 86
+        },
+        {
+          "timestamp": 285.0,
+          "x": 140,
+          "y": 65
+        },
+        {
+          "timestamp": 300.0,
+          "x": 151,
+          "y": 71
+        },
+        {
+          "timestamp": 315.0,
+          "x": 147,
+          "y": 71
+        },
+        {
+          "timestamp": 330.0,
+          "x": 143,
+          "y": 61
+        },
+        {
+          "timestamp": 345.0,
+          "x": 147,
+          "y": 69
+        },
+        {
+          "timestamp": 360.0,
+          "x": 137,
+          "y": 56
+        },
+        {
+          "timestamp": 375.0,
+          "x": 149,
+          "y": 68
+        },
+        {
+          "timestamp": 390.0,
+          "x": 143,
+          "y": 70
+        },
+        {
+          "timestamp": 405.0,
+          "x": 140,
+          "y": 67
+        },
+        {
+          "timestamp": 420.0,
+          "x": 135,
+          "y": 112
+        },
+        {
+          "timestamp": 435.0,
+          "x": 133,
+          "y": 133
+        },
+        {
+          "timestamp": 450.0,
+          "x": 119,
+          "y": 117
+        },
+        {
+          "timestamp": 465.0,
+          "x": 115,
+          "y": 109
+        },
+        {
+          "timestamp": 480.0,
+          "x": 106,
+          "y": 103
+        },
+        {
+          "timestamp": 495.0,
+          "x": 127,
+          "y": 94
+        },
+        {
+          "timestamp": 540.0,
+          "x": 178,
+          "y": 81
+        },
+        {
+          "timestamp": 555.0,
+          "x": 180,
+          "y": 84
+        },
+        {
+          "timestamp": 570.0,
+          "x": 180,
+          "y": 80
+        },
+        {
+          "timestamp": 585.0,
+          "x": 129,
+          "y": 42
+        },
+        {
+          "timestamp": 600.0,
+          "x": 126,
+          "y": 42
+        },
+        {
+          "timestamp": 615.0,
+          "x": 130,
+          "y": 63
+        },
+        {
+          "timestamp": 630.0,
+          "x": 147,
+          "y": 72
+        },
+        {
+          "timestamp": 660.0,
+          "x": 148,
+          "y": 127
+        },
+        {
+          "timestamp": 675.0,
+          "x": 126,
+          "y": 145
+        },
+        {
+          "timestamp": 690.0,
+          "x": 151,
+          "y": 103
+        },
+        {
+          "timestamp": 705.0,
+          "x": 135,
+          "y": 97
+        },
+        {
+          "timestamp": 720.0,
+          "x": 116,
+          "y": 96
+        },
+        {
+          "timestamp": 735.0,
+          "x": 105,
+          "y": 114
+        },
+        {
+          "timestamp": 750.0,
+          "x": 125,
+          "y": 114
+        },
+        {
+          "timestamp": 810.0,
+          "x": 179,
+          "y": 131
+        },
+        {
+          "timestamp": 825.0,
+          "x": 175,
+          "y": 127
+        },
+        {
+          "timestamp": 840.0,
+          "x": 159,
+          "y": 141
+        },
+        {
+          "timestamp": 870.0,
+          "x": 152,
+          "y": 110
+        },
+        {
+          "timestamp": 885.0,
+          "x": 141,
+          "y": 66
+        },
+        {
+          "timestamp": 900.0,
+          "x": 154,
+          "y": 113
+        },
+        {
+          "timestamp": 990.0,
+          "x": 114,
+          "y": 97
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 108,
+          "y": 95
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 129,
+          "y": 42
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 164,
+          "y": 96
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 161,
+          "y": 120
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 154,
+          "y": 72
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 162,
+          "y": 77
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 122,
+          "y": 99
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 98,
+          "y": 104
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 128,
+          "y": 101
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 125,
+          "y": 62
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 165,
+          "y": 78
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 177,
+          "y": 84
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 162,
+          "y": 113
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 132,
+          "y": 142
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 128,
+          "y": 144
+        },
+        {
+          "timestamp": 1335.0,
+          "x": 127,
+          "y": 131
+        },
+        {
+          "timestamp": 1365.0,
+          "x": 125,
+          "y": 43
+        },
+        {
+          "timestamp": 1380.0,
+          "x": 104,
+          "y": 71
+        },
+        {
+          "timestamp": 1395.0,
+          "x": 121,
+          "y": 116
+        },
+        {
+          "timestamp": 1410.0,
+          "x": 119,
+          "y": 118
+        },
+        {
+          "timestamp": 1425.0,
+          "x": 110,
+          "y": 99
+        },
+        {
+          "timestamp": 1455.0,
+          "x": 123,
+          "y": 74
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 108,
+          "y": 65
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 73,
+          "y": 64
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 61,
+          "y": 84
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 52,
+          "y": 93
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 50,
+          "y": 93
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 24,
+        "Takedowns": 23,
+        "Kills": 3,
+        "Assists": 20,
+        "Deaths": 4,
+        "HighestKillStreak": 8,
+        "Multikill": 4,
+        "HeroDamage": 46853,
+        "SiegeDamage": 25977,
+        "StructureDamage": 3576,
+        "MinionDamage": 21073,
+        "CreepDamage": 19136,
+        "SummonDamage": 0,
+        "DamageTaken": 103927,
+        "PhysicalDamage": 46177,
+        "SpellDamage": 46181,
+        "Healing": 0,
+        "SelfHealing": 13784,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 32478,
+        "TeamfightDamageTaken": 80361,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 260,
+        "TimeStunningEnemyHeroes": 36,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 26,
+        "XP": 15467,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "MercCampCaptures": 5,
+        "RegenGlobes": 34,
+        "MinionKills": 25,
+        "TimeSpentDead": 166,
+        "OnFireTimeOnFire": 23,
+        "OutnumberedDeaths": 3,
+        "EscapesPerformed": 4,
+        "VengeancesPerformed": 1,
+        "TownKills": 1,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 9426
+      }
+    },
+    {
+      "name": "Damage",
+      "hero": "Nazeebo",
+      "team": 1,
+      "win": true,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 23,
+        "Deaths": 2,
+        "TownKills": 2,
+        "SoloKill": 8,
+        "Assists": 15,
+        "MetaExperience": 115567,
+        "Level": 24,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 18181,
+        "Healing": 0,
+        "SiegeDamage": 87415,
+        "StructureDamage": 24594,
+        "MinionDamage": 52699,
+        "HeroDamage": 81122,
+        "MercCampCaptures": 5,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 11771,
+        "TimeSpentDead": 72,
+        "TimeCCdEnemyHeroes": 75,
+        "CreepDamage": 87983,
+        "SummonDamage": 0,
+        "Tier1Talent": 1,
+        "Tier2Talent": 1,
+        "Tier3Talent": 1,
+        "Tier4Talent": 1,
+        "Tier5Talent": 3,
+        "Tier6Talent": 1,
+        "Tier7Talent": 3,
+        "DamageTaken": 51735,
+        "DamageSoaked": 45783,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 11,
+        "TeamLevel": 24,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeStunningEnemyHeroes": 0,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 2,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 0,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 28872,
+        "TeamfightHeroDamage": 40201,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 14,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 1,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 1,
+        "WinsWarcraft": 0,
+        "WinsMale": 1,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 1,
+        "PlaysOverwatch": 0,
+        "PlaysWarCraft": 0,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 0,
+        "PlaysWarrior": 0,
+        "PlaysAssassin": 1,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 1,
+        "LessThan3TownStructuresLost": 1,
+        "PhysicalDamage": 50633,
+        "SpellDamage": 229037,
+        "Multikill": 3,
+        "MinionKills": 53,
+        "RegenGlobes": 31,
+        "DamageDoneToImmortal": 51715,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "StructureXP": 1700,
+        "CreepXP": 10977,
+        "SiegeXP": 0,
+        "TrickleXP": 39085
+      },
+      "talents": [
+        {
+          "timestamp": 49.9,
+          "talent_name": "WitchDoctorWidowmakers",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 205.9,
+          "talent_name": "WitchDoctorHexedCrawlers",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 327.3,
+          "talent_name": "WitchDoctorSpiritofArachyr",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 481.3,
+          "talent_name": "WitchDoctorGargantuan",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 619.1,
+          "talent_name": "GenericIceBlockTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 827.0,
+          "talent_name": "WitchDoctorSpiderColony",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1113.7,
+          "talent_name": "WitchDoctorVileInfection",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 649.1,
+          "gameloop": 10386,
+          "killer_pid": 4,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 97.5
+        },
+        {
+          "timestamp": 822.4,
+          "gameloop": 13158,
+          "killer_pid": 3,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 1.0
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 75.0,
+          "x": 126,
+          "y": 58
+        },
+        {
+          "timestamp": 90.0,
+          "x": 108,
+          "y": 63
+        },
+        {
+          "timestamp": 105.0,
+          "x": 120,
+          "y": 49
+        },
+        {
+          "timestamp": 120.0,
+          "x": 127,
+          "y": 42
+        },
+        {
+          "timestamp": 150.0,
+          "x": 202,
+          "y": 99
+        },
+        {
+          "timestamp": 180.0,
+          "x": 105,
+          "y": 66
+        },
+        {
+          "timestamp": 195.0,
+          "x": 106,
+          "y": 66
+        },
+        {
+          "timestamp": 210.0,
+          "x": 105,
+          "y": 64
+        },
+        {
+          "timestamp": 225.0,
+          "x": 133,
+          "y": 78
+        },
+        {
+          "timestamp": 240.0,
+          "x": 140,
+          "y": 88
+        },
+        {
+          "timestamp": 255.0,
+          "x": 143,
+          "y": 108
+        },
+        {
+          "timestamp": 270.0,
+          "x": 122,
+          "y": 142
+        },
+        {
+          "timestamp": 285.0,
+          "x": 118,
+          "y": 145
+        },
+        {
+          "timestamp": 300.0,
+          "x": 116,
+          "y": 143
+        },
+        {
+          "timestamp": 315.0,
+          "x": 121,
+          "y": 148
+        },
+        {
+          "timestamp": 330.0,
+          "x": 136,
+          "y": 145
+        },
+        {
+          "timestamp": 345.0,
+          "x": 131,
+          "y": 145
+        },
+        {
+          "timestamp": 360.0,
+          "x": 137,
+          "y": 146
+        },
+        {
+          "timestamp": 375.0,
+          "x": 148,
+          "y": 137
+        },
+        {
+          "timestamp": 390.0,
+          "x": 119,
+          "y": 160
+        },
+        {
+          "timestamp": 405.0,
+          "x": 131,
+          "y": 123
+        },
+        {
+          "timestamp": 420.0,
+          "x": 155,
+          "y": 113
+        },
+        {
+          "timestamp": 435.0,
+          "x": 201,
+          "y": 112
+        },
+        {
+          "timestamp": 450.0,
+          "x": 129,
+          "y": 84
+        },
+        {
+          "timestamp": 465.0,
+          "x": 115,
+          "y": 98
+        },
+        {
+          "timestamp": 480.0,
+          "x": 111,
+          "y": 107
+        },
+        {
+          "timestamp": 495.0,
+          "x": 106,
+          "y": 104
+        },
+        {
+          "timestamp": 510.0,
+          "x": 163,
+          "y": 102
+        },
+        {
+          "timestamp": 540.0,
+          "x": 167,
+          "y": 78
+        },
+        {
+          "timestamp": 555.0,
+          "x": 189,
+          "y": 87
+        },
+        {
+          "timestamp": 570.0,
+          "x": 155,
+          "y": 76
+        },
+        {
+          "timestamp": 585.0,
+          "x": 121,
+          "y": 104
+        },
+        {
+          "timestamp": 600.0,
+          "x": 118,
+          "y": 142
+        },
+        {
+          "timestamp": 615.0,
+          "x": 103,
+          "y": 143
+        },
+        {
+          "timestamp": 630.0,
+          "x": 118,
+          "y": 160
+        },
+        {
+          "timestamp": 645.0,
+          "x": 119,
+          "y": 166
+        },
+        {
+          "timestamp": 705.0,
+          "x": 144,
+          "y": 104
+        },
+        {
+          "timestamp": 720.0,
+          "x": 118,
+          "y": 120
+        },
+        {
+          "timestamp": 735.0,
+          "x": 129,
+          "y": 114
+        },
+        {
+          "timestamp": 750.0,
+          "x": 126,
+          "y": 113
+        },
+        {
+          "timestamp": 765.0,
+          "x": 129,
+          "y": 123
+        },
+        {
+          "timestamp": 780.0,
+          "x": 157,
+          "y": 141
+        },
+        {
+          "timestamp": 795.0,
+          "x": 172,
+          "y": 126
+        },
+        {
+          "timestamp": 810.0,
+          "x": 174,
+          "y": 134
+        },
+        {
+          "timestamp": 900.0,
+          "x": 156,
+          "y": 114
+        },
+        {
+          "timestamp": 915.0,
+          "x": 174,
+          "y": 125
+        },
+        {
+          "timestamp": 930.0,
+          "x": 173,
+          "y": 122
+        },
+        {
+          "timestamp": 945.0,
+          "x": 129,
+          "y": 113
+        },
+        {
+          "timestamp": 960.0,
+          "x": 115,
+          "y": 107
+        },
+        {
+          "timestamp": 975.0,
+          "x": 130,
+          "y": 101
+        },
+        {
+          "timestamp": 990.0,
+          "x": 140,
+          "y": 109
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 141,
+          "y": 111
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 137,
+          "y": 65
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 88,
+          "y": 135
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 96,
+          "y": 131
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 136,
+          "y": 78
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 166,
+          "y": 54
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 133,
+          "y": 45
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 180,
+          "y": 128
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 175,
+          "y": 123
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 169,
+          "y": 128
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 123,
+          "y": 116
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 128,
+          "y": 110
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 152,
+          "y": 104
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 106,
+          "y": 101
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 136,
+          "y": 73
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 154,
+          "y": 71
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 160,
+          "y": 79
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 182,
+          "y": 93
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 166,
+          "y": 129
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 129,
+          "y": 150
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 130,
+          "y": 142
+        },
+        {
+          "timestamp": 1335.0,
+          "x": 145,
+          "y": 131
+        },
+        {
+          "timestamp": 1365.0,
+          "x": 125,
+          "y": 44
+        },
+        {
+          "timestamp": 1380.0,
+          "x": 94,
+          "y": 89
+        },
+        {
+          "timestamp": 1395.0,
+          "x": 95,
+          "y": 96
+        },
+        {
+          "timestamp": 1410.0,
+          "x": 127,
+          "y": 116
+        },
+        {
+          "timestamp": 1425.0,
+          "x": 125,
+          "y": 100
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 111,
+          "y": 98
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 100,
+          "y": 74
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 80,
+          "y": 70
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 67,
+          "y": 79
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 58,
+          "y": 90
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 52,
+          "y": 90
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 24,
+        "Takedowns": 23,
+        "Kills": 8,
+        "Assists": 15,
+        "Deaths": 2,
+        "HighestKillStreak": 11,
+        "Multikill": 3,
+        "HeroDamage": 81122,
+        "SiegeDamage": 87415,
+        "StructureDamage": 24594,
+        "MinionDamage": 52699,
+        "CreepDamage": 87983,
+        "SummonDamage": 0,
+        "DamageTaken": 51735,
+        "PhysicalDamage": 50633,
+        "SpellDamage": 229037,
+        "Healing": 0,
+        "SelfHealing": 11771,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 40201,
+        "TeamfightDamageTaken": 28872,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 75,
+        "TimeStunningEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 18181,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "MercCampCaptures": 5,
+        "RegenGlobes": 31,
+        "MinionKills": 53,
+        "TimeSpentDead": 72,
+        "OnFireTimeOnFire": 14,
+        "OutnumberedDeaths": 0,
+        "EscapesPerformed": 1,
+        "VengeancesPerformed": 2,
+        "TownKills": 2,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 51715
+      }
+    },
+    {
+      "name": "FourKingNOVA",
+      "hero": "Junkrat",
+      "team": 1,
+      "win": true,
+      "hero_level": 0,
+      "account_level": 0,
+      "rank": null,
+      "stats": {
+        "Takedowns": 21,
+        "Deaths": 2,
+        "TownKills": 2,
+        "SoloKill": 7,
+        "Assists": 14,
+        "MetaExperience": 115567,
+        "Level": 24,
+        "TeamTakedowns": 0,
+        "ExperienceContribution": 17908,
+        "Healing": 0,
+        "SiegeDamage": 122894,
+        "StructureDamage": 14505,
+        "MinionDamage": 91029,
+        "HeroDamage": 103685,
+        "MercCampCaptures": 3,
+        "WatchTowerCaptures": 0,
+        "SelfHealing": 0,
+        "TimeSpentDead": 89,
+        "TimeCCdEnemyHeroes": 76,
+        "CreepDamage": 41670,
+        "SummonDamage": 0,
+        "Tier1Talent": 2,
+        "Tier2Talent": 1,
+        "Tier3Talent": 3,
+        "Tier4Talent": 2,
+        "Tier5Talent": 1,
+        "Tier6Talent": 1,
+        "Tier7Talent": 3,
+        "DamageTaken": 31334,
+        "DamageSoaked": 25845,
+        "Role": 0,
+        "KilledTreasureGoblin": 0,
+        "GameScore": 0,
+        "HighestKillStreak": 10,
+        "TeamLevel": 24,
+        "ProtectionGivenToAllies": 0,
+        "TimeSilencingEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 8,
+        "TimeStunningEnemyHeroes": 0,
+        "ClutchHealsPerformed": 0,
+        "EscapesPerformed": 0,
+        "VengeancesPerformed": 0,
+        "TeamfightEscapesPerformed": 0,
+        "OutnumberedDeaths": 0,
+        "TeamfightHealingDone": 0,
+        "TeamfightDamageTaken": 16207,
+        "TeamfightHeroDamage": 49277,
+        "EndOfMatchAwardMVPBoolean": 0,
+        "EndOfMatchAwardHighestKillStreakBoolean": 0,
+        "EndOfMatchAwardMostVengeancesPerformedBoolean": 0,
+        "EndOfMatchAwardMostDaredevilEscapesBoolean": 0,
+        "EndOfMatchAwardMostEscapesBoolean": 0,
+        "EndOfMatchAwardMostXPContributionBoolean": 0,
+        "EndOfMatchAwardMostHeroDamageDoneBoolean": 1,
+        "EndOfMatchAwardMostKillsBoolean": 0,
+        "EndOfMatchAwardHatTrickBoolean": 0,
+        "EndOfMatchAwardClutchHealerBoolean": 0,
+        "EndOfMatchAwardMostProtectionBoolean": 0,
+        "EndOfMatchAward0DeathsBoolean": 0,
+        "EndOfMatchAwardMostSiegeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostDamageTakenBoolean": 0,
+        "EndOfMatchAward0OutnumberedDeathsBoolean": 0,
+        "EndOfMatchAwardMostHealingBoolean": 0,
+        "EndOfMatchAwardMostStunsBoolean": 0,
+        "EndOfMatchAwardMostRootsBoolean": 0,
+        "EndOfMatchAwardMostSilencesBoolean": 0,
+        "EndOfMatchAwardMostMercCampsCapturedBoolean": 0,
+        "EndOfMatchAwardMapSpecificBoolean": 0,
+        "EndOfMatchAwardMostDragonShrinesCapturedBoolean": 0,
+        "EndOfMatchAwardMostCurseDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostCoinsPaidBoolean": 0,
+        "EndOfMatchAwardMostImmortalDamageBoolean": 0,
+        "EndOfMatchAwardMostDamageDoneToZergBoolean": 0,
+        "EndOfMatchAwardMostDamageToPlantsBoolean": 0,
+        "EndOfMatchAwardMostDamageToMinionsBoolean": 0,
+        "EndOfMatchAwardMostTimeInTempleBoolean": 0,
+        "EndOfMatchAwardMostGemsTurnedInBoolean": 0,
+        "EndOfMatchAwardMostSkullsCollectedBoolean": 0,
+        "EndOfMatchAwardMostAltarDamageDone": 0,
+        "EndOfMatchAwardMostNukeDamageDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightDamageTakenBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHealingDoneBoolean": 0,
+        "EndOfMatchAwardMostTeamfightHeroDamageDoneBoolean": 0,
+        "EndOfMatchAwardGivenToNonwinner": 0,
+        "OnFireTimeOnFire": 231,
+        "LunarNewYearSuccesfulArtifactTurnIns": 0,
+        "EndOfMatchAwardMostTimePushingBoolean": 0,
+        "EndOfMatchAwardMostTimeOnPointBoolean": 0,
+        "TimeOnPoint": 0,
+        "EndOfMatchAwardMostInterruptedCageUnlocksBoolean": 0,
+        "CageUnlocksInterrupted": 0,
+        "EndOfMatchAwardMostSeedsCollectedBoolean": 0,
+        "GardenSeedsCollectedByPlayer": 0,
+        "TeamWinsDiablo": 0,
+        "TeamWinsFemale": 0,
+        "TeamWinsMale": 0,
+        "TeamWinsStarCraft": 0,
+        "TeamWinsWarcraft": 0,
+        "WinsWarrior": 0,
+        "WinsAssassin": 1,
+        "WinsSupport": 0,
+        "WinsSpecialist": 0,
+        "WinsStarCraft": 0,
+        "WinsDiablo": 0,
+        "WinsWarcraft": 0,
+        "WinsMale": 1,
+        "WinsFemale": 0,
+        "PlaysStarCraft": 0,
+        "PlaysDiablo": 0,
+        "PlaysOverwatch": 1,
+        "PlaysWarCraft": 0,
+        "PlaysNexus": 0,
+        "PlaysOverwatchOrNexus": 1,
+        "PlaysWarrior": 0,
+        "PlaysAssassin": 1,
+        "PlaysSupport": 0,
+        "PlaysSpecialist": 0,
+        "PlaysMale": 1,
+        "PlaysFemale": 0,
+        "LunarNewYearEventCompleted": 0,
+        "StarcraftDailyEventCompleted": 0,
+        "StarcraftPiecesCollected": 0,
+        "LunarNewYearRoosterEventCompleted": 0,
+        "TouchByBlightPlague": 0,
+        "PachimariMania": 0,
+        "LessThan4Deaths": 1,
+        "LessThan3TownStructuresLost": 1,
+        "PhysicalDamage": 95577,
+        "SpellDamage": 186423,
+        "Multikill": 3,
+        "MinionKills": 100,
+        "RegenGlobes": 32,
+        "DamageDoneToImmortal": 24437,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "StructureXP": 1700,
+        "CreepXP": 10977,
+        "SiegeXP": 0,
+        "TrickleXP": 39085
+      },
+      "talents": [
+        {
+          "timestamp": 9.6,
+          "talent_name": "JunkratExtraWoundTimersFragLauncherTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 175.5,
+          "talent_name": "JunkratTasteForExplosionsFragLauncherTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 325.8,
+          "talent_name": "JunkratDirtyTrickster",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 474.9,
+          "talent_name": "JunkratRocketRide",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 633.8,
+          "talent_name": "JunkratBombsAwayFragLauncherTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 850.6,
+          "talent_name": "JunkratBurstFireFragLauncherTalent",
+          "source": "game_event"
+        },
+        {
+          "timestamp": 1114.7,
+          "talent_name": "JunkratCannonballFragLauncherTalent",
+          "source": "game_event"
+        }
+      ],
+      "death_timestamps": [],
+      "death_events": [
+        {
+          "timestamp": 496.2,
+          "gameloop": 7939,
+          "killer_pid": 2,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 6.1
+        },
+        {
+          "timestamp": 1354.4,
+          "gameloop": 21670,
+          "killer_pid": 4,
+          "killer_type": "Hero",
+          "outnumbered": false,
+          "dist_to_nearest_ally": 4.1
+        }
+      ],
+      "pos_timeline": [
+        {
+          "timestamp": 60.0,
+          "x": 133,
+          "y": 63
+        },
+        {
+          "timestamp": 75.0,
+          "x": 128,
+          "y": 63
+        },
+        {
+          "timestamp": 90.0,
+          "x": 124,
+          "y": 60
+        },
+        {
+          "timestamp": 120.0,
+          "x": 123,
+          "y": 63
+        },
+        {
+          "timestamp": 135.0,
+          "x": 120,
+          "y": 61
+        },
+        {
+          "timestamp": 150.0,
+          "x": 135,
+          "y": 60
+        },
+        {
+          "timestamp": 165.0,
+          "x": 123,
+          "y": 57
+        },
+        {
+          "timestamp": 180.0,
+          "x": 123,
+          "y": 64
+        },
+        {
+          "timestamp": 195.0,
+          "x": 111,
+          "y": 66
+        },
+        {
+          "timestamp": 210.0,
+          "x": 139,
+          "y": 89
+        },
+        {
+          "timestamp": 225.0,
+          "x": 143,
+          "y": 141
+        },
+        {
+          "timestamp": 240.0,
+          "x": 142,
+          "y": 112
+        },
+        {
+          "timestamp": 255.0,
+          "x": 114,
+          "y": 93
+        },
+        {
+          "timestamp": 270.0,
+          "x": 148,
+          "y": 87
+        },
+        {
+          "timestamp": 285.0,
+          "x": 147,
+          "y": 62
+        },
+        {
+          "timestamp": 300.0,
+          "x": 145,
+          "y": 63
+        },
+        {
+          "timestamp": 315.0,
+          "x": 154,
+          "y": 62
+        },
+        {
+          "timestamp": 330.0,
+          "x": 145,
+          "y": 64
+        },
+        {
+          "timestamp": 345.0,
+          "x": 150,
+          "y": 64
+        },
+        {
+          "timestamp": 360.0,
+          "x": 138,
+          "y": 49
+        },
+        {
+          "timestamp": 375.0,
+          "x": 153,
+          "y": 62
+        },
+        {
+          "timestamp": 405.0,
+          "x": 144,
+          "y": 65
+        },
+        {
+          "timestamp": 420.0,
+          "x": 155,
+          "y": 108
+        },
+        {
+          "timestamp": 435.0,
+          "x": 153,
+          "y": 110
+        },
+        {
+          "timestamp": 450.0,
+          "x": 125,
+          "y": 110
+        },
+        {
+          "timestamp": 465.0,
+          "x": 115,
+          "y": 97
+        },
+        {
+          "timestamp": 480.0,
+          "x": 113,
+          "y": 97
+        },
+        {
+          "timestamp": 495.0,
+          "x": 126,
+          "y": 100
+        },
+        {
+          "timestamp": 540.0,
+          "x": 216,
+          "y": 107
+        },
+        {
+          "timestamp": 555.0,
+          "x": 187,
+          "y": 85
+        },
+        {
+          "timestamp": 570.0,
+          "x": 175,
+          "y": 77
+        },
+        {
+          "timestamp": 585.0,
+          "x": 151,
+          "y": 64
+        },
+        {
+          "timestamp": 600.0,
+          "x": 126,
+          "y": 44
+        },
+        {
+          "timestamp": 615.0,
+          "x": 134,
+          "y": 58
+        },
+        {
+          "timestamp": 630.0,
+          "x": 216,
+          "y": 107
+        },
+        {
+          "timestamp": 645.0,
+          "x": 166,
+          "y": 73
+        },
+        {
+          "timestamp": 660.0,
+          "x": 121,
+          "y": 61
+        },
+        {
+          "timestamp": 675.0,
+          "x": 141,
+          "y": 64
+        },
+        {
+          "timestamp": 690.0,
+          "x": 151,
+          "y": 70
+        },
+        {
+          "timestamp": 705.0,
+          "x": 149,
+          "y": 101
+        },
+        {
+          "timestamp": 720.0,
+          "x": 119,
+          "y": 92
+        },
+        {
+          "timestamp": 735.0,
+          "x": 123,
+          "y": 87
+        },
+        {
+          "timestamp": 750.0,
+          "x": 122,
+          "y": 85
+        },
+        {
+          "timestamp": 765.0,
+          "x": 126,
+          "y": 60
+        },
+        {
+          "timestamp": 780.0,
+          "x": 152,
+          "y": 95
+        },
+        {
+          "timestamp": 795.0,
+          "x": 165,
+          "y": 122
+        },
+        {
+          "timestamp": 810.0,
+          "x": 176,
+          "y": 121
+        },
+        {
+          "timestamp": 825.0,
+          "x": 185,
+          "y": 116
+        },
+        {
+          "timestamp": 840.0,
+          "x": 153,
+          "y": 132
+        },
+        {
+          "timestamp": 855.0,
+          "x": 153,
+          "y": 110
+        },
+        {
+          "timestamp": 870.0,
+          "x": 154,
+          "y": 114
+        },
+        {
+          "timestamp": 885.0,
+          "x": 149,
+          "y": 66
+        },
+        {
+          "timestamp": 900.0,
+          "x": 156,
+          "y": 104
+        },
+        {
+          "timestamp": 915.0,
+          "x": 164,
+          "y": 111
+        },
+        {
+          "timestamp": 930.0,
+          "x": 171,
+          "y": 127
+        },
+        {
+          "timestamp": 945.0,
+          "x": 134,
+          "y": 123
+        },
+        {
+          "timestamp": 960.0,
+          "x": 122,
+          "y": 114
+        },
+        {
+          "timestamp": 975.0,
+          "x": 99,
+          "y": 103
+        },
+        {
+          "timestamp": 990.0,
+          "x": 134,
+          "y": 99
+        },
+        {
+          "timestamp": 1005.0,
+          "x": 136,
+          "y": 102
+        },
+        {
+          "timestamp": 1020.0,
+          "x": 136,
+          "y": 81
+        },
+        {
+          "timestamp": 1050.0,
+          "x": 90,
+          "y": 132
+        },
+        {
+          "timestamp": 1065.0,
+          "x": 88,
+          "y": 131
+        },
+        {
+          "timestamp": 1080.0,
+          "x": 140,
+          "y": 119
+        },
+        {
+          "timestamp": 1095.0,
+          "x": 166,
+          "y": 74
+        },
+        {
+          "timestamp": 1110.0,
+          "x": 163,
+          "y": 77
+        },
+        {
+          "timestamp": 1125.0,
+          "x": 174,
+          "y": 119
+        },
+        {
+          "timestamp": 1140.0,
+          "x": 180,
+          "y": 119
+        },
+        {
+          "timestamp": 1155.0,
+          "x": 172,
+          "y": 124
+        },
+        {
+          "timestamp": 1170.0,
+          "x": 171,
+          "y": 79
+        },
+        {
+          "timestamp": 1185.0,
+          "x": 175,
+          "y": 70
+        },
+        {
+          "timestamp": 1200.0,
+          "x": 143,
+          "y": 102
+        },
+        {
+          "timestamp": 1215.0,
+          "x": 111,
+          "y": 96
+        },
+        {
+          "timestamp": 1230.0,
+          "x": 129,
+          "y": 81
+        },
+        {
+          "timestamp": 1245.0,
+          "x": 133,
+          "y": 60
+        },
+        {
+          "timestamp": 1260.0,
+          "x": 216,
+          "y": 107
+        },
+        {
+          "timestamp": 1275.0,
+          "x": 190,
+          "y": 87
+        },
+        {
+          "timestamp": 1290.0,
+          "x": 173,
+          "y": 101
+        },
+        {
+          "timestamp": 1305.0,
+          "x": 140,
+          "y": 141
+        },
+        {
+          "timestamp": 1320.0,
+          "x": 135,
+          "y": 147
+        },
+        {
+          "timestamp": 1350.0,
+          "x": 127,
+          "y": 41
+        },
+        {
+          "timestamp": 1440.0,
+          "x": 116,
+          "y": 97
+        },
+        {
+          "timestamp": 1470.0,
+          "x": 102,
+          "y": 75
+        },
+        {
+          "timestamp": 1485.0,
+          "x": 85,
+          "y": 72
+        },
+        {
+          "timestamp": 1500.0,
+          "x": 67,
+          "y": 77
+        },
+        {
+          "timestamp": 1515.0,
+          "x": 56,
+          "y": 91
+        },
+        {
+          "timestamp": 1530.0,
+          "x": 57,
+          "y": 88
+        }
+      ],
+      "banking_ledger": [],
+      "disconnected": false,
+      "dc_timestamp": 0,
+      "disconnect_events": [],
+      "kv_stats": {
+        "time_played": "25:47",
+        "Level": 24,
+        "Takedowns": 21,
+        "Kills": 7,
+        "Assists": 14,
+        "Deaths": 2,
+        "HighestKillStreak": 10,
+        "Multikill": 3,
+        "HeroDamage": 103685,
+        "SiegeDamage": 122894,
+        "StructureDamage": 14505,
+        "MinionDamage": 91029,
+        "CreepDamage": 41670,
+        "SummonDamage": 0,
+        "DamageTaken": 31334,
+        "PhysicalDamage": 95577,
+        "SpellDamage": 186423,
+        "Healing": 0,
+        "SelfHealing": 0,
+        "ProtectionGivenToAllies": 0,
+        "ClutchHealsPerformed": 0,
+        "TeamfightHeroDamage": 49277,
+        "TeamfightDamageTaken": 16207,
+        "TeamfightHealingDone": 0,
+        "TeamfightEscapesPerformed": 0,
+        "ObjTime": 0,
+        "TimeCCdEnemyHeroes": 76,
+        "TimeStunningEnemyHeroes": 0,
+        "TimeRootingEnemyHeroes": 8,
+        "TimeSilencingEnemyHeroes": 0,
+        "XP": 17908,
+        "HeroXP": 24451,
+        "MinionXP": 39354,
+        "MercCampCaptures": 3,
+        "RegenGlobes": 32,
+        "MinionKills": 100,
+        "TimeSpentDead": 89,
+        "OnFireTimeOnFire": 231,
+        "OutnumberedDeaths": 0,
+        "EscapesPerformed": 0,
+        "VengeancesPerformed": 0,
+        "TownKills": 2,
+        "BlackheartDoubloonsCollected": 0,
+        "BlackheartDoubloonsTurnedIn": 0,
+        "GemsCollected": 0,
+        "GemsTurnedIn": 0,
+        "SeedsCollected": 0,
+        "AltarDamageDone": 0,
+        "ImmortalDamage": 24437
+      }
+    }
+  ],
+  "user_name": "Discerning",
+  "parser_version": "3.2",
+  "advanced_stats": {
+    "bans": [
+      {
+        "hero": "Hanzo",
+        "gameloop": 0,
+        "team": 2
+      },
+      {
+        "hero": "NONE",
+        "gameloop": 0,
+        "team": 1
+      },
+      {
+        "hero": "Rehgar",
+        "gameloop": 0,
+        "team": 2
+      },
+      {
+        "hero": "NONE",
+        "gameloop": 0,
+        "team": 1
+      },
+      {
+        "hero": "NONE",
+        "gameloop": 0,
+        "team": 1
+      },
+      {
+        "hero": "Stitches",
+        "gameloop": 0,
+        "team": 2
+      }
+    ],
+    "level_milestones": {
+      "0": {
+        "10": 483.9,
+        "20": 1070.7
+      },
+      "1": {
+        "10": 474.9,
+        "20": 1107.1
+      }
+    },
+    "structure_destructions": [
+      {
+        "timestamp": 526.1,
+        "structure_type": "TownTownHallL2",
+        "destroyed_by_team": 0,
+        "gameloop": 8418
+      },
+      {
+        "timestamp": 786.6,
+        "structure_type": "TownTownHallL2",
+        "destroyed_by_team": 0,
+        "gameloop": 12585
+      },
+      {
+        "timestamp": 803.4,
+        "structure_type": "TownTownHallL2",
+        "destroyed_by_team": null,
+        "gameloop": 12855
+      },
+      {
+        "timestamp": 1042.2,
+        "structure_type": "TownTownHallL2",
+        "destroyed_by_team": 1,
+        "gameloop": 16675
+      },
+      {
+        "timestamp": 1501.4,
+        "structure_type": "TownTownHallL3",
+        "destroyed_by_team": 1,
+        "gameloop": 24022
+      }
+    ],
+    "merc_captures": [
+      {
+        "timestamp": 134.8,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 2157
+      },
+      {
+        "timestamp": 208.2,
+        "captured_by_team": 0,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 3331
+      },
+      {
+        "timestamp": 356.6,
+        "captured_by_team": 0,
+        "unit_name": "Siege Camp",
+        "gameloop": 5706
+      },
+      {
+        "timestamp": 401.9,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 6431
+      },
+      {
+        "timestamp": 438.4,
+        "captured_by_team": 1,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 7015
+      },
+      {
+        "timestamp": 599.7,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 9595
+      },
+      {
+        "timestamp": 657.6,
+        "captured_by_team": 0,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 10522
+      },
+      {
+        "timestamp": 664.8,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 10636
+      },
+      {
+        "timestamp": 846.4,
+        "captured_by_team": 0,
+        "unit_name": "Siege Camp",
+        "gameloop": 13542
+      },
+      {
+        "timestamp": 871.1,
+        "captured_by_team": 1,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 13937
+      },
+      {
+        "timestamp": 876.8,
+        "captured_by_team": 0,
+        "unit_name": "Siege Camp",
+        "gameloop": 14029
+      },
+      {
+        "timestamp": 1086.8,
+        "captured_by_team": 0,
+        "unit_name": "Siege Camp",
+        "gameloop": 17389
+      },
+      {
+        "timestamp": 1105.9,
+        "captured_by_team": 0,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 17695
+      },
+      {
+        "timestamp": 1109.7,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 17755
+      },
+      {
+        "timestamp": 1124.7,
+        "captured_by_team": 0,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 17995
+      },
+      {
+        "timestamp": 1311.0,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 20976
+      },
+      {
+        "timestamp": 1366.2,
+        "captured_by_team": 1,
+        "unit_name": "Siege Camp",
+        "gameloop": 21859
+      },
+      {
+        "timestamp": 1394.9,
+        "captured_by_team": 1,
+        "unit_name": "Bruiser Camp",
+        "gameloop": 22318
+      }
+    ],
+    "boss_captures": [],
+    "objective_events": [
+      {
+        "event_name": "GameStart",
+        "timestamp": 0.0,
+        "point": {
+          "MapSizeX": 1015808,
+          "MapSizeY": 851968
+        },
+        "gameloop": 0
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 3.1,
+        "point": {},
+        "gameloop": 50
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 3.1,
+        "point": {},
+        "gameloop": 50
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 3.6,
+        "point": {},
+        "gameloop": 58
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 3.6,
+        "point": {},
+        "gameloop": 58
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 4.1,
+        "point": {},
+        "gameloop": 66
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 4.1,
+        "point": {},
+        "gameloop": 66
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 4.6,
+        "point": {},
+        "gameloop": 74
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 4.6,
+        "point": {},
+        "gameloop": 74
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 5.1,
+        "point": {},
+        "gameloop": 82
+      },
+      {
+        "event_name": "PlayerSpawned",
+        "timestamp": 5.1,
+        "point": {},
+        "gameloop": 82
+      },
+      {
+        "event_name": "Boss Duel Started",
+        "timestamp": 188.2,
+        "point": {},
+        "gameloop": 3011
+      },
+      {
+        "event_name": "Boss Duel Started",
+        "timestamp": 400.5,
+        "point": {},
+        "gameloop": 6408
+      },
+      {
+        "event_name": "Boss Duel Started",
+        "timestamp": 635.4,
+        "point": {},
+        "gameloop": 10166
+      },
+      {
+        "event_name": "Boss Duel Started",
+        "timestamp": 900.1,
+        "point": {},
+        "gameloop": 14401
+      },
+      {
+        "event_name": "Boss Duel Started",
+        "timestamp": 1133.8,
+        "point": {},
+        "gameloop": 18140
+      },
+      {
+        "event_name": "Boss Duel Started",
+        "timestamp": 1355.6,
+        "point": {},
+        "gameloop": 21689
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 1343488
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 520192
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 1110016
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 528384
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 811008
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 98304
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 1175552
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 679936
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 294912
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTimeSpentDead",
+        "timestamp": 1534.1,
+        "point": {
+          "Time": 364544
+        },
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameTalentChoices",
+        "timestamp": 1534.1,
+        "point": {},
+        "gameloop": 24545
+      },
+      {
+        "event_name": "EndOfGameUpVotesCollected",
+        "timestamp": 1544.2,
+        "point": {},
+        "gameloop": 24708
+      }
+    ]
+  }
+}

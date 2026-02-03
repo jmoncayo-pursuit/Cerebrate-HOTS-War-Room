@@ -1,10 +1,11 @@
 import json
 import os
 from datetime import datetime
-from database_manager import DatabaseManager
+from api.services.database import DatabaseManager
 
 class AgenticBrain:
     def __init__(self):
+        # Use the correct DatabaseManager that works with war_room.db
         self.db = DatabaseManager()
         self.map_names = [
             "Alterac Pass", "Battlefield of Eternity", "Blackheart's Bay", 
@@ -155,7 +156,9 @@ class AgenticBrain:
 
     def _build_tactical_dossier(self, audit, map_name, hero_name):
         """Construct the raw intelligence payload for the AI."""
-        dossier = "=== AGENTIC TACTICAL DOSSIER ===\n"
+        dossier = "=== AGENTIC TACTICAL DOSSIER [SOURCE: HYBRID_SYNTHESIS] ===\n"
+        dossier += "METADATA: All stats marked 'Verified' pull directly from SECURE_DATALINK (SQL Archive).\n"
+        dossier += "METADATA: Strategic directives are generated via NEURAL_SYNTHESIS (Cross-referenced analysis).\n\n"
         
         if map_name:
             dossier += f"MAP CONTEXT: {map_name.upper()}\n"
@@ -207,7 +210,8 @@ class AgenticBrain:
                 dossier += f"- Neural link (Draft Optima): {b['build_code']} ({b['win_rate']}% WR)\n"
         
         if constraints.get('global_bans'):
-            dossier += f"\n⚠️ BLACKLISTED ASSETS: {', '.join(constraints['global_bans'])}\n"
+            dossier += f"\n⚠️ BLACKLISTED ASSETS (Manual Override): {', '.join(constraints['global_bans'])}\n"
             
-        dossier += "================================\n"
+        dossier += "\nTACTICAL DIRECTIVE: Prioritize 'Verified' assets for optimal mission success. Use 'Neural' insights for high-variance situational adaptations.\n"
+        dossier += "========================================================\n"
         return dossier

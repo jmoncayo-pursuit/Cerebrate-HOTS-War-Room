@@ -36,13 +36,15 @@ def execute_upsert(db, match_data):
         # Insert Players
         for p in m.get('players', []):
             conn.execute(
-                "INSERT INTO match_players (match_id, player_name, toon_handle, hero, team, win, hero_level, account_level, rank, stats, talents) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                "INSERT INTO match_players (match_id, player_name, toon_handle, hero, team, win, hero_level, account_level, rank, stats, talents, disconnected, dc_timestamp) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 (
                     mid, p['name'], p.get('toon_handle'), p['hero'], p['team'], 1 if p['win'] else 0,
                     p.get('hero_level'), p.get('account_level'), p.get('rank'),
-                    json.dumps(p.get('stats', {})), json.dumps(p.get('talents', []))
+                    json.dumps(p.get('stats', {})), json.dumps(p.get('talents', [])),
+                    1 if p.get('disconnected') else 0, p.get('dc_timestamp')
                 )
             )
+
         conn.commit()
     
     # Post-processing: Update Social Intelligence

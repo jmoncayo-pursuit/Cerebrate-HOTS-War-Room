@@ -255,7 +255,10 @@ def parse_replay(replay_path, options=None):
         match_id = hashlib.md5('_'.join(id_components).encode()).hexdigest()[:16]
 
         # ColoredLogger.info(f"Loading replay (Build: {base_build}, Duration: {time_played_str})", "PARSER")
-        protocol = latest()
+        try:
+            protocol = build(base_build)
+        except:
+            protocol = latest()
 
         # EARLY QM CHECK - Do this BEFORE parsing details/tracker events
         try:
@@ -339,7 +342,7 @@ def parse_replay(replay_path, options=None):
         tracker_events = protocol.decode_replay_tracker_events(archive.read_file('replay.tracker.events'))
         
         # Initialize stats containers (Range 0-16 for safety)
-        stats_data = {i: {'stats': {}, 'talents': [], 'banking_ledger': [], 'current_balance': 0, 'last_collection_time': None} for i in range(0, 16)} 
+        stats_data = {i: {'stats': {'last_activity_gameloop': 0}, 'talents': [], 'banking_ledger': [], 'current_balance': 0, 'last_collection_time': None} for i in range(0, 16)} 
         
         bans = []
         team_level_milestones = {0: {10: None, 20: None}, 1: {10: None, 20: None}}
@@ -595,6 +598,15 @@ def parse_replay(replay_path, options=None):
                     ename = event.get('m_eventName', b'').decode('utf-8')
                     
                     if ename == 'JungleCampCapture':
+                        # Update activity
+                        # data_map is defined below, so we need to extract PlayerID directly if possible
+                        # or define data_map earlier. For now, we'll assume PlayerID might be in intData/fixedData
+                        # and define data_map here for this specific update.
+                        temp_data_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value') for d in (event.get('m_intData') or []) + (event.get('m_fixedData') or [])}
+                        pid = temp_data_map.get('PlayerID')
+                        if pid and pid in stats_data:
+                            stats_data[pid]['stats']['last_activity_gameloop'] = event['_gameloop']
+                            
                         merc_timestamp = round(event['_gameloop'] / 16.0, 1)
                         data_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value') for d in (event.get('m_intData') or []) + (event.get('m_fixedData') or [])}
                         str_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value', b'').decode('utf-8') for d in (event.get('m_stringData') or [])}
@@ -697,6 +709,8 @@ def parse_replay(replay_path, options=None):
                         data_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value') for d in (event.get('m_intData') or []) + (event.get('m_fixedData') or [])}
                         pid = data_map.get('PlayerID')
                         if pid and pid in stats_data:
+                            # Update activity
+                            stats_data[pid]['stats']['last_activity_gameloop'] = event['_gameloop']
                             # Map event name to its stat key
                             mapping = {
                                 # Blackheart's Bay
@@ -796,42 +810,42 @@ def parse_replay(replay_path, options=None):
                              'point': pt,
                              'gameloop': event['_gameloop']
                          })
+                         
                      # --- DISCONNECT TRACKING (Forensics) ---
-                    elif ename == 'GameUserLeave':
+                    elif ename in ['GameUserLeave', 'GameUserAnnounceLeave']:
                         # This event triggers when a user disconnects or quits
                         data_map = {d.get('m_key', b'').decode('utf-8'): d.get('m_value') for d in (event.get('m_intData') or []) + (event.get('m_fixedData') or [])}
-                        # The user ID who left? Usually in fixedData or intData
-                        # Note: Heroes replays are notoriously vague on this. 
-                        # We verify against 'm_userid' if present in the base event structure
-                        
-                        # However, UserLeave is often a specific Game Event. 
-                        # We will log it to the suspect player's stats for audit.
-                        # We need to map UserId -> PlayerId
                         
                         target_pid = None
-                        uid = data_map.get('User') # Sometimes it's 'User'
-                        if uid is not None:
-                            # Map UID to PID
-                             user_wrapper = event.get('_userid', {})
-                             if isinstance(user_wrapper, dict):
-                                real_uid = user_wrapper.get('m_userId')
-                                if real_uid is not None:
-                                     # Player list is 0-indexed, uid matches indices
-                                     if 0 <= real_uid < len(players):
-                                         target_pid = real_uid + 1
+                        user_wrapper = event.get('_userid', {})
+                        real_uid = None
+                        
+                        if isinstance(user_wrapper, dict):
+                             real_uid = user_wrapper.get('m_userId')
+                        elif isinstance(user_wrapper, int):
+                             real_uid = user_wrapper
+                             
+                        if real_uid is not None and 0 <= real_uid < len(players):
+                             target_pid = real_uid + 1
 
                         if target_pid and target_pid in stats_data:
+                            ts = round(event['_gameloop'] / 16.0, 1)
                             stats_data[target_pid].setdefault('disconnects', []).append({
-                                'timestamp': round(event['_gameloop'] / 16.0, 1),
+                                'timestamp': ts,
                                 'gameloop': event['_gameloop'],
-                                'type': 'DC'
+                                'type': ename
                             })
+                            # Mark the player as disconnected for easier indexing later
+                            stats_data[target_pid]['disconnected'] = True
+                            stats_data[target_pid]['dc_timestamp'] = ts
+                            
                             # Also flag the match-level alert
                             if 'disconnect_events' not in stats_data: stats_data['disconnect_events'] = []
                             stats_data['disconnect_events'].append({
                                 'player': players[target_pid-1]['name'],
                                 'hero': players[target_pid-1]['hero'],
-                                'timestamp': round(event['_gameloop'] / 16.0, 1)
+                                'timestamp': ts,
+                                'type': ename
                             })
 
                 # --- BOSS DAMAGE TRACKING (for kill speed) ---
@@ -986,6 +1000,18 @@ def parse_replay(replay_path, options=None):
                  # Re-read archive? decoding game events is expensive but necessary
                  game_events = protocol.decode_replay_game_events(archive.read_file('replay.game.events'))
                  for event in game_events:
+                     # --- INACTIVITY TRACKING (Command/Presence) ---
+                     uid = None
+                     if '_userid' in event:
+                         u_wrapper = event.get('_userid')
+                         if isinstance(u_wrapper, dict): uid = u_wrapper.get('m_userId')
+                         elif isinstance(u_wrapper, int): uid = u_wrapper
+                     
+                     if uid is not None and 0 <= uid < len(players):
+                         pid = uid + 1
+                         if pid in stats_data:
+                             stats_data[pid]['stats']['last_activity_gameloop'] = event['_gameloop']
+
                      if event['_event'] == 'NNet.Game.SHeroTalentTreeSelectedEvent':
                          # {'m_index': 8, '_userid': {'m_userId': 3}, ...}
                          idx = event.get('m_index')
@@ -1013,6 +1039,7 @@ def parse_replay(replay_path, options=None):
                                      })
                                      talent_event_count += 1
              except Exception as e:
+                 # print(f"Error decoding game_events: {e}") # Log if needed
                  pass 
                  
         
@@ -1108,6 +1135,26 @@ def parse_replay(replay_path, options=None):
             p['death_events'] = stats_src.get('death_events', [])  # Enhanced: includes killer info
             p['pos_timeline'] = stats_src.get('position_samples', [])
             p['banking_ledger'] = stats_src.get('banking_ledger', [])
+            
+            # DISCONNECTS
+            p['disconnected'] = stats_src.get('disconnected', False)
+            p['dc_timestamp'] = stats_src.get('dc_timestamp', 0)
+            p['disconnect_events'] = stats_src.get('disconnects', [])
+            
+            # INACTIVITY HEURISTIC
+            last_loop = p['stats'].get('last_activity_gameloop', 0)
+            if not p['disconnected'] and last_loop > 0:
+                # If they were silent for the last 45+ seconds of the game, likely a DC/Quit
+                silence_duration = (game_loops - last_loop) / 16.0
+                if silence_duration > 45 and game_duration_seconds > 180: # Ignore very short games
+                    p['disconnected'] = True
+                    p['dc_timestamp'] = round(last_loop / 16.0, 1)
+                    p['dc_reason'] = "Inactivity (No commands sent)"
+                    p.setdefault('disconnect_events', []).append({
+                        'timestamp': p['dc_timestamp'],
+                        'gameloop': last_loop,
+                        'type': 'Inactivity'
+                    })
             
             # Detect User: Check for environment names or fallback
             user_name = os.environ.get('PLAYER_NAME', 'Player').lower()
@@ -1230,4 +1277,5 @@ def parse_replay(replay_path, options=None):
 if __name__ == "__main__":
     import sys
     if len(sys.argv) > 1:
-        parse_replay(sys.argv[1])
+        result = parse_replay(sys.argv[1])
+        print(json.dumps(result, indent=2))

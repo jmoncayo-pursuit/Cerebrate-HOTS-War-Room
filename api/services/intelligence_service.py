@@ -33,18 +33,15 @@ class IntelligenceService:
         if api_key:
             genai.configure(api_key=api_key)
             
-            # Load System Protocol
+            # Load and store System Protocol for all tiers
             protocol_path = os.path.join(os.path.dirname(__file__), '..', '..', '.agent', 'brain', 'AI_CHAT_PROTOCOL.md')
-            system_instruction = "You are the Cerebrate Intelligence."
+            self.system_instruction = "You are the Cerebrate Intelligence."
             if os.path.exists(protocol_path):
                 with open(protocol_path, 'r') as f:
-                    system_instruction = f.read()
+                    self.system_instruction = f.read()
             
             # Default model for general tasks
-            self.model = genai.GenerativeModel(
-                model_name=self.TIERS["CHAT"],
-                system_instruction=system_instruction
-            )
+            self.model = self._get_model_for_tier("CHAT")
         else:
             self.model = None
 
@@ -59,7 +56,10 @@ class IntelligenceService:
             limit = status.get('limit', 0)
             ColoredLogger.warn(f"⚠️ NEURAL ALERT: Using PRO Model [{model_name}]. Daily Tally: {used+1}/{limit}", "INTEL")
         
-        return genai.GenerativeModel(model_name=model_name)
+        return genai.GenerativeModel(
+            model_name=model_name,
+            system_instruction=getattr(self, 'system_instruction', "You are the Cerebrate Intelligence.")
+        )
 
     # --- CHAT & AI LOGIC ---
     def generate_chat_response(self, message, history=None, tier="CHAT"):

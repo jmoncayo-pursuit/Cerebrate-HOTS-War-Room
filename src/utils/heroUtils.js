@@ -47,7 +47,7 @@ export const normalizeHeroName = (name) => {
         "li-ming": "liming",
         "liming": "liming",
         "li ming": "liming",
-        "cho'gall": "chogall", // Should split usually but handle safely
+        "cho'gall": "cho",
         "gall": "gall",
         "cho": "cho",
         "lucio": "lucio",

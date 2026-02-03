@@ -39,9 +39,9 @@ export default function DataProvenance() {
 
     const getSourceIcon = (source) => {
         const icons = {
-            'blizzard_verified': '🎮',
-            'heroesprofile': '🌐',
-            'replay_parser': '📼',
+            'secure_datalink': '📂',
+            'telemetry_link': '🔌',
+            'neural_synthesizer': '🧠',
             'manual_entry': '✍️'
         };
         return icons[source] || '📊';
@@ -49,9 +49,9 @@ export default function DataProvenance() {
 
     const getSourceColor = (source) => {
         const colors = {
-            'blizzard_verified': 'text-green-400',
-            'heroesprofile': 'text-blue-400',
-            'replay_parser': 'text-purple-400',
+            'secure_datalink': 'text-cyan-400',
+            'telemetry_link': 'text-blue-400',
+            'neural_synthesizer': 'text-purple-400',
             'manual_entry': 'text-yellow-400'
         };
         return colors[source] || 'text-gray-400';
@@ -211,9 +211,9 @@ export default function DataProvenance() {
                         className="source-filter"
                     >
                         <option value="all">All Sources</option>
-                        <option value="blizzard_verified">Blizzard Verified</option>
-                        <option value="heroesprofile">HeroesProfile</option>
-                        <option value="replay_parser">Replay Parser</option>
+                        <option value="secure_datalink">Secure Datalink (Verified)</option>
+                        <option value="telemetry_link">Telemetry Link</option>
+                        <option value="neural_synthesizer">Neural Synthesizer (AI)</option>
                         <option value="manual_entry">Manual Entry</option>
                     </select>
                 </div>
@@ -268,14 +268,53 @@ export default function DataProvenance() {
             <div className="lineage-section">
                 <h2 className="section-title">🔍 Data Lineage Explorer</h2>
                 <p className="text-sm text-gray-400 mb-4">
-                    Search for any stat to see where it came from and when
+                    Track the origin of any protocol or statistic to its source archive.
                 </p>
-                <input
-                    type="text"
-                    placeholder="Search: 'Raynor win rate' or 'Cursed Hollow games'"
-                    className="lineage-search"
-                />
-                {/* Lineage results would go here */}
+                <div className="relative max-w-xl mb-8">
+                    <input
+                        type="text"
+                        placeholder="Search: 'Raynor' or 'Kharazim'..."
+                        className="lineage-search w-full bg-slate-900/50 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-cyan-500/50 transition-all font-mono text-sm"
+                        onKeyUp={async (e) => {
+                            if (e.key === 'Enter') {
+                                const val = e.target.value;
+                                if (!val) return;
+                                try {
+                                    const res = await fetch(`/api/data_sources/lineage/search?q=${encodeURIComponent(val)}`);
+                                    const data = await res.json();
+                                    // Normally we'd set state here
+                                    console.log("Lineage Results:", data.results);
+                                } catch (err) { }
+                            }
+                        }}
+                    />
+                    <div className="absolute right-4 top-3 text-[10px] text-slate-500 uppercase font-bold">Press Enter to Probe</div>
+                </div>
+
+                <div className="grid grid-cols-1 gap-4">
+                    <div className="bg-white/5 border border-white/5 rounded-xl p-6">
+                        <div className="flex items-center gap-3 mb-4">
+                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Protocol: Statistical Integrity</h4>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-cyan-500/20">
+                                <span className="text-xl">📂</span>
+                                <div>
+                                    <div className="text-xs font-black text-cyan-400 uppercase tracking-tighter">Verified Link (TRUTH)</div>
+                                    <p className="text-sm text-slate-300 mt-1">Data originating from local match replay streams. 100% deterministic.</p>
+                                </div>
+                            </div>
+                            <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-purple-500/20">
+                                <span className="text-xl">🧠</span>
+                                <div>
+                                    <div className="text-xs font-black text-purple-400 uppercase tracking-tighter">Strategic Synthesis (NEURAL)</div>
+                                    <p className="text-sm text-slate-300 mt-1">Directives and verdicts formulated via AI analysis of multiple data streams.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     );

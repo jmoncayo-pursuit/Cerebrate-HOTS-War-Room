@@ -19,8 +19,14 @@ export default function HeroPortrait({ heroName, size = 'md' }) {
       size={size}
       className={`${size === 'full' ? 'rounded-lg' : 'rounded-full border-2 border-outline-variant'}`}
       onError={() => {
-        // Fallback handled by LazyImage
+        console.warn(`Portrait missing for: ${heroName}`)
       }}
+      fallback={
+        <div className="w-full h-full flex flex-col items-center justify-center bg-slate-900 border border-cyan-500/20 text-[8px] font-black text-cyan-500/50 uppercase">
+          <div className="opacity-50">NO_DATA</div>
+          <div>{heroName?.substring(0, 3)}</div>
+        </div>
+      }
     />
   )
 }

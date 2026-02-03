@@ -169,14 +169,14 @@ class DatabaseManager:
             commander_toon = commander['toon_handle']
             
             # 2. Update all other players
-            others = conn.execute("SELECT player_name, toon_handle, hero, team, win, stats FROM match_players WHERE match_id = ? AND toon_handle != ?", (match_id, commander_toon)).fetchall()
+            others = conn.execute("SELECT player_name, toon_handle, hero, team, win, stats, disconnected, dc_timestamp FROM match_players WHERE match_id = ? AND toon_handle != ?", (match_id, commander_toon)).fetchall()
             for p in others:
                 name = p['player_name']
                 handle = p['toon_handle']
                 if not handle or handle == "0-0-0": continue # Skip non-unique/AI
                 
                 # Check for existing profile
-                row = conn.execute("SELECT total_games, hero_pool, tags, kda_avg FROM social_profiles WHERE toon_handle = ?", (handle,)).fetchone()
+                row = conn.execute("SELECT total_games, hero_pool, tags, kda_avg, leaver_count FROM social_profiles WHERE toon_handle = ?", (handle,)).fetchone()
                 
                 # Calculate KDA
                 try:
@@ -192,44 +192,62 @@ class DatabaseManager:
                     
                     # Update fields based on relationship
                     if p['team'] == commander_team:
+                        # Update leaver status
+                        new_leaver_count = row['leaver_count'] + (1 if p['disconnected'] else 0)
+                        tags = json.loads(row['tags'] or '[]')
+                        if new_leaver_count > 0 and 'Leaver' not in tags:
+                            if 'Unreliable' not in tags: tags.append('Leaver')
+                        
                         conn.execute("""
                             UPDATE social_profiles SET 
                                 player_name = ?,
                                 total_games = total_games + 1,
                                 games_as_teammate = games_as_teammate + 1,
                                 wins_as_teammate = wins_as_teammate + ?,
+                                leaver_count = ?,
                                 hero_pool = ?,
+                                tags = ?,
                                 kda_avg = (kda_avg * ? + ?) / ?,
                                 last_seen = CURRENT_TIMESTAMP,
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE toon_handle = ?
-                        """, (name, 1 if p['win'] else 0, json.dumps(list(hero_pool)), row['total_games'], kda, total, handle))
+                        """, (name, 1 if p['win'] else 0, new_leaver_count, json.dumps(list(hero_pool)), json.dumps(tags), row['total_games'], kda, total, handle))
                     else:
+                        new_leaver_count = row['leaver_count'] + (1 if p['disconnected'] else 0)
+                        tags = json.loads(row['tags'] or '[]')
+                        if new_leaver_count > 0 and 'Leaver' not in tags:
+                           if 'Unreliable' not in tags: tags.append('Leaver')
+
                         conn.execute("""
                             UPDATE social_profiles SET 
                                 player_name = ?,
                                 total_games = total_games + 1,
                                 games_as_enemy = games_as_enemy + 1,
                                 wins_against = wins_against + ?,
+                                leaver_count = ?,
                                 hero_pool = ?,
+                                tags = ?,
                                 kda_avg = (kda_avg * ? + ?) / ?,
                                 last_seen = CURRENT_TIMESTAMP,
                                 updated_at = CURRENT_TIMESTAMP
                             WHERE toon_handle = ?
-                        """, (name, 1 if commander_won else 0, json.dumps(list(hero_pool)), row['total_games'], kda, total, handle))
+                        """, (name, 1 if commander_won else 0, new_leaver_count, json.dumps(list(hero_pool)), json.dumps(tags), row['total_games'], kda, total, handle))
                 else:
                     # Insert new
                     hero_pool = json.dumps([p['hero']])
+                    is_leaver = 1 if p['disconnected'] else 0
+                    tags = json.dumps(['Leaver']) if is_leaver else json.dumps([])
+                    
                     if p['team'] == commander_team:
                         conn.execute("""
-                            INSERT INTO social_profiles (toon_handle, player_name, total_games, games_as_teammate, wins_as_teammate, kda_avg, hero_pool, last_seen)
-                            VALUES (?, ?, 1, 1, ?, ?, ?, CURRENT_TIMESTAMP)
-                        """, (handle, name, 1 if p['win'] else 0, kda, hero_pool))
+                            INSERT INTO social_profiles (toon_handle, player_name, total_games, games_as_teammate, wins_as_teammate, kda_avg, leaver_count, tags, hero_pool, last_seen)
+                            VALUES (?, ?, 1, 1, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        """, (handle, name, 1 if p['win'] else 0, kda, is_leaver, tags, hero_pool))
                     else:
                         conn.execute("""
-                            INSERT INTO social_profiles (toon_handle, player_name, total_games, games_as_enemy, wins_against, kda_avg, hero_pool, last_seen)
-                            VALUES (?, ?, 1, 1, ?, ?, ?, CURRENT_TIMESTAMP)
-                        """, (handle, name, 1 if commander_won else 0, kda, hero_pool))
+                            INSERT INTO social_profiles (toon_handle, player_name, total_games, games_as_enemy, wins_against, kda_avg, leaver_count, tags, hero_pool, last_seen)
+                            VALUES (?, ?, 1, 1, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                        """, (handle, name, 1 if commander_won else 0, kda, is_leaver, tags, hero_pool))
             conn.commit()
 
     def save_summary_grade(self, match_id, attempt_number, grades, feedback):

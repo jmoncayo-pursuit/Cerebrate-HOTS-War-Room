@@ -34,6 +34,18 @@ def process_tracker_events(events, players, stats_data):
                 if any(kw in u_type for kw in boss_keywords) and u_pid is None:
                     unit_tags[tag]['is_boss'] = True
 
+        elif etype == 'SUnitDiedEvent':
+            tag = event.get('m_unitTagIndex')
+            if tag in unit_tags:
+                u_info = unit_tags[tag]
+                # If it's a hero unit (has a pid), record the death timestamp
+                if u_info.get('pid') is not None:
+                    pid = u_info['pid']
+                    if pid in stats_data:
+                        if 'death_timestamps' not in stats_data[pid]:
+                            stats_data[pid]['death_timestamps'] = []
+                        stats_data[pid]['death_timestamps'].append(round(gameloop / 16.0, 1))
+
         # --- BANS ---
         elif etype == 'SHeroBannedEvent':
             team_id = event.get('m_controllingTeam')
@@ -120,7 +132,16 @@ def process_tracker_events(events, players, stats_data):
                     for k in ['HeroXP', 'MinionXP', 'StructureXP', 'CreepXP', 'SiegeXP', 'TrickleXP']:
                         stats_data[pid]['stats'][k] = round(data_map.get(k, 0) / 4096.0)
 
+            elif ename == 'GameUserLeave':
+                # Forensic detection of a player disconnecting
+                pid = data_map.get('PlayerID')
+                if pid and pid in stats_data:
+                    stats_data[pid]['disconnected'] = True
+                    stats_data[pid]['dc_gameloop'] = gameloop
+                    stats_data[pid]['dc_timestamp'] = round(gameloop / 16.0, 1)
+
     return stats_data, bans
+
 
 def process_game_events(events, players, stats_data):
     """
@@ -140,15 +161,24 @@ def process_game_events(events, players, stats_data):
                     player_idx = uid
                     if 0 <= player_idx < len(players):
                         hero_n = players[player_idx]['hero']
-                        # Game events use 1-based index for talent tiers usually
-                        # but heroprotocol m_index is raw.
                         rich_id = get_talent_from_index(hero_n, idx, talents.TALENTS_DB)
                         if rich_id:
-                            # Avoid duplicates if already found in tracker
                             if not any(t['talent_name'] == rich_id for t in stats_data[pid]['talents']):
                                 stats_data[pid]['talents'].append({
                                     "timestamp": round(gameloop / 16.0, 1),
                                     "talent_name": rich_id,
                                     "source": "game_event"
                                 })
+        
+        elif etype == 'SGameUserLeaveEvent':
+            uid = event.get('_userid', {}).get('m_userId')
+            if uid is not None:
+                pid = uid + 1
+                if pid in stats_data:
+                    # Forensic DC tracking
+                    stats_data[pid]['disconnected'] = True
+                    stats_data[pid]['dc_gameloop'] = gameloop
+                    stats_data[pid]['dc_timestamp'] = round(gameloop / 16.0, 1)
+
     return stats_data
+

@@ -36,11 +36,16 @@ class AnalystAgent(BaseAgent):
             'verdict', 'explain', 'tell me about this', 'why'
         ]
         
-        # If we have an active match context, we handle analytical followups
-        if context.get('selectedMatch') or context.get('match_id'):
-            if query_lower.startswith(('why', 'how', 'tell me', 'explain', 'elaborate')):
-                return True
+        # RED FLAG: If it's just a map name without analytical verbs, ignore it. 
+        # Map Experts should handle simple lookups.
+        from agents.cerebrate_orchestrator import CerebrateOrchestrator
+        orchestrator = CerebrateOrchestrator() # Temporary for map list
+        maps = [m.lower() for m in orchestrator.map_experts.keys()]
         
+        # If query is JUST a map name (allow for some fluff), it's not for us.
+        is_just_map = query_lower.strip() in maps
+        if is_just_map: return False
+
         return any(keyword in query_lower for keyword in analysis_keywords)
     
     def analyze(self, query, context):

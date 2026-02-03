@@ -9,7 +9,8 @@ export default function LazyImage({
   alt = '',
   className = '',
   onError,
-  size = 'md'
+  size = 'md',
+  fallback
 }) {
   const [isLoading, setIsLoading] = useState(true)
   const [hasError, setHasError] = useState(false)
@@ -46,9 +47,11 @@ export default function LazyImage({
           }}
         />
       ) : (
-        <div className={`w-full h-full ${placeholderClass}`}>
-          {alt.substring(0, 2)}
-        </div>
+        fallback || (
+          <div className={`w-full h-full ${placeholderClass}`}>
+            {alt.substring(0, 2)}
+          </div>
+        )
       )}
 
       {isLoading && !hasError && (

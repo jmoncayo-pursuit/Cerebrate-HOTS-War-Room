@@ -19,6 +19,10 @@ from .map_experts.sky_temple_expert import SkyTempleExpert
 from .map_experts.battlefield_of_eternity_expert import BattlefieldOfEternityExpert
 from .map_experts.tomb_of_the_spider_queen_expert import TombOfTheSpiderQueenExpert
 from .map_experts.volskaya_foundry_expert import VolskayaFoundryExpert
+from .map_experts.alterac_pass_expert import AlteracPassExpert
+from .map_experts.braxis_holdout_expert import BraxisHoldoutExpert
+from .map_experts.hanamura_temple_expert import HanamuraTempleExpert
+from .map_experts.garden_of_terror_expert import GardenOfTerrorExpert
 
 class CerebrateOrchestrator:
     """
@@ -47,7 +51,11 @@ class CerebrateOrchestrator:
             "Sky Temple": SkyTempleExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
             "Battlefield of Eternity": BattlefieldOfEternityExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
             "Tomb of the Spider Queen": TombOfTheSpiderQueenExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Volskaya Foundry": VolskayaFoundryExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager)
+            "Volskaya Foundry": VolskayaFoundryExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
+            "Alterac Pass": AlteracPassExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
+            "Braxis Holdout": BraxisHoldoutExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
+            "Hanamura Temple": HanamuraTempleExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
+            "Garden of Terror": GardenOfTerrorExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager)
         }
         
         # Initialize all available agents
@@ -144,6 +152,18 @@ class CerebrateOrchestrator:
         # Call the agent
         response = agent.analyze(query, context)
         
+        # ELITE SYNTHESIS: Ensure every response has a human 'response' field
+        if 'response' not in response or not response['response']:
+             # Attempt to synthesize from data
+             if 'analysis' in response and isinstance(response['analysis'], dict):
+                  summary = response['analysis'].get('summary') or response['analysis'].get('win_condition')
+                  if summary:
+                       response['response'] = f"Tactical analysis synchronized. {summary}"
+                  else:
+                       response['response'] = "Data link established. Analysis complete. Review raw telemetry below."
+             else:
+                  response['response'] = "Mission report generated. Tactical data available."
+
         # Add orchestrator metadata
         response['orchestrator'] = {
             'selected_agent': agent_name,

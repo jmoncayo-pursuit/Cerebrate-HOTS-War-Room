@@ -29,6 +29,8 @@ SCHEMA = [
         rank TEXT,
         stats TEXT,
         talents TEXT,
+        disconnected INTEGER DEFAULT 0,
+        dc_timestamp REAL,
         FOREIGN KEY(match_id) REFERENCES matches(id)
     )
     """,
@@ -120,6 +122,7 @@ SCHEMA = [
         games_as_enemy INTEGER DEFAULT 0,
         wins_against INTEGER DEFAULT 0,
         kda_avg REAL,
+        leaver_count INTEGER DEFAULT 0,
         hero_pool TEXT, -- JSON Hero list
         tags TEXT, -- JSON Tags
         notes TEXT,

@@ -16,7 +16,7 @@ from .header import get_match_id
 from .tracker import process_tracker_events, process_game_events
 
 # Increment when parser logic changes
-PARSER_VERSION = "3.4" 
+PARSER_VERSION = "3.5" 
 
 def parse_replay(replay_path, options=None):
     setup_imp_shim()
@@ -108,6 +108,12 @@ def parse_replay(replay_path, options=None):
             src = stats_data.get(pid, {'stats': {}, 'talents': []})
             p['stats'] = src['stats']
             p['talents'] = src['talents']
+            p['death_timestamps'] = src.get('death_timestamps', [])
+            p['disconnected'] = src.get('disconnected', False)
+            if p['disconnected']:
+                p['dc_gameloop'] = src.get('dc_gameloop')
+                p['dc_timestamp'] = src.get('dc_timestamp')
+
             
             # Map stats for frontend
             s = p['stats']

@@ -72,9 +72,19 @@ def ask_agent():
     orchestrator = get_orchestrator()
     result = orchestrator.route_query(query, context)
     
-    # Record usage if successful
-    if result.get('success'):
+    # 🕵️ TELEMETRY: Identify which agent handled the query
+    responder = result.get('orchestrator', {}).get('selected_agent', 'UNKNOWN')
+    provenance = result.get('data_provenance', 'AI_GENERATED')
+    
+    # Record usage if successful and NOT a programmatic/cached response
+    # SWARM_PROTOCOL_CACHE, STATIC_VERIFIED, and LOCAL_COGNITION do not use Gemini tokens
+    is_programmatic = provenance in ['SWARM_PROTOCOL_CACHE', 'STATIC_VERIFIED', 'LOCAL_COGNITION']
+    
+    if result.get('success') and not is_programmatic:
         quota_manager.record_request()
+    
+    # Add responder info to result for frontend transparency
+    result['responder_id'] = responder
         
     return jsonify(result)
 
@@ -189,6 +199,17 @@ def get_map_stats():
         return jsonify({"error": str(e)}), 500
 
 
+from api.services.dossier_service import DossierService
+
+@agent_bp.route('/hero_dossier/manifest', methods=['GET'])
+def get_dossier_manifest():
+    try:
+        service = DossierService(db)
+        manifest = service.get_manifest()
+        return jsonify({"manifest": manifest})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @agent_bp.route('/hero_dossier', methods=['GET'])
 def get_hero_dossier():
     hero = request.args.get('hero')
@@ -196,41 +217,13 @@ def get_hero_dossier():
         return jsonify({"error": "Hero name required"}), 400
         
     try:
-        with db._get_connection() as conn:
-            # Get hero map stats
-            cursor = conn.execute("""
-                SELECT map_name, games, wins, win_rate 
-                FROM hero_map_stats 
-                WHERE hero = ? 
-                ORDER BY games DESC 
-                LIMIT 6
-            """, (hero,))
-            map_stats = [{
-                "name": r[0],
-                "games": r[1],
-                "wr": r[3],
-                "status": "OPERATIONAL" if r[3] >= 50 else "UNDERPERFORMING"
-            } for r in cursor.fetchall()]
+        service = DossierService(db)
+        dossier = service.generate_dossier(hero)
+        
+        if not dossier:
+            return jsonify({"error": "Insufficient data"}), 404
             
-            # Get general hero stats from match history
-            cursor = conn.execute("""
-                SELECT COUNT(*), SUM(CASE WHEN result = 'WIN' THEN 1 ELSE 0 END)
-                FROM matches
-                WHERE hero = ?
-            """, (hero,))
-            total_games, wins = cursor.fetchone()
-            win_rate = round(wins/total_games*100, 1) if total_games > 0 else 0
-            
-            return jsonify({
-                "hero": hero,
-                "overallWR": win_rate,
-                "totalGames": total_games,
-                "level": 0, # Placeholder or fetch from profile
-                "sectors": map_stats,
-                "risks": [], # Add logic for risks/nemesis if desired
-                "nemesis": [],
-                "verdict": f"Tactical analysis synchronized. {hero} shows {'high' if win_rate >= 55 else 'standard'} operational compliance."
-            })
+        return jsonify(dossier)
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 

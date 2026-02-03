@@ -13,6 +13,7 @@ from api.routes.agent_routes import agent_bp
 from api.routes.social_routes import social_bp
 from api.routes.system_routes import system_bp
 from api.routes.watcher_routes import watcher_bp
+from api.routes.verification_routes import verification_bp
 from api.services.database import DatabaseManager
 from api.services.mcp_bridge_service import mcp_bridge
 
@@ -35,6 +36,7 @@ def create_app():
     app.register_blueprint(social_bp)
     app.register_blueprint(system_bp)
     app.register_blueprint(watcher_bp)
+    app.register_blueprint(verification_bp)
     
     @app.route('/api/health')
     def health():

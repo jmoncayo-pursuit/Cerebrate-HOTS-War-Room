@@ -31,9 +31,12 @@ def analyze_replay():
     if request.is_json:
         data = request.get_json() or {}
         match_id = data.get('match_id')
+        force = data.get('force', False)
+        
         if not match_id:
-            return jsonify({'error': 'No match_id or file provided'}), 400
-        result = replay_service.analyze_match(match_id)
+            return jsonify({"status": "error", "message": "match_id required"}), 400
+            
+        result = replay_service.analyze_match(match_id, force=force)
         return jsonify(result)
     
     return jsonify({'error': 'Expected JSON or File'}), 415

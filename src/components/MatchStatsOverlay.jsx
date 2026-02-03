@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer } from 'lucide-react'
+import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer, RefreshCw, Users, BrainCircuit } from 'lucide-react'
 import HeroPortrait from './HeroPortrait'
 import talentData from '../data/talents.json'
 // import profileData from '../data/player_profile.json' // Removed
@@ -10,6 +10,11 @@ import { normalizeHeroName } from '../utils/heroUtils'
 import MatchTimeline from './MatchTimeline'
 import { processHeroIcons } from './HeroText'
 import heroData from '../data/hero_data.json'
+
+const getHeroPortrait = (heroName) => {
+    if (!heroName) return '';
+    return `/images/heroes/${normalizeHeroName(heroName)}.png`;
+};
 
 // --- CUSTOM HOOKS ---
 
@@ -309,6 +314,7 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
     const [isVerifying, setIsVerifying] = useState(false)
     const [playerProfile, setPlayerProfile] = useState(null)
     const [talentMap, setTalentMap] = useState({})
+    const isSyncing = useRef(false)
 
     useEffect(() => {
         fetch('/api/data/talent_id_map.json')
@@ -330,7 +336,53 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
             .catch(err => console.error(err))
     }, [])
 
-    // Add Escape key handler to close overlay
+    // NEURAL RE-SYNC: If analysis is missing, try to fetch it once
+    useEffect(() => {
+        if (localMatch && (!localMatch.analysis || Object.keys(localMatch.analysis).length === 0)) {
+            if (isSyncing.current) return;
+            isSyncing.current = true;
+
+            console.log(`[Neural Link] Missing analysis for ${localMatch.id}. Attempting re-sync...`);
+            fetch(`/api/analyze_replay`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ match_id: localMatch.id })
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.status === 'complete' && data.analysis) {
+                        console.log(`[Neural Link] Analysis synchronized for ${localMatch.id}`);
+                        setLocalMatch(prev => ({ ...prev, analysis: data.analysis }));
+                    }
+                })
+                .catch(err => console.error("[Neural Link] Sync failed:", err))
+                .finally(() => {
+                    isSyncing.current = false;
+                });
+        }
+    }, [localMatch?.id])
+
+    const handleForceRefresh = async () => {
+        if (isVerifying) return; // Use isVerifying for the refresh state
+        setIsVerifying(true);
+        console.log(`[Neural Link] FORCING re-parse/analysis for ${localMatch.id}...`);
+        try {
+            const res = await fetch(`/api/analyze_replay`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ match_id: localMatch.id, force: true }) // Changed True to true
+            });
+            const data = await res.json();
+            if (data.status === 'complete' && data.analysis) {
+                console.log(`[Neural Link] Forced synchronization complete for ${localMatch.id}`);
+                setLocalMatch(prev => ({ ...prev, analysis: data.analysis }));
+            }
+        } catch (err) {
+            console.error("[Neural Link] Forced refresh failed:", err);
+        } finally {
+            setIsVerifying(false);
+        }
+    };
     useEffect(() => {
         const handleEscape = (e) => {
             if (e.key === 'Escape' && onClose) {
@@ -384,11 +436,30 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
                             </div>
                         </div>
 
+                        {/* Action Buttons */}
+                        <div className="flex items-center gap-4">
+                            <button
+                                onClick={() => {
+                                    window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: localMatch.hero }));
+                                    onClose();
+                                }}
+                                className="px-6 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-400 font-bold uppercase tracking-tight text-xs flex items-center gap-2 transition-all group"
+                            >
+                                <BrainCircuit size={16} className="group-hover:rotate-12 transition-transform" />
+                                Consult Protocol Archive
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
+                            >
+                                <X size={24} />
+                            </button>
+                        </div>
                     </div>
 
 
                     <div className="px-8 pt-6 flex gap-8 border-b border-white/5 mx-8 shrink-0">
-                        {['summary', 'stats', 'talents', 'timeline'].map(tab => (
+                        {['summary', 'stats', 'talents', 'personnel', 'timeline'].map(tab => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveTab(tab)}
@@ -406,9 +477,16 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
                         <div className="w-full">
                             {activeTab === 'stats' && <StatsScoreboard match={localMatch} players={players} onDiscuss={onDiscuss} />}
-                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} />}
+                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={initialMatch.analysis || localMatch.analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} handleForceRefresh={handleForceRefresh} isVerifying={isVerifying} />}
                             {activeTab === 'talents' && <TalentGrid match={localMatch} players={players} talentMap={talentMap} onDiscuss={onDiscuss} playerProfile={playerProfile} />}
-                            {activeTab === 'timeline' && <MatchTimeline matchId={localMatch.id} />}
+                            {activeTab === 'personnel' && <PersonnelTab match={localMatch} analysis={initialMatch.analysis || localMatch.analysis} />}
+                            {activeTab === 'timeline' && (
+                                <MatchTimeline
+                                    matchId={localMatch.id}
+                                    match={localMatch}
+                                    userPlayer={localMatch.players?.find(p => p.name === 'Discerning' || p.hero === localMatch.hero)}
+                                />
+                            )}
                         </div>
                     </div>
 
@@ -704,9 +782,8 @@ function renderMarkdown(text) {
     return <>{finalParts}</>;
 }
 
-function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onClose }) {
+function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onClose, handleForceRefresh, isVerifying }) {
     const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
-    const [isVerifying, setIsVerifying] = useState(false)
 
     // Get user's stats and team stats for comparison
     const userPlayer = match.players?.find(p =>
@@ -844,6 +921,14 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                     <div className="flex items-center gap-3 mb-4">
                         <Award className="text-cyan-500" size={24} />
                         <h2 className="text-cyan-500 text-sm font-bold uppercase tracking-widest">Analytical Verdict</h2>
+                        <button
+                            onClick={handleForceRefresh}
+                            disabled={isVerifying}
+                            className={`ml-auto p-1.5 rounded bg-cyan-900/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-all ${isVerifying ? 'animate-spin' : ''}`}
+                            title="Force Re-parse & Analyze"
+                        >
+                            <RefreshCw size={14} />
+                        </button>
                     </div>
                     <div className="text-5xl font-black text-white mb-6 italic tracking-tight">{analysis?.verdict || "ANALYZING..."}</div>
                     <p className="text-gray-300 leading-relaxed text-lg font-light border-t border-white/10 pt-4">
@@ -1269,13 +1354,83 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                         </Questionable>
                     </div>
                 )}
-
             </div>
-        </div >
+        </div>
     )
 }
 
 // --- TALENT GRID ---
+
+function PersonnelTab({ match, analysis }) {
+    if (!analysis || !analysis.social_insights) {
+        return (
+            <div className="flex flex-col items-center justify-center h-64 text-gray-500 uppercase tracking-widest bg-black/20 rounded-lg border border-white/5 gap-4">
+                <BrainCircuit size={48} className="text-gray-700" />
+                <span>Neural social link not established for this match.</span>
+            </div>
+        );
+    }
+
+    const { social_summary, notable_nodes, rivalry_factor } = analysis.social_insights;
+
+    return (
+        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Social Summary Card */}
+            <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f172a] border border-purple-500/20 rounded-lg p-8 shadow-2xl relative overflow-hidden">
+                <div className="absolute right-0 top-0 opacity-5 p-4">
+                    <Users size={120} />
+                </div>
+                <div className="flex items-center gap-3 mb-6">
+                    <Zap className="text-purple-400" size={20} />
+                    <h2 className="text-purple-300 text-xs font-bold uppercase tracking-widest">Team Neural Sync</h2>
+                </div>
+                <p className="text-xl font-light text-slate-200 leading-relaxed italic">
+                    "{social_summary}"
+                </p>
+            </div>
+
+            {/* Notable Nodes Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {notable_nodes?.map((node, idx) => {
+                    const player = match.players?.find(p => p.name === node.name);
+                    const isAlly = player?.team === match.players?.find(p => p.name === 'Discerning' || p.hero === match.hero)?.team;
+
+                    return (
+                        <div key={idx} className={`p-5 rounded-xl border ${isAlly ? 'bg-cyan-500/5 border-cyan-500/20' : 'bg-red-500/5 border-red-500/20'} transition-all hover:scale-[1.02]`}>
+                            <div className="flex items-center gap-3 mb-3">
+                                {player && (
+                                    <div className="w-10 h-10 rounded bg-black/40 border border-white/10 overflow-hidden shrink-0">
+                                        <img src={getHeroPortrait(player.hero)} alt={player.hero} className="w-full h-full object-cover" />
+                                    </div>
+                                )}
+                                <div className="flex flex-col">
+                                    <span className={`font-black text-sm ${isAlly ? 'text-cyan-400' : 'text-red-400'}`}>{node.name}</span>
+                                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{player?.hero || 'Unknown Unit'}</span>
+                                </div>
+                            </div>
+                            <div className="text-xs text-slate-300 leading-relaxed bg-black/20 p-3 rounded border border-white/5">
+                                {node.note}
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
+
+            {/* Rivalry Factor */}
+            {rivalry_factor && (
+                <div className="bg-black/40 border border-white/5 p-6 rounded-lg">
+                    <div className="flex items-center gap-2 mb-4 text-red-400/80">
+                        <Swords size={16} />
+                        <span className="text-[10px] font-black uppercase tracking-widest">Neural Rivalry Matrix</span>
+                    </div>
+                    <p className="text-sm text-slate-400 italic">
+                        {rivalry_factor}
+                    </p>
+                </div>
+            )}
+        </div>
+    );
+}
 
 function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
     const [sortBy, setSortBy] = useState('hero')
@@ -1284,7 +1439,7 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
 
     // Talent tier to level mapping (tier 1-7 -> levels 1, 4, 7, 10, 13, 16, 20)
     const levelToTier = {
-        1: 1, 4: 2, 7: 3, 10: 4, 13: 5, 16: 6, 20: 7
+        1: 1, 4: 2, 7: 3, 10: 4, 13: 5, 16: 6, 7: 20
     }
     const levels = [1, 4, 7, 10, 13, 16, 20]
 
@@ -1370,14 +1525,14 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
                             .map(tier => p.stats?.[`Tier${tier}Talent`] || 0)
                             .join('-')
 
-                        // Fetch real build WR from player_profile.json
+                        // Real data only - remove mock fallbacks
                         const buildStats = playerProfile?.talent_builds?.[p.hero]?.[buildHash]
                         const realBuildWR = buildStats?.wr
                         const realBuildGames = buildStats?.games
 
-                        // Fallback to mock if no real data
-                        const mockBuildWR = 45 + (p.hero.charCodeAt(0) % 15)
-                        const mockBuildGames = 10 + (p.hero.charCodeAt(1) % 40)
+                        // Safety fallbacks to prevent ReferenceError in JSX
+                        const mockBuildWR = 0
+                        const mockBuildGames = 0
 
                         return (
                             <div key={i} className={`grid grid-cols-[180px_repeat(7,minmax(0,1fr))_120px] min-h-[60px] py-0.5 border-b border-[#2e2158] items-center transition-colors hover:brightness-110 border-l-[6px] ${rowClass}`}>
@@ -1424,13 +1579,9 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
                                     const realWR = talentStats?.wr
                                     const realPR = talentStats?.pr
 
-                                    // Fallback to mock if no real data
-                                    const mockWR = tIdx ? 45 + (tIdx * 5) % 20 : null
-                                    const mockPickRate = tIdx ? 15 + (tIdx * 8) % 35 : null
-
-                                    // Use real data if available, otherwise mock
-                                    const displayWR = realWR !== undefined ? realWR : mockWR
-                                    const displayPR = realPR !== undefined ? realPR : mockPickRate
+                                    // Use real data strictly
+                                    const displayWR = realWR
+                                    const displayPR = realPR
 
                                     return (
                                         <div key={`${i}-${lvl}`} className="flex flex-col items-center justify-center border-l border-[#2e2158] self-stretch pt-1.5 pb-1.5 px-0.5 group hover:bg-white/5 transition-colors relative">
