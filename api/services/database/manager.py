@@ -49,17 +49,32 @@ class DatabaseManager:
         with self._get_connection() as conn:
             return conn.execute(query, params).fetchone()[0]
 
-    def get_matches(self, limit=100, offset=0, hero=None, map_name=None, include_players=True, match_id=None, include_details=False):
-        query = "SELECT m.* FROM matches m"
+    def get_matches(self, limit=100, offset=0, hero=None, map_name=None, include_players=True, match_id=None, include_details=False, search=None):
+        query = "SELECT DISTINCT m.* FROM matches m"
         params = []
-        if match_id:
-            query += " WHERE m.id = ?"; params.append(match_id)
+        where_clauses = []
+
+        if search:
+            query += " JOIN match_players p ON m.id = p.match_id"
+            search_param = f"%{search}%"
+            where_clauses.append("(m.id LIKE ? OR m.hero LIKE ? OR m.map LIKE ? OR p.player_name LIKE ?)")
+            params.extend([search_param, search_param, search_param, search_param])
         elif hero:
-            query += " JOIN match_players p ON m.id = p.match_id WHERE p.hero = ?"; params.append(hero)
-            if map_name: query += " AND m.map = ?"; params.append(map_name)
-        elif map_name:
-            query += " WHERE m.map = ?"; params.append(map_name)
+            query += " JOIN match_players p ON m.id = p.match_id"
+            where_clauses.append("p.hero = ?")
+            params.append(hero)
+
+        if match_id:
+            where_clauses.append("m.id = ?")
+            params.append(match_id)
         
+        if map_name:
+            where_clauses.append("m.map = ?")
+            params.append(map_name)
+
+        if where_clauses:
+            query += " WHERE " + " AND ".join(where_clauses)
+
         query += " ORDER BY m.date DESC LIMIT ? OFFSET ?"
         params.extend([limit, offset])
         
@@ -110,12 +125,13 @@ class DatabaseManager:
                     match['has_analysis'] = bool(match.get('analysis'))
                     match['has_raw_stats'] = bool(match.get('raw_stats'))
 
-                    # DE-HOARDING: Only include heavy analysis/stats if explicitly requested
+                    # Always parse analysis (needed for UI summaries)
+                    match['analysis'] = json.loads(match['analysis']) if match['analysis'] else {}
+                    
+                    # Only include heavy raw_stats if explicitly requested
                     if include_details or match_id:
-                        match['analysis'] = json.loads(match['analysis']) if match['analysis'] else {}
                         match['raw_stats'] = json.loads(match['raw_stats']) if match['raw_stats'] else {}
                     else:
-                        match['analysis'] = None
                         match['raw_stats'] = None
             return matches
 

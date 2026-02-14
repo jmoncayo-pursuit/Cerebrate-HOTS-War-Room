@@ -46,10 +46,11 @@ def match_history():
     """Serve match history for frontend"""
     limit = request.args.get('limit', 500)
     include_details = request.args.get('details', 'false').lower() == 'true'
+    search = request.args.get('search')
     try:
         limit = int(limit)
     except:
         limit = 500
         
-    matches = replay_service.get_match_history(limit=limit, include_details=include_details)
+    matches = replay_service.get_match_history(limit=limit, include_details=include_details, search=search)
     return jsonify(matches)

@@ -11,7 +11,7 @@ class MCPBridgeService:
         self._loop = None
         self.server_params = StdioServerParameters(
             command="npx",
-            args=["-y", "chrome-devtools-mcp", "--autoConnect"],
+            args=["-y", "chrome-devtools-mcp", "--browserUrl", "http://127.0.0.1:56991"],
             env=None
         )
 

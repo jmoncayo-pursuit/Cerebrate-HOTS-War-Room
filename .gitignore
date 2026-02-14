@@ -66,6 +66,7 @@ match_result.json
 docs/
 SCHEMA.md
 100_PERCENT_COMPLETE.md
+.private_docs/
 
 # ============================================
 # SHARED/PUBLIC DATA (OK TO COMMIT)
@@ -174,3 +175,4 @@ DRAFT_GUIDE.md
 .agent/DEMO_NARRATION_SCRIPTS.md
 .agent/workflows
 .healer.pid
+jpmc_application_responses.md

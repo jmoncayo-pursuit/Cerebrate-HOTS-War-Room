@@ -1,7 +1,11 @@
 import logging
 import os
 from flask import Flask, jsonify, request
+from dotenv import load_dotenv
 from api.logger import ColoredLogger
+
+# Load environment variables
+load_dotenv()
 
 # Silence Flask/Werkzeug logging
 log = logging.getLogger('werkzeug')
