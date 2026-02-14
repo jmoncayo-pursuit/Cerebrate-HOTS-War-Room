@@ -126,6 +126,8 @@ SCHEMA = [
         hero_pool TEXT, -- JSON Hero list
         tags TEXT, -- JSON Tags
         notes TEXT,
+        neural_brief TEXT,
+        neural_brief_audit TEXT,
         last_seen DATETIME,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )

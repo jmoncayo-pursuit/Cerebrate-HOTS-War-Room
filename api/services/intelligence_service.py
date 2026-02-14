@@ -2,6 +2,7 @@ import os
 import json
 import uuid
 import google.generativeai as genai
+import time
 from datetime import datetime
 from api.logger import ColoredLogger
 from api.services.database import DatabaseManager
@@ -77,7 +78,38 @@ class IntelligenceService:
             chat = active_model.start_chat(history=history or [])
             response = chat.send_message(full_prompt)
             
-            # 4. Record Quota
+            # 4. Record Telemetry & Quota
+            try:
+                # Extract tokens
+                usage = getattr(response, 'usage_metadata', None)
+                p_tokens = usage.prompt_token_count if usage else 0
+                r_tokens = usage.candidates_token_count if usage else 0
+                t_tokens = usage.total_token_count if usage else 0
+                
+                # Update KV Telemetry
+                telemetry = self.db.get_kv('token_telemetry') or {
+                    "total_tokens": 0, "prompt_tokens": 0, "response_tokens": 0, "total_calls": 0, "history": []
+                }
+                
+                telemetry["total_tokens"] += t_tokens
+                telemetry["prompt_tokens"] += p_tokens
+                telemetry["response_tokens"] += r_tokens
+                telemetry["total_calls"] += 1
+                
+                # Add to history (limit to 20)
+                telemetry["history"].insert(0, {
+                    "timestamp": time.time() if 'time' in globals() else datetime.now().timestamp(),
+                    "prompt_t": p_tokens,
+                    "resp_t": r_tokens,
+                    "total_t": t_tokens,
+                    "model": active_model.model_name
+                })
+                telemetry["history"] = telemetry["history"][:20]
+                
+                self.db.set_kv('token_telemetry', telemetry)
+            except Exception as tel_e:
+                ColoredLogger.error(f"Telemetry Recording Error: {tel_e}")
+
             if self.quota:
                 self.quota.record_request(active_model.model_name)
                 

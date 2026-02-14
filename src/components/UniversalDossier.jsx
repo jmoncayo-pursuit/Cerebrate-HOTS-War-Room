@@ -1,17 +1,90 @@
 
-import React from 'react';
-import { Shield, Target, Zap, AlertTriangle, Crown, Map as MapIcon, BarChart3, TrendingUp, RefreshCw } from 'lucide-react';
+import React, { useState } from 'react';
+import { Shield, Target, Zap, AlertTriangle, Crown, Map as MapIcon, BarChart3, TrendingUp, RefreshCw, ShieldCheck, AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import RankIcon from './RankIcon';
 import ServiceRecord from './ServiceRecord';
 import HeroPortrait from './HeroPortrait';
+import ConfidenceScore from './ConfidenceScore';
 import { formatFullDateTime } from '../utils/dateUtils';
+
+const AuditBadge = ({ audit }) => {
+    const [expanded, setExpanded] = useState(false);
+    if (!audit) return null;
+
+    const { scores, reasoning, hallucinations_identified, verdict } = audit;
+    const isPass = verdict === 'PASS';
+
+    const getScoreColor = (score) => {
+        if (score >= 4) return 'text-green-400';
+        if (score >= 3) return 'text-yellow-400';
+        return 'text-red-400';
+    };
+
+    return (
+        <div className={`mt-3 border rounded-lg overflow-hidden transition-all duration-300 ${isPass ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
+            <div
+                className="flex items-center justify-between p-2 cursor-pointer hover:bg-white/5"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <div className="flex items-center gap-2">
+                    {isPass ? (
+                        <ShieldCheck size={16} className="text-emerald-400" />
+                    ) : (
+                        <AlertCircle size={16} className="text-amber-400" />
+                    )}
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isPass ? 'text-emerald-300' : 'text-amber-300'}`}>
+                        Neural Audit: {verdict}
+                    </span>
+                    <div className="flex gap-2 ml-4">
+                        <div className="flex items-center gap-1">
+                            <span className="text-[9px] text-gray-500 font-medium">Grounding:</span>
+                            <span className={`text-[9px] font-bold ${getScoreColor(scores.grounding)}`}>{scores.grounding}/5</span>
+                        </div>
+                    </div>
+                </div>
+                {expanded ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
+            </div>
+
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/5 p-3 space-y-3"
+                    >
+                        <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <Info size={12} className="text-gray-400" />
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Auditor Reasoning</span>
+                            </div>
+                            <p className="text-xs text-gray-300 italic leading-relaxed">"{reasoning}"</p>
+                        </div>
+
+                        {hallucinations_identified && hallucinations_identified.length > 0 && (
+                            <div className="bg-red-500/10 border border-red-500/20 rounded p-2">
+                                <div className="text-[10px] font-bold text-red-400 uppercase tracking-tighter mb-1">Hallucinations Detected</div>
+                                <ul className="list-disc pl-4 space-y-1">
+                                    {hallucinations_identified.map((h, i) => (
+                                        <li key={i} className="text-[10px] text-red-300 italic">{h}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
 
 const TruthBadge = ({ source }) => {
     const isSecure = source === 'SECURE_DATALINK';
     return (
         <span className={`ml-2 px-1.5 py-0.5 rounded-[2px] text-[8px] font-black uppercase tracking-tighter border ${isSecure
-                ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
-                : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
+            ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
+            : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
             }`} title={isSecure ? 'Verified Match Data' : 'AI Strategic Synthesis'}>
             {isSecure ? 'TRUTH' : 'NEURAL'}
         </span>
@@ -128,7 +201,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                     Global Precision
                                     <TruthBadge source={stats.statSources?.overallWR} />
                                 </div>
-                                <div className="text-3xl font-black text-white">{stats.overallWR}% <span className="text-sm font-normal text-slate-400">WR</span></div>
+                                <ConfidenceScore value={stats.overallWR} n={stats.totalGames} />
                                 <div className="w-full h-1.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
                                     <div className={`h-full bg-${theme.primary}-500 shadow-[0_0_10px_rgba(0,0,0,0.5)]`} style={{ width: `${stats.overallWR}%` }}></div>
                                 </div>
@@ -154,15 +227,14 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                 <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest">Apex Threats Identified</h3>
                             </div>
                             <div className="space-y-4">
-                                {stats.nemesis.map((n, i) => (
+                                {(stats.nemesis || []).map((n, i) => (
                                     <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-red-500/10 border border-red-500/10 group hover:bg-red-500/20 transition-all">
                                         <div>
                                             <div className="text-white font-bold">{n.name}</div>
                                             <div className="text-[10px] text-red-400/70 uppercase font-black">{n.type}</div>
                                         </div>
                                         <div className="text-right">
-                                            <div className="text-red-400 font-black">{n.wr}%</div>
-                                            <div className="text-[10px] text-slate-500 uppercase">{n.games} Encounters</div>
+                                            <ConfidenceScore value={n.wr} n={n.games} className="scale-75 origin-right" />
                                         </div>
                                     </div>
                                 ))}
@@ -180,13 +252,13 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                             <TruthBadge source={stats.statSources?.sectors} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {stats.sectors.map((s, i) => (
+                            {(stats.sectors || []).map((s, i) => (
                                 <div key={i} className="p-5 rounded-xl border border-white/5 bg-white/5 flex items-center justify-between">
                                     <div>
                                         <h4 className="text-lg font-bold text-white">{s.name}</h4>
                                         <span className={`text-[10px] text-${theme.primary}-400 font-black uppercase tracking-widest`}>{s.status}</span>
                                     </div>
-                                    <div className="text-2xl font-black text-white">{s.wr}%</div>
+                                    <ConfidenceScore value={s.wr} n={s.games_played || 0} className="scale-90 origin-right" />
                                 </div>
                             ))}
                         </div>
@@ -198,10 +270,10 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                     <h4 className="text-sm font-bold text-red-400 uppercase tracking-widest">Restricted Sectors</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {stats.avoidSectors.map((s, i) => (
+                                    {(stats.avoidSectors || []).map((s, i) => (
                                         <div key={i} className="p-4 rounded-lg bg-red-900/10 border border-red-500/10 flex items-center justify-between opacity-80">
                                             <div className="text-white font-medium">{s.name}</div>
-                                            <div className="text-red-400 font-bold">{s.wr}% WR</div>
+                                            <ConfidenceScore value={s.wr} n={s.games_played || 0} className="scale-75 origin-right" />
                                         </div>
                                     ))}
                                 </div>
@@ -218,7 +290,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                     <h3 className="text-sm font-bold text-purple-400 uppercase tracking-widest">Neural Desync Risks</h3>
                                 </div>
                                 <div className="space-y-4">
-                                    {stats.risks.map((r, i) => (
+                                    {(stats.risks || []).map((r, i) => (
                                         <div key={i} className="flex justify-between items-center p-4 rounded-xl bg-purple-500/5 border border-purple-500/10">
                                             <div className="flex items-center gap-3">
                                                 <div className="w-10 h-10 rounded-lg bg-purple-500/10 flex items-center justify-center text-purple-400 font-bold">
@@ -230,8 +302,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                                 </div>
                                             </div>
                                             <div className="text-right">
-                                                <div className="text-lg font-black text-white">{r.wr}%</div>
-                                                <div className="text-[10px] text-slate-500 uppercase">{r.games} Operations</div>
+                                                <ConfidenceScore value={r.wr} n={r.games} className="scale-75 origin-right" />
                                             </div>
                                         </div>
                                     ))}
@@ -267,6 +338,11 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                         <TrendingUp className="w-4 h-4" />
                                         Review Status: {stats.tacticalSummary.status || "OPERATIONAL"}
                                     </div>
+
+                                    {/* Audit Badge for AI Verdict */}
+                                    {stats.audit && (
+                                        <AuditBadge audit={stats.audit} />
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -284,7 +360,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                 <span className="text-[10px] text-slate-500 uppercase font-mono italic">Verified Match Records</span>
                             </div>
                             <div className="space-y-3">
-                                {stats.recentPerformance.map((match, i) => (
+                                {(stats.recentPerformance || []).map((match, i) => (
                                     <div
                                         key={i}
                                         className="flex items-center justify-between p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-all cursor-pointer group"

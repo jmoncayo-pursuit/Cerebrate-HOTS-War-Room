@@ -3,6 +3,7 @@ import { BarChart3 } from 'lucide-react'
 import { calculateYourStats } from '../utils/statsUtils'
 import BuildDisplay from './BuildDisplay'
 import { normalizeHeroName } from '../utils/heroUtils'
+import ConfidenceScore from './ConfidenceScore'
 
 export default function QuickSummaryTile({ matches, profile, talentMap }) {
 
@@ -215,7 +216,11 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                                     <div key={h.hero} className="text-xs">
                                         <div className="flex items-baseline gap-1 mb-1">
                                             <span className="text-slate-200">• {h.hero}:</span>
-                                            <span className="text-green-400 font-bold">{userWR.toFixed(1)}%</span>
+                                            <ConfidenceScore
+                                                value={userWR.toFixed(1)}
+                                                n={h.s3.games >= 5 ? h.s3.games : h.lifetime.games}
+                                                className="scale-75 origin-left"
+                                            />
                                             <span className="text-slate-400">
                                                 (+{delta.toFixed(1)}% vs Global)
                                             </span>
@@ -295,7 +300,11 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                                     <div key={h.hero} className="text-xs">
                                         <div className="flex items-baseline gap-1 mb-1">
                                             <span className="text-slate-200">• {h.hero}:</span>
-                                            <span className="text-red-400 font-bold">{userWR.toFixed(1)}%</span>
+                                            <ConfidenceScore
+                                                value={userWR.toFixed(1)}
+                                                n={h.s3.games >= 5 ? h.s3.games : h.lifetime.games}
+                                                className="scale-75 origin-left"
+                                            />
                                             <span className="text-slate-400">
                                                 ({delta.toFixed(1)}% vs Global)
                                             </span>

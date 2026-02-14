@@ -97,7 +97,7 @@ const AgentDashboard = () => {
       const res = await fetch(`/api/usage?t=${Date.now()}`)
       if (res.ok) {
         const data = await res.json()
-        setUsage(data.quota)
+        setUsage(data)
         setModelHealth({
           quality: data.link_quality,
           last_model: data.current_model
@@ -194,7 +194,9 @@ const AgentDashboard = () => {
                 </div>
                 <div className="text-right">
                   <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Total Tokens</div>
-                  <div className="text-sm font-bold text-white font-mono">{usage.total_tokens?.toLocaleString() || usage.quota?.[Object.keys(usage.quota)[0]]?.used.toLocaleString() || '0'}</div>
+                  <div className="text-sm font-bold text-white font-mono">
+                    {usage.total_tokens?.toLocaleString() || '0'}
+                  </div>
                 </div>
               </div>
 

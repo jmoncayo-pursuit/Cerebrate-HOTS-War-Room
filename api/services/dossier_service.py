@@ -52,9 +52,55 @@ class DossierService:
         # 5. Medals
         medals = self._get_medals(hero_name)
         
-        # 6. Generate Fluff
+        # 6. Generate Fluff & AI Verdict
         codename = self._generate_codename(hero_name)
-        verdict = self._generate_verdict(basic_stats['wr'], sectors)
+        
+        # ELITE UPGRADE: AI-Generated Verdict based on stats
+        from api.services.intelligence_service import IntelligenceService
+        import os
+        api_key = os.environ.get('GEMINI_API_KEY')
+        verdict = None
+        audit = None
+        
+        if api_key:
+            intel = IntelligenceService(self.db, api_key)
+            stats_context = f"""
+            Hero: {hero_name}
+            Overall WR: {basic_stats['wr']}%
+            Total Games: {basic_stats['games']}
+            Top Sectors: {json.dumps(sectors)}
+            Avoid Sectors: {json.dumps(avoid_sectors)}
+            Nemeses: {json.dumps(nemesis)}
+            Risks: {json.dumps(risks)}
+            """
+            
+            prompt = f"Perform a high-level tactical audit for {hero_name} based on these stats. Speak like a senior tactical advisor. Return JSON: {{\"verdict\": \"Subject is [STATUS]\", \"analysis\": \"Clinical overview\", \"status\": \"OPERATIONAL/GOLD STANDARD/NEEDS REVIEW\"}}"
+            try:
+                raw_verdict = intel.generate_chat_response(prompt, history=[{"role": "user", "parts": [stats_context]}])
+                # Simple JSON extract
+                json_match = re.search(r'(\{.*\})', raw_verdict, re.DOTALL)
+                if json_match:
+                    verdict = json.loads(json_match.group(1))
+                else:
+                    verdict = json.loads(raw_verdict)
+                
+                # AUDIT THE VERDICT
+                from agents.cerebrate_orchestrator import CerebrateOrchestrator
+                orchestrator = CerebrateOrchestrator(call_gemini_fn=intel.generate_chat_response)
+                audit_context = {
+                    'target_query': hero_name,
+                    'target_context': stats_context,
+                    'target_response': verdict['analysis'],
+                    'audit_type': 'DOSSIER'
+                }
+                auditor_result = orchestrator.agents['auditor'].analyze(hero_name, audit_context)
+                if auditor_result.get('success'):
+                    audit = auditor_result.get('audit')
+            except Exception as e:
+                print(f"AI Verdict/Audit Failure: {e}")
+                verdict = self._generate_verdict(basic_stats['wr'], sectors)
+        else:
+            verdict = self._generate_verdict(basic_stats['wr'], sectors)
         
         # 7. Theme
         theme = self._get_theme(hero_name)
@@ -78,6 +124,7 @@ class DossierService:
             "nemesis": nemesis,
             "recentPerformance": self._get_recent_performance(hero_name),
             "tacticalSummary": verdict,
+            "audit": audit, # PERSIST AUDIT
             "statSources": {
                 "overallWR": "SECURE_DATALINK",
                 "totalGames": "SECURE_DATALINK",
@@ -311,7 +358,7 @@ class DossierService:
     def _get_recent_performance(self, hero):
         """Pulls last 5 matches for this hero."""
         query = """
-            SELECT m.id, m.result, m.map, m.date, p.SoloKill, p.Deaths, p.Assists
+            SELECT m.id, m.result, m.map, m.date, p.stats
             FROM matches m
             JOIN match_players p ON m.id = p.match_id
             WHERE p.hero = ?
@@ -322,14 +369,19 @@ class DossierService:
         with self.db._get_connection() as conn:
             rows = conn.execute(query, (hero,)).fetchall()
             for r in rows:
+                stats = {}
+                try:
+                    stats = json.loads(r[4]) if r[4] else {}
+                except: pass
+                
                 history.append({
                     "id": r[0],
                     "result": r[1],
                     "map": r[2],
                     "date": r[3],
-                    "kills": r[4],
-                    "deaths": r[5],
-                    "assists": r[6]
+                    "kills": stats.get('SoloKill', 0),
+                    "deaths": stats.get('Deaths', 0),
+                    "assists": stats.get('Assists', 0)
                 })
         return history
 

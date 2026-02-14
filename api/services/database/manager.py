@@ -284,6 +284,31 @@ class DatabaseManager:
         with self._get_connection() as conn:
             return [dict(row) for row in conn.execute(query, params).fetchall()]
 
+    _talent_cache = {}
+
+    def _get_silent_talent_map(self, hero):
+        """Helper to get talent tier/order mapping without hitting DB."""
+        if hero in self.__class__._talent_cache:
+            return self.__class__._talent_cache[hero]
+            
+        try:
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            talents_path = os.path.join(base_dir, '..', '..', '..', 'src', 'data', 'talents.json')
+            if os.path.exists(talents_path):
+                with open(talents_path, 'r') as f:
+                    data = json.load(f)
+                    hero_data = data.get(hero, {})
+                    t_map = {}
+                    for tier, options in hero_data.items():
+                        for order, details in options.items():
+                            t_id = details.get('tooltipId')
+                            if t_id:
+                                t_map[t_id] = (int(tier), int(order))
+                    self.__class__._talent_cache[hero] = t_map
+                    return t_map
+        except: pass
+        return {}
+
     def get_top_builds(self, hero, limit=5):
         query = """
             SELECT p.hero, p.talents, COUNT(*) as games, SUM(p.win) as wins
@@ -294,13 +319,26 @@ class DatabaseManager:
             ORDER BY wins DESC, games DESC
             LIMIT ?
         """
+        t_map = self._get_silent_talent_map(hero)
         with self._get_connection() as conn:
             rows = conn.execute(query, (hero, limit)).fetchall()
             builds = []
             for row in rows:
                 d = dict(row)
-                d['talents'] = json.loads(d['talents'])
-                d['win_rate'] = round(d['wins'] / d['games'] * 100, 1)
+                talents = json.loads(d['talents'])
+                d['talents'] = talents
+                d['win_rate'] = round(d['wins'] / d['games'] * 100, 1) if d['games'] > 0 else 0
+                
+                # Calculate build_code (T123 format)
+                build = ["0"] * 7
+                for t in talents:
+                    t_id = t.get('talent_name')
+                    if t_id in t_map:
+                        tier, order = t_map[t_id]
+                        if 1 <= tier <= 7:
+                            build[tier-1] = str(order)
+                d['build_code'] = "T" + "".join(build)
+                
                 builds.append(d)
             return builds
 

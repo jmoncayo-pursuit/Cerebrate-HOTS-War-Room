@@ -58,7 +58,7 @@ def get_agents():
     return jsonify({"agents": orchestrator.get_available_agents()})
 
 @agent_bp.route('/cerebrate/ask', methods=['POST'])
-def ask_agent():
+async def ask_agent():
     data = request.json or {}
     query = data.get('query')
     context = data.get('context', {})
@@ -68,12 +68,51 @@ def ask_agent():
         context['profile'] = db.get_kv('player_profile')
     if 'matches' not in context:
         context['matches'] = db.get_matches(limit=50)
+
+    # 🧠 NEURAL PARITY: Self-Inspection Capability
+    # If the user asks about "errors", "console", "logs", or "debug", 
+    # we inject the actual browser console logs into the context.
+    lower_query = query.lower() if query else ""
+    if any(k in lower_query for k in ['error', 'console', 'log', 'fail', 'debug', 'broken']):
+    if any(k in lower_query for k in ['error', 'console', 'log', 'fail', 'debug', 'broken']):
+        try:
+            # Async retrieval of console logs with safety check
+            if mcp_bridge.is_healthy():
+                logs_result = await mcp_bridge.get_console_logs()
+                if logs_result and 'logs' in logs_result:
+                    # Inject last 20 logs for context
+                    context['browser_logs'] = logs_result['logs'][-20:]
+                    ColoredLogger.info(f"Injecting {len(context['browser_logs'])} browser logs into context", "AGENT")
+            else:
+                ColoredLogger.warning("Skipping log injection: Neural Link not established", "AGENT")
+        except Exception as e:
+            # CRITICAL: Do not let optional context injection crash the main chat flow
+            ColoredLogger.warning(f"Could not inject console logs: {e}")
         
     orchestrator = get_orchestrator()
     result = orchestrator.route_query(query, context)
     
-    # 🕵️ TELEMETRY: Identify which agent handled the query
+    # Check if audit is requested or if it's a strategic agent that needs validation
+    should_audit = data.get('audit', False)
     responder = result.get('orchestrator', {}).get('selected_agent', 'UNKNOWN')
+    
+    # Auto-audit strategic agents (SCOUT, COACH, TACTICIAN, ANALYST, SOCIAL) if success
+    strategic_agents = ['SCOUT', 'COACH', 'TACTICIAN', 'ANALYST', 'SOCIAL']
+    if result.get('success') and (should_audit or responder in strategic_agents):
+        try:
+            # We need the original context and response for the auditor
+            audit_context = {
+                'target_query': query,
+                'target_context': str(context.get('matches', []))[:2000], # Truncated for token safety
+                'target_response': result.get('response', '')
+            }
+            auditor_result = orchestrator.agents['auditor'].analyze(query, audit_context)
+            if auditor_result.get('success'):
+                result['audit'] = auditor_result.get('audit')
+        except Exception as audit_err:
+             ColoredLogger.error(f"Post-Response Audit Failed: {audit_err}")
+
+    # 🕵️ TELEMETRY: Identify which agent handled the query
     provenance = result.get('data_provenance', 'AI_GENERATED')
     
     # Record usage if successful and NOT a programmatic/cached response
@@ -95,14 +134,11 @@ def get_usage():
     
     # Check for token telemetry in database
     telemetry = db.get_kv('token_telemetry') or {
-        "total_tokens": 142050,
-        "prompt_tokens": 82400,
-        "response_tokens": 59650,
-        "total_calls": 42,
-        "history": [
-            {"timestamp": time.time() - i*3600, "total_t": 1200 + (i*150), "prompt_t": 800, "resp_t": 400 + (i*150), "model": "gemini-1.5-flash"}
-            for i in range(24)
-        ]
+        "total_tokens": 0,
+        "prompt_tokens": 0,
+        "response_tokens": 0,
+        "total_calls": 0,
+        "history": []
     }
     
     # Determine model health based on quota
@@ -228,23 +264,32 @@ def get_hero_dossier():
         return jsonify({"error": str(e)}), 500
 
 @agent_bp.route('/mcp/inspect', methods=['GET'])
-def inspect_mcp():
+async def inspect_mcp():
+    # Note: Flask 2.0+ supports async routes natively.
     from api.services.mcp_bridge_service import mcp_bridge
-    # Since we can't easily wait for async in flask route without async wrapper (which requires async flask setup)
-    # We will do a synchronous check or use a helper. 
-    # Actually, Flask 2.0+ supports async routes. Assuming we are on modern Flask.
-    # If not, we bridge. Let's try to assume usage of a loop or simple return status first.
     
-    # Ideally we'd use 'await mcp_bridge.get_dom_snapshot()' but this route might not be async aware.
-    # For now, let's just return the connection status and cached info if available?
-    # No, the user wants to see it WORK. 
-    # Let's try to run it in a new loop or simple thread just for the test?
-    # Or just return static status if async is blocked.
+    action = request.args.get('action')
     
-    # Actually, we can check if the bridge is connected.
+    if action == 'logs':
+        result = await mcp_bridge.get_console_logs()
+        return jsonify(result)
+        
+    if action == 'dom':
+        result = await mcp_bridge.get_dom_snapshot()
+        return jsonify(result)
+
     status = {
         "connected": mcp_bridge.is_healthy(),
         "bridge_type": "Chrome DevTools Protocol",
-        "capabilities": ["evaluate_script", "list_console_messages"]
+        "capabilities": ["evaluate_script", "list_console_messages"],
+        "link_status": "NEURAL_LINK_ESTABLISHED" if mcp_bridge.is_healthy() else "SEARCHING_FOR_SIGNAL"
     }
     return jsonify(status)
+
+@agent_bp.route('/vision/analyze', methods=['GET'])
+def vision_analyze():
+    map_name = request.args.get('map', 'Infernal Shrines')
+    from api.agentic_brain import AgenticBrain
+    brain = AgenticBrain()
+    recommendations = brain.get_draft_recommendations(map_name)
+    return jsonify(recommendations)

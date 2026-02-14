@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useLayoutEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Sparkles, Bot, User, Eraser, X, ChevronDown, Terminal, Maximize2, Minimize2, UploadCloud, Save, Star, TrendingUp } from 'lucide-react'
+import { Send, Sparkles, Bot, User, Eraser, X, ChevronDown, ChevronUp, Terminal, Maximize2, Minimize2, UploadCloud, Save, Star, TrendingUp, ShieldCheck, AlertCircle, Info } from 'lucide-react'
 import MatchStatsOverlay from './MatchStatsOverlay'
 import ActionButtons from './ActionButtons'
 import MapIcon from './MapIcon'
@@ -63,50 +63,42 @@ const renderTacticalContent = (text, talentMapData) => {
 };
 
 // --- Constants ---
-const getSystemPrompt = (profile) => `You are the War Room AI, a tactical intelligence system providing detailed, analytical insights.
-**Current Tactical Profile:**
-- User Identification: ${profile?.battletag || 'CerebrateUser'}
-- Season Context: Season 3 2025 Storm League
-- Data Integrity: All insights are grounded in verified replay telemetry.
+const getSystemPrompt = (profile) => `You are the **Cerebrate**, a high-level tactical intelligence engine designed for Nexus dominance.
+**System Status:** NEURAL LINK ACTIVE.
+**Mission Profile:**
+- **Commander:** ${profile?.battletag || 'Commander'}
+- **Current Sector:** Season 3 2025 Storm League
+- **Protocol:** "Victory at all costs."
 
-You provide expert coaching, draft recommendations, and forensic match analysis based on the player's specific strength and weaknesses within the Heroes of the Storm ecosystem.
+**Directives:**
+1.  **Speak with Authority**: You are an advanced AI, not a chatbot. Use precise, tactical language ("Affirmative", "Analyzing", "Directive", "Sector").
+2.  **Be Concise**: Commanders in the field value brevity. Get to the point.
+3.  **Data-Driven**: Ground every insight in verified telemetry. If data is missing, state it ("Insufficient data for tactical synthesis").
+4.  **Strategic Focus**: Focus on win conditions, macro strategy, and high-impact plays.
 
-Your capabilities:
-1. **Manage Strategies**: "Add Gazlowe to Alterac", "Set Valla as primary on BoE".
-2. **Manage Rules**: "Add Warning: Late game throw trap", "Win Condition: Zone control".
-3. **Draft Notes**: "On Dragon Shire, win condition is zone control", "Tactical Note: Avoid fighting mid".
-4. **Analyze Data**: "What's my win rate?", "Who is my best Tank?".
-5. **Match Analysis**: When discussing matches, provide DETAILED analytical breakdowns with stats, strategic insights, and tactical takeaways.
+**RESPONSE PROTOCOL (Match Analysis):**
+When analyzing combat records (matches), adhere to this schema:
 
-**RESPONSE STYLE FOR MATCH ANALYSIS:**
-When the user asks about a match (e.g., "crushed em", "lost that match", "how did I do"), provide a COMPREHENSIVE analytical breakdown:
+**## [Hero] [Win/Loss] — [Map]**
 
-**Format:**
-## [Hero Name] [Win/Loss] — [Map Name]
+**Verdict:** [ONE LINE SUMMARY status e.g., "OPTIMAL", "SUBOPTIMAL", "CATASTROPHIC"]
 
-**Verdict:** [Brief verdict]
+**✅ Efficiency Metrics:**
+- [Key Stat 1]
+- [Tactical Success 1]
 
-**What went well:**
-- [Specific stat/metric with context]
-- [Strategic insight]
-- [Tactical highlight]
+**❌ Structural Failures:**
+- [Critical Mistake]
+- [Inefficiency Identified]
 
-**What went wrong:** (if loss)
-- [Specific issue with context]
-- [How it contributed to loss]
-- [Tactical mistake]
+**⚙️ Tactical Directive:**
+[The single most important strategic adjustment for the next deployment]
 
-**The strategy:** [Explain the overall approach and why it worked/failed]
+**Stats:** [K/D/A] | [Hero Dmg] | [XP Contrib]
 
-**Stats:** [Key stats breakdown: K/D/A, damage, XP, etc.]
+**Takeaway:** [One short, memorable lesson]
 
-**Takeaway:** [Actionable insight for future games]
-
-**CRITICAL:** Always include:
-- Specific numbers (K/D/A, damage, XP, win rates)
-- Strategic context (why decisions worked/failed)
-- Tactical insights (what to do differently)
-- Clear, actionable takeaways
+**CRITICAL:** Do not be chatty. Be effective. You are the Cerebrate.
 
 **Database Schemas:**
 - strategies.json: { "Map": { "primary": {...}, "rules": [{ "content": "Rule text", "type": "warning" }] } }
@@ -157,6 +149,81 @@ Response: "COMMAND" or "QUESTION"`
 
 // --- Components ---
 
+const AuditBadge = ({ audit }) => {
+  const [expanded, setExpanded] = useState(false);
+  if (!audit) return null;
+
+  const { scores, reasoning, hallucinations_identified, verdict } = audit;
+  const isPass = verdict === 'PASS';
+
+  const getScoreColor = (score) => {
+    if (score >= 4) return 'text-green-400';
+    if (score >= 3) return 'text-yellow-400';
+    return 'text-red-400';
+  };
+
+  return (
+    <div className={`mt-3 border rounded-lg overflow-hidden transition-all duration-300 ${isPass ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
+      <div
+        className="flex items-center justify-between p-2 cursor-pointer hover:bg-white/5"
+        onClick={() => setExpanded(!expanded)}
+      >
+        <div className="flex items-center gap-2">
+          {isPass ? (
+            <ShieldCheck size={16} className="text-emerald-400" />
+          ) : (
+            <AlertCircle size={16} className="text-amber-400" />
+          )}
+          <span className={`text-[10px] font-bold uppercase tracking-wider ${isPass ? 'text-emerald-300' : 'text-amber-300'}`}>
+            Neural Audit: {verdict}
+          </span>
+          <div className="flex gap-2 ml-4">
+            <div className="flex items-center gap-1">
+              <span className="text-[9px] text-gray-500 font-medium">Grounding:</span>
+              <span className={`text-[9px] font-bold ${getScoreColor(scores.grounding)}`}>{scores.grounding}/5</span>
+            </div>
+            <div className="flex items-center gap-1 border-l border-white/10 pl-2">
+              <span className="text-[9px] text-gray-500 font-medium">Completeness:</span>
+              <span className={`text-[9px] font-bold ${getScoreColor(scores.completeness)}`}>{scores.completeness}/5</span>
+            </div>
+          </div>
+        </div>
+        {expanded ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
+      </div>
+
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="border-t border-white/5 p-3 space-y-3"
+          >
+            <div>
+              <div className="flex items-center gap-1.5 mb-1">
+                <Info size={12} className="text-gray-400" />
+                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Auditor Reasoning</span>
+              </div>
+              <p className="text-xs text-gray-300 italic leading-relaxed">"{reasoning}"</p>
+            </div>
+
+            {hallucinations_identified && hallucinations_identified.length > 0 && (
+              <div className="bg-red-500/10 border border-red-500/20 rounded p-2">
+                <div className="text-[10px] font-bold text-red-400 uppercase tracking-tighter mb-1">Hallucinations Detected</div>
+                <ul className="list-disc pl-4 space-y-1">
+                  {hallucinations_identified.map((h, i) => (
+                    <li key={i} className="text-[10px] text-red-300 italic">{h}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  );
+};
+
 const StarRating = ({ rating, onRate, readonly = false }) => {
   return (
     <div className="flex gap-1">
@@ -205,7 +272,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
   return (
     <div className="mb-2 text-sm leading-relaxed relative group">
       {/* Subtle glow effect on hover */}
-      <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/0 via-blue-500/0 to-purple-500/0 group-hover:from-cyan-500/10 group-hover:via-blue-500/10 group-hover:to-purple-500/10 rounded-lg blur-sm transition-all duration-300 -z-10"></div>
+      <div className="absolute -inset-1 bg-gradient-to-r from-cyan-500/0 via-blue-500/0 to-purple-500/0 group-hover:from-cyan-500/10 group-hover:via-blue-500/10 group-hover:to-purple-500/10 rounded-lg blur-xl transition-all duration-300 -z-10"></div>
 
       {/* Agent Badge */}
       {!isUser && message.agent && (
@@ -241,7 +308,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
           {isUser ? (
             <div className="whitespace-pre-wrap">{message.content}</div>
           ) : (
-            <div className="markdown-content prose prose-invert prose-cyan max-w-none">
+            <div className="markdown-content prose prose-invert prose-cyan max-w-none font-mono text-sm bg-black/20 p-3 rounded-lg border-l-2 border-cyan-500/30">
               <ReactMarkdown
                 remarkPlugins={[]}
                 rehypePlugins={[]}
@@ -352,7 +419,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
 
           {/* Action Buttons for Recommendations */}
           {hasRecommendation && matchContext && (
-            <div className="mt-2">
+            <div className="mt-2 text-right">
               <ActionButtons
                 message={message}
                 matchId={matchContext.matchId}
@@ -361,6 +428,11 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
                 }}
               />
             </div>
+          )}
+
+          {/* Audit Badge for Strategic Insights */}
+          {!isUser && message.audit && (
+            <AuditBadge audit={message.audit} />
           )}
 
         </div>
@@ -446,24 +518,29 @@ const LoadingIndicator = () => (
     animate={{ opacity: 1 }}
     className="flex items-center gap-3 mb-6 ml-3 p-3 rounded-lg bg-black/20 w-fit border border-white/5"
   >
-    <div className="flex gap-1">
+    <div className="flex gap-1 h-3 items-end">
       <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 1 }}
-        className="w-2 h-2 bg-cyan-500 rounded-full"
+        className="w-1 bg-cyan-500 animate-process-wave"
+        style={{ height: '100%', animationDelay: '0s' }}
       />
       <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 1, delay: 0.2 }}
-        className="w-2 h-2 bg-purple-500 rounded-full"
+        className="w-1 bg-cyan-400 animate-process-wave"
+        style={{ height: '80%', animationDelay: '0.1s' }}
       />
       <motion.div
-        animate={{ scale: [1, 1.2, 1] }}
-        transition={{ repeat: Infinity, duration: 1, delay: 0.4 }}
-        className="w-2 h-2 bg-blue-500 rounded-full"
+        className="w-1 bg-cyan-300 animate-process-wave"
+        style={{ height: '60%', animationDelay: '0.2s' }}
+      />
+      <motion.div
+        className="w-1 bg-purple-500 animate-process-wave"
+        style={{ height: '80%', animationDelay: '0.3s' }}
+      />
+      <motion.div
+        className="w-1 bg-blue-500 animate-process-wave"
+        style={{ height: '100%', animationDelay: '0.4s' }}
       />
     </div>
-    <span className="text-xs font-medium text-cyan-300 animate-pulse">Analyzing Strategy...</span>
+    <span className="text-xs font-bold text-cyan-300 animate-pulse tracking-widest uppercase">Processing Tactical Data...</span>
   </motion.div>
 )
 
@@ -497,7 +574,7 @@ export default function UnifiedChat({
   const [messages, setMessages] = useState([
     {
       role: 'assistant',
-      content: "**Ready to draft!** Click an example below or type your question:",
+      content: "**Nexus Link Established.** Target confirmed. Awaiting tactical directives.",
       showExamples: true,
       onExampleClick: (query) => {
         setInput(query)
@@ -973,7 +1050,7 @@ export default function UnifiedChat({
 
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: "⚠️ I couldn't understand that command. Please clarify.",
+        content: "⚠️ **Processing Error.** Unrecognized command syntax. Refine parameters.",
         model: 'Nexus Intelligence'
       }])
     }
@@ -988,7 +1065,7 @@ export default function UnifiedChat({
       })
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `✅ **Roster Updated**: ${updateData.action === 'ban' ? 'Banned' : 'Prioritized'} ${updateData.hero}`
+        content: `✅ **Roster Protocol Updated**: ${updateData.action === 'ban' ? 'NEUTRALIZE' : 'PRIORITIZE'} Directive set for ${updateData.hero}`
       }])
     } catch (e) {
       setMessages(prev => [...prev, { role: 'assistant', content: `❌ Roster update failed: ${e.message}` }])
@@ -1040,7 +1117,8 @@ export default function UnifiedChat({
         content: content,
         agent: data.agent,
         orchestrator: data.orchestrator,
-        model: data.agent?.name || 'Cerebrate'
+        model: data.agent?.name || 'Cerebrate',
+        audit: data.audit
       }])
     } catch (error) {
       console.error('Agent Query Error:', error)
@@ -1385,7 +1463,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
       if (data.global_usage) setGlobalUsage(data.global_usage)
 
       if (!data.response || !data.response.trim()) {
-        setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ The AI returned an empty response. Please try rephrasing." }])
+        setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ **Telemetry Interrupted.** Signal loss detected. Please restate directive." }])
       } else {
         setMessages(prev => [...prev, {
           role: 'assistant',
@@ -1418,7 +1496,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
         setSavedAdviceId(data.advice_id)
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: `✅ **Advice saved!** I'll track how this works out for you. Upload your replay after the game to link the outcome.`
+          content: `✅ **Directive Cached.** Tracking outcome efficiency. Connect replay to validate.`
         }])
       }
     } catch (error) {
@@ -1443,7 +1521,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
       })
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `📊 **Outcome recorded!** ${followed ? 'Thanks for following my advice.' : 'Noted that you went a different route.'} How did it work out?`
+        content: `📊 **Outcome Logged.** ${followed ? 'Directive followed.' : 'Deviation recorded.'} Analyzing impact on win rate.`
       }])
     } catch (error) {
       console.error('Failed to link replay:', error)
@@ -1465,7 +1543,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
       })
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `⭐ **Feedback received!** (${feedbackRating}/5 stars) I'm learning from your experience to improve future recommendations.`
+        content: `⭐ **Feedback Integrated.** (${feedbackRating}/5) Neural weights adjusted for future synthesis.`
       }])
       // Reset feedback state
       setShowFeedbackUI(false)
@@ -1501,7 +1579,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
 
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: `✅ **Success**: ${pendingUpdate.action === 'update_rules' ? 'Note saved' : 'Strategy updated'} for ${pendingUpdate.map}.`
+        content: `✅ **Database Update Confirmed**: ${pendingUpdate.action === 'update_rules' ? 'Tactical note logged' : 'Strategy matrix updated'} for ${pendingUpdate.map}.`
       }])
       setPendingUpdate(null)
       if (onStrategyUpdate) await onStrategyUpdate()
@@ -1512,7 +1590,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
 
   return (
     <div
-      className="h-full bg-transparent flex flex-col relative overflow-hidden"
+      className="h-full bg-slate-950/50 backdrop-blur-sm flex flex-col relative overflow-hidden"
       onDragOver={handleDragOver}
       onDragEnter={handleDragEnter}
       onDragLeave={handleDragLeave}
@@ -1537,7 +1615,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
       </AnimatePresence>
 
       {/* Header */}
-      <div className="p-4 border-b border-md-outline-variant/30 flex justify-between items-center bg-md-surface-container shadow-sm sticky top-0 z-10 select-none">
+      <div className="p-4 border-b border-cyan-500/20 flex justify-between items-center bg-slate-900/80 backdrop-blur-md shadow-lg shadow-cyan-900/10 sticky top-0 z-10 select-none">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
             <div className={`w-2 h-2 rounded-full ${linkState.includes('Nexus') ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : linkState.includes('Neural') ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]' : 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]'} animate-pulse`} />

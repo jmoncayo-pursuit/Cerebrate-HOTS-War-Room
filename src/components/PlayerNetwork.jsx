@@ -1,15 +1,95 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { normalizeHeroName } from '../utils/heroUtils';
-import { ChevronRight, Activity, Users, Target, Sword, Swords, AlertTriangle, Search, Info, BarChart3, Shield, Zap, TrendingUp, History, BrainCircuit } from 'lucide-react';
+import { ChevronRight, Activity, Users, Target, Sword, Swords, AlertTriangle, Search, Info, BarChart3, Shield, Zap, TrendingUp, History, BrainCircuit, ShieldCheck, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroText from './HeroText';
 import SelfHealingErrorBoundary from './SelfHealingErrorBoundary';
 import './PlayerNetwork.css';
 
 // StrategyContent now uses HeroText component
-const StrategyContent = ({ text, heroData }) => {
-    if (!text) return null;
-    return <div className="strategy-content text-slate-300 leading-relaxed whitespace-pre-wrap"><HeroText text={text} heroData={heroData} /></div>;
+// AuditBadge component for social briefs
+const AuditBadge = ({ audit }) => {
+    const [expanded, setExpanded] = useState(false);
+    if (!audit) return null;
+
+    const { scores, reasoning, hallucinations_identified, verdict } = audit;
+    const isPass = verdict === 'PASS';
+
+    const getScoreColor = (score) => {
+        if (score >= 4) return 'text-green-400';
+        if (score >= 3) return 'text-yellow-400';
+        return 'text-red-400';
+    };
+
+    return (
+        <div className={`mt-3 border rounded-lg overflow-hidden transition-all duration-300 ${isPass ? 'border-emerald-500/30 bg-emerald-500/5' : 'border-amber-500/30 bg-amber-500/5'}`}>
+            <div
+                className="flex items-center justify-between p-2 cursor-pointer hover:bg-white/5"
+                onClick={() => setExpanded(!expanded)}
+            >
+                <div className="flex items-center gap-2">
+                    {isPass ? (
+                        <ShieldCheck size={16} className="text-emerald-400" />
+                    ) : (
+                        <AlertCircle size={16} className="text-amber-400" />
+                    )}
+                    <span className={`text-[10px] font-bold uppercase tracking-wider ${isPass ? 'text-emerald-300' : 'text-amber-300'}`}>
+                        Neural Audit: {verdict}
+                    </span>
+                    <div className="flex gap-2 ml-4">
+                        <div className="flex items-center gap-1">
+                            <span className="text-[9px] text-gray-500 font-medium">Grounding:</span>
+                            <span className={`text-[9px] font-bold ${getScoreColor(scores.grounding)}`}>{scores.grounding}/5</span>
+                        </div>
+                    </div>
+                </div>
+                {expanded ? <ChevronUp size={14} className="text-gray-500" /> : <ChevronDown size={14} className="text-gray-500" />}
+            </div>
+
+            <AnimatePresence>
+                {expanded && (
+                    <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: 'auto', opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        className="border-t border-white/5 p-3 space-y-3"
+                    >
+                        <div>
+                            <div className="flex items-center gap-1.5 mb-1">
+                                <Info size={12} className="text-gray-400" />
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter">Auditor Reasoning</span>
+                            </div>
+                            <p className="text-xs text-gray-300 italic leading-relaxed">"{reasoning}"</p>
+                        </div>
+
+                        {hallucinations_identified && hallucinations_identified.length > 0 && (
+                            <div className="bg-red-500/10 border border-red-500/20 rounded p-2">
+                                <div className="text-[10px] font-bold text-red-400 uppercase tracking-tighter mb-1">Hallucinations Detected</div>
+                                <ul className="list-disc pl-4 space-y-1">
+                                    {hallucinations_identified.map((h, i) => (
+                                        <li key={i} className="text-[10px] text-red-300 italic">{h}</li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+};
+
+// StrategyContent now handles audits
+const StrategyContent = ({ player, heroData }) => {
+    if (!player.aiStrategy) return null;
+    return (
+        <div className="strategy-wrapper">
+            <div className="strategy-content text-slate-300 leading-relaxed whitespace-pre-wrap">
+                <HeroText text={player.aiStrategy} heroData={heroData} />
+            </div>
+            {player.audit && <AuditBadge audit={player.audit} />}
+        </div>
+    );
 };
 
 const PlayerNetworkContent = () => {
@@ -191,7 +271,7 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
             setPlayers(prev => {
                 const updated = prev.map(p =>
                     p.id === player.id
-                        ? { ...p, aiStrategy: data.response }
+                        ? { ...p, aiStrategy: data.response, audit: data.audit }
                         : p
                 );
 
@@ -682,18 +762,34 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                                                                     <img
                                                                         src={getHeroPortrait(match.hero)}
                                                                         alt={match.hero}
-                                                                        className="match-hero-portrait shadow-md"
+                                                                        className="match-hero-portrait shadow-md cursor-pointer hover:ring-2 hover:ring-cyan-500/50 transition-all"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: match.hero }));
+                                                                        }}
                                                                         onError={(e) => e.target.style.display = 'none'}
                                                                     />
-                                                                    <span className="match-hero">{match.hero}</span>
+                                                                    <span className="match-hero cursor-pointer hover:text-cyan-400"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: match.hero }));
+                                                                        }}>{match.hero}</span>
                                                                     <span className="match-vs text-[10px] font-black opacity-30 tracking-widest">VS</span>
                                                                     <img
                                                                         src={getHeroPortrait(match.my_hero)}
                                                                         alt={match.my_hero}
-                                                                        className="match-hero-portrait shadow-md"
+                                                                        className="match-hero-portrait shadow-md cursor-pointer hover:ring-2 hover:ring-cyan-500/50 transition-all"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: match.my_hero }));
+                                                                        }}
                                                                         onError={(e) => e.target.style.display = 'none'}
                                                                     />
-                                                                    <span className="match-your-hero">{match.my_hero}</span>
+                                                                    <span className="match-your-hero cursor-pointer hover:text-cyan-400"
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: match.my_hero }));
+                                                                        }}>{match.my_hero}</span>
                                                                     <div className={`match-result-badge ${match.result.toLowerCase()}`}>
                                                                         {match.result === 'WIN' ? <Shield size={10} /> : <AlertTriangle size={10} />}
                                                                         <span>{match.result}</span>
@@ -713,7 +809,7 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                                                             <div className="h-px flex-1 bg-gradient-to-r from-purple-500/20 to-transparent ml-4" />
                                                         </div>
                                                         {player.aiStrategy ? (
-                                                            <StrategyContent text={player.aiStrategy} heroData={heroData} />
+                                                            <StrategyContent player={player} heroData={heroData} />
                                                         ) : (
                                                             <div className="text-slate-600 italic text-[11px] p-4 text-center border border-dashed border-white/5 rounded-lg">
                                                                 No dossier extracted for {player.name}. Initiate Intelligence Extraction to generate a tactical brief.

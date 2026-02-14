@@ -392,8 +392,43 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
         
         if summary and summary.get('success'):
             results = summary['analysis']
+            
+            # --- 🕵️ NEURAL AUDIT: Match Summary ---
+            try:
+                from agents.cerebrate_orchestrator import CerebrateOrchestrator
+                intel = self._get_intel_service()
+                orchestrator = CerebrateOrchestrator(call_gemini_fn=intel.generate_chat_response)
+                
+                # Context for audit includes core stats
+                audit_context = {
+                    'target_query': f"Analyze match on {match_data.get('map')}",
+                    'target_context': f"Result: {match_data.get('result')}, Hero: {match_data.get('hero')}. Stats: {json.dumps(results.get('key_insights', {}))}",
+                    'target_response': results.get('summary', ''),
+                    'audit_type': 'CHAT'
+                }
+                summary_audit = orchestrator.agents['auditor'].analyze(match_id, audit_context)
+                if summary_audit.get('success'):
+                    results['audit'] = summary_audit.get('audit')
+            except Exception as audit_err:
+                ColoredLogger.warn(f"Match Summary Audit Failed: {audit_err}", "REPLAY")
+
             if social:
                 results['social_insights'] = social
+                
+                # --- 🕵️ NEURAL AUDIT: Social Insights ---
+                try:
+                    social_audit_context = {
+                        'target_query': "Social Intelligence Extraction",
+                        'target_context': json.dumps([{ 'name': p['name'], 'hero': p['hero'], 'team': p['team'] } for p in players]),
+                        'target_response': social.get('social_summary', ''),
+                        'audit_type': 'SOCIAL'
+                    }
+                    social_audit = orchestrator.agents['auditor'].analyze(match_id, social_audit_context)
+                    if social_audit.get('success'):
+                        results['social_insights']['audit'] = social_audit.get('audit')
+                except Exception as s_audit_err:
+                    ColoredLogger.warn(f"Social Audit Failed: {s_audit_err}", "REPLAY")
+
                 # PERSIST SOCIAL NOTES to Database
                 try:
                     for node in social.get('notable_nodes', []):

@@ -108,7 +108,7 @@ Sections:
                 # Get match count
                 with self.db._get_connection() as conn:
                     stats["total_matches"] = conn.execute("SELECT COUNT(*) FROM matches").fetchone()[0]
-                    stats["total_players"] = conn.execute("SELECT COUNT(DISTINCT name) FROM match_players").fetchone()[0]
+                    stats["total_players"] = conn.execute("SELECT COUNT(DISTINCT player_name) FROM match_players").fetchone()[0]
                     
                     # Get last ingestion time
                     last_match = conn.execute("SELECT date FROM matches ORDER BY date DESC LIMIT 1").fetchone()

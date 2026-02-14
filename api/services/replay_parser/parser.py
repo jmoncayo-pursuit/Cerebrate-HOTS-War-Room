@@ -155,7 +155,7 @@ def parse_replay(replay_path, options=None):
             "map": map_name,
             "game_length": int(game_duration_seconds),
             "timestamp_iso": timestamp_iso,
-            "result": "Win" if user_won else "Loss",
+            "result": "WIN" if user_won else "LOSS",
             "hero": user_player['hero'],
             "players": players,
             "user_name": user_player['name'],
@@ -165,7 +165,8 @@ def parse_replay(replay_path, options=None):
                 "bans": bans,
                 "structure_destructions": stats_data.get('structure_destructions', []),
                 "merc_captures": stats_data.get('merc_captures', []),
-                "boss_captures": stats_data.get('boss_captures', [])
+                "boss_captures": stats_data.get('boss_captures', []),
+                "player_deaths": stats_data.get('player_deaths', [])
             }
         }
 

@@ -6,10 +6,12 @@ import VerificationModal from '../components/VerificationModal';
 export default function DataProvenance() {
     const [ingestionLog, setIngestionLog] = useState([]);
     const [sourceStatus, setSourceStatus] = useState({});
-    const [conflicts, setConflicts] = useState([]);
     const [selectedSource, setSelectedSource] = useState('all');
     const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [message, setMessage] = useState(null);
+    const [lineageResults, setLineageResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
+    const [conflicts, setConflicts] = useState([]);
 
     useEffect(() => {
         loadIngestionData();
@@ -279,41 +281,70 @@ export default function DataProvenance() {
                             if (e.key === 'Enter') {
                                 const val = e.target.value;
                                 if (!val) return;
+                                setIsSearching(true);
                                 try {
                                     const res = await fetch(`/api/data_sources/lineage/search?q=${encodeURIComponent(val)}`);
                                     const data = await res.json();
-                                    // Normally we'd set state here
-                                    console.log("Lineage Results:", data.results);
-                                } catch (err) { }
+                                    setLineageResults(data.results || []);
+                                } catch (err) {
+                                    setLineageResults([]);
+                                } finally {
+                                    setIsSearching(false);
+                                }
                             }
                         }}
                     />
-                    <div className="absolute right-4 top-3 text-[10px] text-slate-500 uppercase font-bold">Press Enter to Probe</div>
+                    <div className="absolute right-4 top-3 text-[10px] text-slate-500 uppercase font-bold">
+                        {isSearching ? 'Probing...' : 'Press Enter to Probe'}
+                    </div>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
-                    <div className="bg-white/5 border border-white/5 rounded-xl p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                            <h4 className="text-sm font-bold text-white uppercase tracking-wider">Protocol: Statistical Integrity</h4>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-cyan-500/20">
-                                <span className="text-xl">📂</span>
-                                <div>
-                                    <div className="text-xs font-black text-cyan-400 uppercase tracking-tighter">Verified Link (TRUTH)</div>
-                                    <p className="text-sm text-slate-300 mt-1">Data originating from local match replay streams. 100% deterministic.</p>
+                    {lineageResults.length > 0 ? (
+                        lineageResults.map((res, i) => (
+                            <div key={i} className="bg-white/5 border border-cyan-500/20 rounded-xl p-6 animate-in slide-in-from-left duration-500">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee]" />
+                                        <h4 className="text-sm font-bold text-white uppercase tracking-wider">Protocol: {res.target} // {res.type}</h4>
+                                    </div>
+                                    <span className="text-[10px] text-cyan-500 font-black uppercase italic tracking-widest">Confidence: {res.confidence}</span>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-white/5">
+                                    <span className="text-xl">{res.source === 'SECURE_DATALINK' ? '📂' : '🧠'}</span>
+                                    <div>
+                                        <div className={`text-xs font-black uppercase tracking-tighter ${res.source === 'SECURE_DATALINK' ? 'text-cyan-400' : 'text-purple-400'}`}>
+                                            Source Archive: {res.source}
+                                        </div>
+                                        <p className="text-sm text-slate-300 mt-1">{res.evidence}</p>
+                                    </div>
                                 </div>
                             </div>
-                            <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-purple-500/20">
-                                <span className="text-xl">🧠</span>
-                                <div>
-                                    <div className="text-xs font-black text-purple-400 uppercase tracking-tighter">Strategic Synthesis (NEURAL)</div>
-                                    <p className="text-sm text-slate-300 mt-1">Directives and verdicts formulated via AI analysis of multiple data streams.</p>
+                        ))
+                    ) : (
+                        <div className="bg-white/5 border border-white/5 rounded-xl p-6">
+                            <div className="flex items-center gap-3 mb-4">
+                                <div className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                                <h4 className="text-sm font-bold text-white uppercase tracking-wider">Protocol: Statistical Integrity</h4>
+                            </div>
+                            <div className="space-y-4">
+                                <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-cyan-500/20">
+                                    <span className="text-xl">📂</span>
+                                    <div>
+                                        <div className="text-xs font-black text-cyan-400 uppercase tracking-tighter">Verified Link (TRUTH)</div>
+                                        <p className="text-sm text-slate-300 mt-1">Data originating from local match replay streams. 100% deterministic.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4 p-4 rounded bg-black/40 border border-purple-500/20">
+                                    <span className="text-xl">🧠</span>
+                                    <div>
+                                        <div className="text-xs font-black text-purple-400 uppercase tracking-tighter">Strategic Synthesis (NEURAL)</div>
+                                        <p className="text-sm text-slate-300 mt-1">Directives and verdicts formulated via AI analysis of multiple data streams.</p>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
+                    )}
                 </div>
             </div>
         </div>

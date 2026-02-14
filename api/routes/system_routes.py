@@ -13,7 +13,7 @@ def source_status():
     with db._get_connection() as conn:
         match_count = conn.execute("SELECT COUNT(*) FROM matches").fetchone()[0]
         player_records = conn.execute("SELECT COUNT(*) FROM match_players").fetchone()[0]
-        hero_mastery = conn.execute("SELECT COUNT(*) FROM hero_stats WHERE games_played > 0").fetchone()[0]
+        hero_mastery = conn.execute("SELECT COUNT(*) FROM global_meta_stats WHERE games_played > 0").fetchone()[0]
 
     return jsonify({
         "secure_datalink": {
@@ -49,7 +49,7 @@ def lineage_search():
 
     with db._get_connection() as conn:
         # Search for hero provenance
-        heroes = conn.execute("SELECT hero, win_rate, games_played FROM hero_stats WHERE lower(hero) LIKE ?", (f"%{query}%",)).fetchall()
+        heroes = conn.execute("SELECT hero, win_rate, games_played FROM global_meta_stats WHERE lower(hero) LIKE ?", (f"%{query}%",)).fetchall()
         for h in heroes:
             results.append({
                 "target": h['hero'],

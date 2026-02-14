@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import BuildDisplay from './BuildDisplay'
+import ConfidenceScore from './ConfidenceScore'
 
 export default function StrongHeroCard({ hero, profile, heroData, talentMap, talentData }) {
     const [topBuilds, setTopBuilds] = useState([])
@@ -80,7 +81,11 @@ export default function StrongHeroCard({ hero, profile, heroData, talentMap, tal
                                 {delta > 0 ? '+' : ''}{delta}%
                             </span>
                         )}
-                        <span className="text-green-400 font-bold">{hero.season_wr}%</span>
+                        <ConfidenceScore
+                            value={hero.season_wr}
+                            n={hero.season_games}
+                            className="scale-75 origin-right"
+                        />
                     </div>
                     <div className="text-[9px] text-slate-500 uppercase flex items-center justify-end gap-1">
                         S3 WR {hero.lt_wr > 0 && <span className="opacity-50">vs {hero.lt_wr}% LT</span>}
@@ -108,12 +113,11 @@ export default function StrongHeroCard({ hero, profile, heroData, talentMap, tal
                         <div className="flex justify-between items-center mb-1">
                             <span className="text-[10px] uppercase font-bold tracking-wider opacity-70">Recommended Build</span>
                             <span className="text-[10px] text-slate-400">
-                                {Number(topBuilds[0].stats.wr).toFixed(1)}% WR
-                                {topBuilds[0].stats.games && (
-                                    topBuilds[0].stats.games === hero.lifetime_games ?
-                                        <span className="text-cyan-400 opacity-80 ml-1 font-bold text-[9px] uppercase tracking-wide">(Signature)</span> :
-                                        <span className="text-slate-500 opacity-80 ml-1">({topBuilds[0].stats.games} Games)</span>
-                                )}
+                                <ConfidenceScore
+                                    value={Number(topBuilds[0].stats.wr).toFixed(1)}
+                                    n={topBuilds[0].stats.games || 0}
+                                    className="scale-[0.6] origin-right"
+                                />
                             </span>
                         </div>
                         <BuildDisplay

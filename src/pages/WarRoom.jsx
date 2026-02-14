@@ -5,6 +5,7 @@ import MapIcon from '../components/MapIcon';
 import { getMapImagePath, getMapColor } from '../utils/mapUtils';
 import { normalizeHeroName } from '../utils/heroUtils';
 import BuildDisplay from '../components/BuildDisplay';
+import ConfidenceScore from '../components/ConfidenceScore';
 import { calculateYourStats } from '../utils/statsUtils';
 import { useReplayData } from '../hooks/useReplayData';
 
@@ -530,9 +531,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                   />
                   <div className="map-info">
                     <div className="map-name">{map.name}</div>
-                    <span className={`map-wr ${map.wr >= 50 ? 'positive' : 'negative'}`}>
-                      {map.wr}%
-                    </span>
+                    <ConfidenceScore value={map.wr} n={map.w + map.l} className="scale-75 origin-right" />
                   </div>
                 </div>
 
@@ -549,7 +548,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                         <div className="hero-info">
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
                           {h.isVerified && <span className="verified-badge">VERIFIED</span>}
-                          <span className="hero-stats">{h.wr.toFixed(1)}% ({h.games}g)</span>
+                          <ConfidenceScore value={h.wr.toFixed(1)} n={h.games} className="scale-75 origin-right" />
                         </div>
                         <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
@@ -568,10 +567,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                       <div key={i} className="hero-item proven">
                         <div className="hero-info">
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
-                          <span className="hero-stats">
-                            Lifetime: {h.wr.toFixed(1)}% ({h.games}g)
-                            {h.s3Games > 0 && ` · ${SEASON_NAME}: ${h.s3WR.toFixed(1)}% (${h.s3Games}g)`}
-                          </span>
+                          <ConfidenceScore value={h.wr.toFixed(1)} n={h.games} className="scale-75 origin-right" />
                         </div>
                         <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
@@ -590,10 +586,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                       <div key={i} className="hero-item hot">
                         <div className="hero-info">
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
-                          <span className="hero-stats">
-                            {h.s3WR.toFixed(1)}% ({h.s3Games}g)
-                            {h.isVerified && <span className="text-green-500/60 ml-1 text-[8px]">✓ Verified</span>}
-                          </span>
+                          <ConfidenceScore value={h.s3WR.toFixed(1)} n={h.s3Games} className="scale-75 origin-right" />
                         </div>
                         <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
@@ -612,7 +605,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                       <div key={i} className="hero-item untapped">
                         <div className="hero-info">
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
-                          <span className="hero-stats">Lifetime: {h.overallWR.toFixed(1)}% ({h.totalGames}g)</span>
+                          <ConfidenceScore value={h.overallWR.toFixed(1)} n={h.totalGames} className="scale-75 origin-right" />
                         </div>
                         <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
@@ -692,7 +685,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                     {mapPerf.avoid.slice(0, 5).map((h, i) => (
                       <div key={i} className="avoid-item">
                         <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
-                        <span className="hero-stats">{h.wr.toFixed(1)}% ({h.games}g)</span>
+                        <ConfidenceScore value={h.wr.toFixed(1)} n={h.games} className="scale-75 origin-right" />
                       </div>
                     ))}
                   </div>

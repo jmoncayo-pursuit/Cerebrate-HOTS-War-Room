@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import BuildDisplay from './BuildDisplay'
+import ConfidenceScore from './ConfidenceScore'
 
 export default function AvoidFixHeroCard({ hero, profile, heroData, talentMap, talentData }) {
     const [topBuilds, setTopBuilds] = useState([])
@@ -70,7 +71,11 @@ export default function AvoidFixHeroCard({ hero, profile, heroData, talentMap, t
                                 {delta > 0 ? '+' : ''}{delta}%
                             </span>
                         )}
-                        <span className="text-red-400 font-bold">{hero.season_wr}%</span>
+                        <ConfidenceScore
+                            value={hero.season_wr}
+                            n={hero.season_games}
+                            className="scale-75 origin-right"
+                        />
                     </div>
                     <div className="text-[9px] text-slate-500 uppercase flex items-center justify-end gap-1">
                         S3 WR {hero.lt_wr > 0 && <span className="opacity-50">vs {hero.lt_wr}% LT</span>}
@@ -101,12 +106,11 @@ export default function AvoidFixHeroCard({ hero, profile, heroData, talentMap, t
                                 {topBuilds[0].isMeta ? 'Try Meta Build' : 'Your Build'}
                             </span>
                             <span className="text-[10px] text-slate-400">
-                                {Number(topBuilds[0].stats.wr).toFixed(1)}% WR
-                                {topBuilds[0].stats.games && (
-                                    <span className="text-slate-500 opacity-80 ml-1">
-                                        ({topBuilds[0].stats.games} Games)
-                                    </span>
-                                )}
+                                <ConfidenceScore
+                                    value={Number(topBuilds[0].stats.wr).toFixed(1)}
+                                    n={topBuilds[0].stats.games || 0}
+                                    className="scale-[0.6] origin-right"
+                                />
                             </span>
                         </div>
                         <BuildDisplay

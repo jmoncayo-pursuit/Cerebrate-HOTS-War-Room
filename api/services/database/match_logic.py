@@ -50,4 +50,22 @@ def execute_upsert(db, match_data):
     # Post-processing: Update Social Intelligence
     db.update_social_stats(mid)
     
+    # Post-processing: Update Global Meta Stats (Incremental)
+    # Ideally should be optimized, but for now simple re-calc for affected heroes
+    with db._get_connection() as conn:
+        for p in m.get('players', []):
+            hero = p['hero']
+            row = conn.execute("""
+                SELECT COUNT(*) as games, SUM(win) as wins, AVG(hero_level) as lvl
+                FROM match_players WHERE hero = ?
+            """, (hero,)).fetchone()
+            
+            if row and row['games'] > 0:
+                wr = round((row['wins'] / row['games']) * 100, 1)
+                conn.execute("""
+                    INSERT OR REPLACE INTO global_meta_stats (hero, games_played, win_rate, kda, avg_level, updated_at)
+                    VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
+                """, (hero, row['games'], wr, 0.0, row['lvl']))
+        conn.commit()
+
     return True

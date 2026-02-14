@@ -11,6 +11,7 @@ const PlayerNetwork = lazy(() => import('./components/PlayerNetwork'))
 const WarRoom = lazy(() => import('./pages/WarRoom'))
 const DataProvenance = lazy(() => import('./pages/DataProvenance'))
 const AgentDashboard = lazy(() => import('./components/AgentDashboard'))
+const DraftSimulation = lazy(() => import('./components/DraftSimulation'))
 const TemporalAnalysis = lazy(() => import('./components/TemporalAnalysis'))
 const CompositionMatrix = lazy(() => import('./components/tactical/CompositionMatrix'))
 const DossierHub = lazy(() => import('./pages/DossierHub'))
@@ -19,7 +20,14 @@ const UnifiedChat = lazy(() => import('./components/UnifiedChat'))
 
 function App() {
   const { matches, heroes, profile, loading, error, refresh } = useReplayData()
-  const [selectedHeroes, setSelectedHeroes] = useState([])
+  const [selectedHeroes, setSelectedHeroes] = useState(() => {
+    try {
+      const saved = localStorage.getItem('selectedHeroes')
+      return saved ? JSON.parse(saved) : []
+    } catch {
+      return []
+    }
+  })
   const [viewMode, setViewMode] = useState('draft')
   const [selectedMap, setSelectedMap] = useState(null)
   const [excludedHeroes, setExcludedHeroes] = useState(() => {
@@ -67,6 +75,10 @@ function App() {
   useEffect(() => {
     localStorage.setItem('excludedHeroes', JSON.stringify(excludedHeroes))
   }, [excludedHeroes])
+
+  useEffect(() => {
+    localStorage.setItem('selectedHeroes', JSON.stringify(selectedHeroes))
+  }, [selectedHeroes])
 
   const loadStrategies = async () => {
     if (!serverAvailable) return
@@ -143,6 +155,8 @@ function App() {
               { id: 'players', label: 'Social', icon: '🤝', active: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
               { id: 'arsenal', label: 'War Room', icon: '🎯', active: 'border-red-500/50 bg-red-500/10 text-red-400' },
               { id: 'dossier-hub', label: 'Protocols', icon: '📁', active: 'border-slate-500/50 bg-slate-500/10 text-slate-300' },
+              { id: 'agents', label: 'Agents', icon: '🤖', active: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
+              { id: 'vision', label: 'Vision', icon: '👁️', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
               { id: 'provenance', label: 'Sources', icon: '📈', active: 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' },
             ].map((btn) => (
               <button
@@ -179,6 +193,8 @@ function App() {
             {viewMode === 'arsenal' && <WarRoom selectedMap={selectedMap} setSelectedMap={setSelectedMap} />}
             {viewMode === 'dossier-hub' && <DossierHub />}
             {viewMode === 'provenance' && <DataProvenance />}
+            {viewMode === 'agents' && <AgentDashboard />}
+            {viewMode === 'vision' && <DraftSimulation />}
           </Suspense>
 
           {activeMatchStats && (

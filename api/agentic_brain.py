@@ -54,12 +54,19 @@ class AgenticBrain:
     def _detect_hero(self, text):
         # We could pull all hero names from DB to be precise
         with self.db._get_connection() as conn:
-            heroes = conn.execute("SELECT hero FROM hero_stats").fetchall()
+            heroes = conn.execute("SELECT hero FROM global_meta_stats").fetchall()
             for h in heroes:
                 name = h['hero']
                 if name.lower() in text and len(name) > 3:
                     return name
         return None
+
+    def _get_hero_role(self, hero_name):
+        config = self.db.get_kv('hero_roles') or {}
+        for role, heroes in config.items():
+            if hero_name in heroes:
+                return role
+        return "Ranged Assassin" # Default fallback
 
     def _get_constraints(self):
         config = self.db.get_kv('cerebrate_config') or {}
@@ -70,8 +77,8 @@ class AgenticBrain:
         with self.db._get_connection() as conn:
             # 1. Fetch Lifetime Mastery for all played heroes (excluding dislikes if possible, but we'll filter later)
             mastery = conn.execute('''
-                SELECT hero, win_rate, games_played as games, wins
-                FROM hero_stats 
+                SELECT hero, win_rate, games_played as games
+                FROM global_meta_stats 
                 WHERE games_played > 0
                 ORDER BY games_played DESC
             ''').fetchall()
@@ -133,9 +140,15 @@ class AgenticBrain:
         with self.db._get_connection() as conn:
             # Lifetime stats
             lifetime = conn.execute('''
-                SELECT wins, losses, win_rate, games_played, level
-                FROM hero_stats WHERE hero = ?
+                SELECT win_rate, games_played, avg_level as level
+                FROM global_meta_stats WHERE hero = ?
             ''', (hero_name,)).fetchone()
+            
+            if lifetime:
+                l = dict(lifetime)
+                l['wins'] = round((l['win_rate'] / 100) * l['games_played'])
+                l['losses'] = l['games_played'] - l['wins']
+                lifetime = l
             
             # Map specific if provided
             map_stats = None
@@ -215,3 +228,47 @@ class AgenticBrain:
         dossier += "\nTACTICAL DIRECTIVE: Prioritize 'Verified' assets for optimal mission success. Use 'Neural' insights for high-variance situational adaptations.\n"
         dossier += "========================================================\n"
         return dossier
+
+    def get_draft_recommendations(self, map_name):
+        """Returns structured JSON recommendations for the Draft Simulator."""
+        audit = self._audit_map(map_name)
+        assets = audit.get("all_assets", [])
+        
+        # Scoring Algorithm matching _build_tactical_dossier
+        def get_score(a):
+            score = (a['lifetime_wr'] / 10) + (a['lifetime_games'] / 100)
+            if a['is_verified']:
+                score += 500 + (a['map_wr'] * 2)
+            return score
+
+        recommendations = []
+        roles = ["Tank", "Healer", "Bruiser", "Ranged Assassin"]
+        
+        # Get one top pick per major role for the vision panel
+        for role in roles:
+            role_assets = [a for a in assets if a['role'] == role]
+            if not role_assets: continue
+            
+            top_pick = sorted(role_assets, key=get_score, reverse=True)[0]
+            
+            # Simple tactic generation
+            tactic = f"High performance on {map_name}."
+            if top_pick['is_verified']:
+                tactic = f"Verified {top_pick['map_wr']}% win rate on this map archive."
+            elif top_pick['lifetime_wr'] > 55:
+                tactic = f"Exceptional lifetime mastery ({top_pick['lifetime_wr']}% WR)."
+
+            recommendations.append({
+                "hero": top_pick['hero'],
+                "role": role,
+                "win_rate": top_pick['map_wr'] if top_pick['is_verified'] else top_pick['lifetime_wr'],
+                "is_verified": top_pick['is_verified'],
+                "tactic": tactic,
+                "label": "Optimal Pick" if top_pick['is_verified'] else "Mastery Pick"
+            })
+            
+        return {
+            "map": map_name,
+            "recommendations": recommendations[:3], # Return top 3 for the UI
+            "confidence": 95 if any(r['is_verified'] for r in recommendations) else 75
+        }

@@ -85,14 +85,15 @@ export default function HeroText({ text, className = '', iconSize = 'w-5 h-5', c
                     newParts.push(
                         <span
                             key={uniqueKey}
-                            className={`inline-flex items-center gap-1 ${compact ? 'px-1 py-0' : 'px-2 py-0.5'} bg-slate-800/80 rounded border border-slate-700/50 mx-0.5 my-0.5 align-middle shadow-sm break-inside-avoid min-h-[24px]`}
+                            onClick={() => window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: name }))}
+                            className={`inline-flex items-center gap-1 ${compact ? 'px-1 py-0' : 'px-2 py-0.5'} bg-slate-800/80 rounded border border-slate-700/50 mx-0.5 my-0.5 align-middle shadow-sm break-inside-avoid min-h-[24px] cursor-pointer hover:bg-slate-700 hover:border-cyan-500/50 transition-all active:scale-95 group`}
                         >
                             <img
                                 src={`/images/heroes/${normalizeHeroName(name)}.png`}
                                 alt={name}
                                 width="20"
                                 height="20"
-                                className={`${iconSize} rounded shadow-inner border border-white/5 flex-shrink-0 object-cover`}
+                                className={`${iconSize} rounded shadow-inner border border-white/5 flex-shrink-0 object-cover group-hover:border-cyan-500/30`}
                                 loading="eager"
                                 decoding="async"
                                 onError={(e) => {
@@ -100,7 +101,7 @@ export default function HeroText({ text, className = '', iconSize = 'w-5 h-5', c
                                     e.target.src = '/images/heroes/unknown.png';
                                 }}
                             />
-                            <span className={`font-bold text-cyan-300 ${compact ? 'text-[10px]' : 'text-[11px]'} leading-none tracking-tight whitespace-nowrap`}>
+                            <span className={`font-bold text-cyan-300 ${compact ? 'text-[10px]' : 'text-[11px]'} leading-none tracking-tight whitespace-nowrap group-hover:text-cyan-200`}>
                                 {heroMatch}{possessiveMatch}
                             </span>
                         </span>

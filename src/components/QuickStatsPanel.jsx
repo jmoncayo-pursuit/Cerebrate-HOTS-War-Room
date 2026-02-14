@@ -13,6 +13,7 @@ import DataUpdateNotification from './DataUpdateNotification'
 import { useReplayData } from '../hooks/useReplayData'
 import { normalizeHeroName } from '../utils/heroUtils'
 import RankIcon from './RankIcon'
+import ConfidenceScore from './ConfidenceScore'
 
 export default function QuickStatsPanel({ onSelectMatch }) {
     const { matches: allMatches, profile, heroData, talentMap: talentMapData, talentData, loading: replayLoading, dataChanged, lastUpdated } = useReplayData()
@@ -201,9 +202,12 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                         return (
                             <>
                                 <RankIcon rank={profile?.rank_data?.storm_league?.current_rank} size="xs" />
-                                <span className="text-cyan-400 font-bold">{displayGames}</span> Season 3 Games • <span className={displayWR >= 50 ? 'text-green-400' : 'text-amber-400'}>
-                                    {displayWR}% WR
-                                </span>
+                                <ConfidenceScore
+                                    value={displayWR}
+                                    n={displayGames}
+                                    label="S3 Performance"
+                                    className="scale-75 origin-left"
+                                />
                                 {peakRank && (
                                     <span className="text-purple-400 font-semibold border-l border-purple-600/30 pl-3">
                                         🎯 Peak: {peakRank.rank} ({peakRank.season})

@@ -9,6 +9,7 @@ from .coach_agent import CoachAgent
 from .tactician_agent import TacticianAgent
 from .social_agent import SocialAgent
 from .data_agent import DataAgent
+from .auditor_agent import AuditorAgent
 from .map_experts.blackhearts_bay_expert import BlackheartsBayExpert
 from .map_experts.cursed_hollow_expert import CursedHollowExpert
 from .map_experts.infernal_shrines_expert import InfernalShrinesExpert
@@ -65,7 +66,8 @@ class CerebrateOrchestrator:
             'coach': CoachAgent(db=db_manager, call_gemini_fn=call_gemini_api_fn),
             'tactician': TacticianAgent(db=db_manager, call_gemini_fn=call_gemini_api_fn),
             'social': SocialAgent(db=db_manager, call_gemini_fn=call_gemini_api_fn),
-            'quartermaster': DataAgent(db_manager=db_manager, call_gemini_fn=call_gemini_api_fn)
+            'quartermaster': DataAgent(db_manager=db_manager, call_gemini_fn=call_gemini_api_fn),
+            'auditor': AuditorAgent(call_gemini_fn=call_gemini_api_fn)
         }
     
     def route_query(self, query, context):
@@ -112,6 +114,12 @@ class CerebrateOrchestrator:
             except:
                 pass
 
+        # PRIORITY 0: SYSTEM/DEBUG INTERVENTION
+        # If the user is asking about the neural link or logs, route to ANALYST immediately
+        system_keywords = ['console', 'log', 'error', 'debug', 'fail', 'warning', 'neural link', 'telemetry']
+        if any(w in query.lower() for w in system_keywords) and context.get('live_telemetry'):
+             return self.agents['analyst'].analyze(query, context)
+
         # Extract entities from query for context-aware routing
         context['map'] = self._extract_map(query)
         context['hero'] = self._extract_hero(query)
@@ -138,6 +146,10 @@ class CerebrateOrchestrator:
                 capable_agents.append((agent_name, agent))
         
         if not capable_agents:
+            # FALLBACK: If we have telemetry but no specific agent claimed it, let the Analyst try
+            if context.get('live_telemetry'):
+                 return self.agents['analyst'].analyze(query, context)
+
             return {
                 'success': False,
                 'error': 'No agent could handle this query',

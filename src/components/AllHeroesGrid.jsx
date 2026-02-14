@@ -57,15 +57,19 @@ export default function AllHeroesGrid({ onSelectHero, selectedHeroes = [], match
 
     // Get most recent match date
     const recentMatch = heroMatches
-      .filter(m => m.timestamp_iso)
-      .sort((a, b) => new Date(b.timestamp_iso) - new Date(a.timestamp_iso))[0]
+      .filter(m => m.timestamp_iso || m.date)
+      .sort((a, b) => {
+        const dateA = new Date(a.timestamp_iso || a.date)
+        const dateB = new Date(b.timestamp_iso || b.date)
+        return dateB - dateA
+      })[0]
 
     return {
       games: wins + losses,
       wins,
       losses,
       winRate: wins + losses > 0 ? Math.round((wins / (wins + losses)) * 100) : 0,
-      lastPlayed: recentMatch?.timestamp_iso || null
+      lastPlayed: recentMatch?.timestamp_iso || recentMatch?.date || null
     }
   }
 
@@ -105,6 +109,15 @@ export default function AllHeroesGrid({ onSelectHero, selectedHeroes = [], match
     <div className="w-full">
       {/* Filters and Sort */}
       <div className="flex flex-wrap gap-4 mb-6 p-4 bg-[#1e293b] rounded-2xl border border-white/5">
+        <div className="flex-1">
+          <h2 className="text-lg font-bold text-white mb-1">Cerebrate Roster Calibration</h2>
+          <p className="text-xs text-gray-400">
+            Select heroes you actively play. The AI uses this <strong className="text-cyan-400">Verified Pool</strong> to tailor draft advice and filter out noise.
+          </p>
+        </div>
+      </div>
+
+      <div className="flex flex-wrap gap-4 mb-6 p-4 bg-[#1e293b] rounded-2xl border border-white/5 items-center">
         <div className="flex items-center gap-2">
           <label className="text-sm text-gray-400 font-bold">Filter:</label>
           <select
@@ -135,6 +148,13 @@ export default function AllHeroesGrid({ onSelectHero, selectedHeroes = [], match
             <option value="recent">Most Recent</option>
           </select>
         </div>
+
+        {selectedHeroes.length > 0 && (
+          <div className="flex items-center gap-2 ml-4 px-3 py-1 bg-cyan-900/30 rounded-lg border border-cyan-500/30">
+            <span className="text-xs text-cyan-300 font-bold uppercase tracking-wider">Active Roster:</span>
+            <span className="text-sm font-bold text-white">{selectedHeroes.length} Heroes</span>
+          </div>
+        )}
 
         {excludedHeroes.length > 0 && (
           <div className="flex items-center gap-2 ml-auto">

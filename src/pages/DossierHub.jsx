@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Shield, ChevronRight, RefreshCw, PlusCircle, Search } from 'lucide-react';
 import { useReplayData } from '../hooks/useReplayData';
 import UniversalDossier from '../components/UniversalDossier';
+import ConfidenceScore from '../components/ConfidenceScore';
 
 const DossierHub = () => {
     const { heroes, matches, loading } = useReplayData();
@@ -161,15 +162,12 @@ const DossierHub = () => {
                                         {isArchived && <Shield className="w-3 h-3 text-cyan-500" />}
                                     </div>
                                     <div className="flex items-end justify-between mt-2">
-                                        <div className="flex flex-col">
-                                            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Win Rate</span>
-                                            <span className={`text-sm font-bold ${h.win_rate >= 55 ? 'text-green-400' : h.win_rate >= 50 ? 'text-cyan-400' : 'text-slate-300'}`}>
-                                                {h.win_rate}%
-                                            </span>
-                                        </div>
                                         <div className="flex flex-col items-end">
-                                            <span className="text-[10px] text-slate-500 uppercase tracking-wider">Games</span>
-                                            <span className="text-sm font-bold text-white">{h.games_played}</span>
+                                            <ConfidenceScore
+                                                value={h.win_rate}
+                                                n={h.games_played}
+                                                className="scale-90 origin-right"
+                                            />
                                         </div>
                                     </div>
                                 </div>
