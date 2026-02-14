@@ -24,9 +24,10 @@ class CerebrateHealer:
     def check_api_health(self):
         """Check if the API is responding."""
         try:
-            res = requests.get(f"{self.api_url}/api/player_profile", timeout=5)
+            res = requests.get(f"{self.api_url}/api/health", timeout=5)
             if res.status_code == 200:
-                return True
+                data = res.json()
+                return data.get("status") == "healthy"
         except:
             pass
         return False
