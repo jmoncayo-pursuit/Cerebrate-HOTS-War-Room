@@ -1,0 +1,27 @@
+{
+    "hooks": {
+        "BeforeAnalysis": [
+            {
+                "name": "cache_manager",
+                "enabled": true,
+                "description": "Check cache before analysis to avoid duplicate API calls"
+            },
+            {
+                "name": "context_injector",
+                "enabled": true,
+                "matcher": ".*",
+                "description": "Inject recent match history and player stats"
+            }
+        ],
+        "AfterAnalysis": [
+            {
+                "name": "summary_validator",
+                "enabled": true,
+                "max_retries": 3,
+                "description": "Validate summary quality (hero-specific distances, critical mistake, player-focused win condition)"
+            }
+        ],
+        "BeforeQuery": [],
+        "AfterQuery": []
+    }
+}
