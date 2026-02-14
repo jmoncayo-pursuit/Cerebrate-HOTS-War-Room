@@ -6,12 +6,87 @@ from api.logger import ColoredLogger
 from api.services.replay_parser import parse_replay
 from api.services.database import DatabaseManager
 from api.services.quota_manager import QuotaManager
+from agents.hooks_manager import HooksManager, HookResponse
+from agents.hooks import context_injector_hook, summary_validator_hook, cache_manager_hook, store_in_cache
 
 class ReplayService:
     def __init__(self):
         self.db = DatabaseManager()
         self.quota = QuotaManager()
         self._intel_service = None  # Lazy-loaded
+        self.hooks = self._init_hooks()  # Initialize hooks system
+    
+    def _init_hooks(self):
+        """Initialize hooks manager with default hooks"""
+        hooks = HooksManager()
+        
+        # Register BeforeAnalysis hooks
+        hooks.register_hook('BeforeAnalysis', 'cache_manager', cache_manager_hook, enabled=True)
+        hooks.register_hook('BeforeAnalysis', 'context_injector', context_injector_hook, enabled=True)
+        
+        # Register AfterAnalysis hooks
+        hooks.register_hook('AfterAnalysis', 'summary_validator', summary_validator_hook, 
+                          enabled=True, max_retries=3)
+        
+        return hooks
+    
+    def clean_text(self, text):
+        """Clean up formatting issues in AI-generated text."""
+        if not isinstance(text, str):
+            return text
+        
+        import re
+        
+        # 1. Flow period into previous word: "match ." -> "match."
+        text = re.sub(r'\s+([.;])(?!\w)', r'\1', text)
+        
+        # 2. Join trailing period on new line to previous line: "match\n." -> "match."
+        # This specifically addresses the "stray periods on their own lines" issue
+        text = re.sub(r'(\w)\s*\n\s*([.;])', r'\1\2', text)
+        
+        # 3. Join lines that don't end in punctuation (if the next line starts with lowercase)
+        # This fixes "broken sentences" split across multiple lines
+        text = re.sub(r'([^.;!?\n])\n([a-z])', r'\1 \2', text)
+        
+        # 4. Collapse multiple spaces (but preserve newlines)
+        text = re.sub(r'[ \t]+', ' ', text)
+        
+        # 5. Fix periods/semicolons followed by spaces then newline
+        text = re.sub(r'([.;])\s+\n', r'\1\n', text)
+        
+        # 6. Handle escaped quotes and double-escaped newlines
+        text = text.replace("\\'", "'")
+        text = text.replace('\\\\n', '\n')
+        
+        # 7. Normalize paragraph breaks (max 2 newlines)
+        text = re.sub(r'\n{3,}', '\n\n', text)
+        
+        return text.strip()
+    
+    def _parse_json_response(self, text):
+        """Extract and parse JSON from AI response text."""
+        if not text:
+            return None
+        
+        # Strip markdown blocks
+        if "```json" in text:
+            text = text.split("```json")[1].split("```")[0].strip()
+        elif "```" in text:
+            text = text.split("```")[1].split("```")[0].strip()
+        
+        try:
+            return json.loads(text)
+        except Exception as e:
+            ColoredLogger.error(f"JSON Parse Error: {e}", "REPLAY")
+            # Fallback: try to find anything that looks like JSON
+            try:
+                start = text.find('{')
+                end = text.rfind('}') + 1
+                if start >= 0 and end > start:
+                    return json.loads(text[start:end])
+            except:
+                pass
+            return None
 
     def _get_intel_service(self):
         """Lazy-load IntelligenceService to avoid circular imports."""
@@ -78,15 +153,12 @@ class ReplayService:
             # Upsert
             success = self.db.upsert_match(db_data)
             
-            # 5. ANALYSIS - Always generate for immediate feedback
+            # 5. ANALYSIS - Always generate full context (Forensic + Social)
             analysis_result = None
             if success and self.quota.can_make_request():
                 try:
-                    # Note: We still highlight DCs in the prompt if they exist
-                    analysis_result = self._generate_match_summary(db_data)
-                    if analysis_result and analysis_result.get('success'):
-                        self.db.update_match_analysis(result['match_id'], analysis_result['analysis'])
-                        self.quota.record_request()
+                    # analyze_match(force=True) triggers both Forensic Audit and Social Insights
+                    analysis_result = self.analyze_match(result['match_id'], force=True)
                 except Exception as e:
                     ColoredLogger.warn(f"Analysis generation failed: {e}", "REPLAY")
 
@@ -110,9 +182,20 @@ class ReplayService:
         if s is None: return "0:00"
         return f"{int(s//60)}:{int(s%60):02d}"
 
-    def _generate_match_summary(self, match_data):
-        """Generate a clinical forensic AI summary for a match (Mode B: FORENSIC AUDIT)."""
+    def _generate_match_summary(self, match_data, max_retries=3, force=False):
+        """Generate a clinical forensic AI summary for a match (Mode B: FORENSIC AUDIT).
+        
+        Args:
+            match_data: Match data dictionary
+            max_retries: Maximum retry attempts if validation fails
+        
+        Returns:
+            dict: Analysis summary or None if failed
+        """
         intel_service = self._get_intel_service()
+        # print "DEBUG: Entered _generate_match_summary. Intel Service: %s" % intel_service
+        print(f"DEBUG: Entered _generate_match_summary. Intel Service: {intel_service}")
+
         if not intel_service:
             return None
         
@@ -125,16 +208,27 @@ class ReplayService:
         players = match_data.get('players', [])
         advanced = match_data.get('raw_stats', {})
         
+        if not intel_service.model:
+            return None
+
         # 1. Forensic Extraction: Identify User & Teams
-        user_player = None
-        team_0 = []
-        team_1 = []
-        for p in players:
-            if p.get('hero') == hero: user_player = p
-            if p.get('team') == 0: team_0.append(p)
-            else: team_1.append(p)
+        print(f"DEBUG: Analyzing match with {len(players)} players.")
+        user_player = next((p for p in players if p.get('name') == 'Discerning' or p.get('name') == 'CerebrateUser'), None)
+        if not user_player:
+            print("DEBUG: User not found by name. Falling back to hero.")
+            # Fallback to hero match if name not found
+            for p in players:
+                if p.get('hero') == hero:
+                    user_player = p
+                    break
         
-        if not user_player: return None
+        if not user_player:
+            print("DEBUG: User not found by hero either.")
+            return None
+        print(f"DEBUG: User identified as {user_player.get('name')} ({user_player.get('hero')})")
+        
+        team_0 = [p for p in players if p.get('team') == 0]
+        team_1 = [p for p in players if p.get('team') == 1]
         
         user_team = team_0 if user_player['team'] == 0 else team_1
         enemy_team = team_1 if user_player['team'] == 0 else team_0
@@ -166,18 +260,40 @@ class ReplayService:
             team_val = team_stats['own'][k.lower() if k != 'SoloKill' else 'kills']
             contribution[k] = round((user_core_stats.get(k, 0) / team_val * 100), 1) if team_val > 0 else 0
 
+        # Rich Stats for UI Cards
+        kill_streak = user_core_stats.get('HighestKillStreak', 0)
+        downtime = self.fmt_ms(user_core_stats.get('TimeSpentDead', 0))
+        minion_xp = user_core_stats.get('MinionXP', 0)
+        solo_kills = user_core_stats.get('SoloKill', 0)
+        personal_mercs = user_core_stats.get('MercCampCaptures', 0)
+
         # 4. Forensic Timeline Correlation (Deaths vs Objectives)
         merc_events = advanced.get('merc_captures', [])
         boss_events = advanced.get('boss_captures', [])
         structure_events = advanced.get('structure_destructions', [])
-        
+        player_deaths = advanced.get('player_deaths', [])
+
+        user_pid = None
+        for i, p in enumerate(players):
+            if p.get('name') == user_player['name']:
+                user_pid = i + 1
+                break
+
+        user_kills_timeline = []
+        user_deaths_timeline = []
+        for d in player_deaths:
+            ts = self.fmt_ms(d['timestamp'])
+            victim_p = players[d['victim_pid'] - 1] if 0 < d['victim_pid'] <= len(players) else None
+            killer_p = players[d['killer_pid'] - 1] if d['killer_pid'] and 0 < d['killer_pid'] <= len(players) else None
+            
+            if d['killer_pid'] == user_pid:
+                user_kills_timeline.append(f"{ts}: Killed {victim_p['hero'] if victim_p else 'Unknown'}")
+            if d['victim_pid'] == user_pid:
+                user_deaths_timeline.append(f"{ts}: Killed by {killer_p['hero'] if killer_p else 'Unknown'}")
+
         # 5. Disconnects & Telemetry
-        user_deaths_raw = user_player.get('death_timestamps', [])
-        user_deaths_formatted = ", ".join([self.fmt_ms(d) for d in user_deaths_raw])
-        
         teammate_enemy_dcs = []
         user_dc_event = None
-        # 60 second grace period: ignore disconnects at the very end of the game
         DC_GRACE_PERIOD = 60
         
         for p in players:
@@ -190,115 +306,212 @@ class ReplayService:
                     else:
                         teammate_enemy_dcs.append(f"{p['name']} ({p['hero']}) at {time_str}")
         
-        # GROUND TRUTH: Count actual capture events, not unreliable individual player stats
         team_merc_count = len([m for m in merc_events if m.get('captured_by_team') == user_player['team']])
         enemy_merc_count = len([m for m in merc_events if m.get('captured_by_team') != user_player['team']])
 
-        # 6. Personnel Context (Individual Teammate Metrics)
-        teammate_performance = []
-        for p in user_team:
-            if p['name'] != user_player['name']:
-                p_stats = p.get('stats', {})
-                teammate_performance.append({
-                    "name": p['name'],
-                    "hero": p['hero'],
-                    "deaths": p_stats.get('Deaths', 0),
-                    "xp_contribution": p_stats.get('ExperienceContribution', 0),
-                    "hero_damage": p_stats.get('HeroDamage', 0),
-                    "siege_damage": p_stats.get('SiegeDamage', 0),
-                    "death_timestamps": p.get('death_timestamps', [])
-                })
+        # 6. Kill Verification Alert
+        solo_kills = user_core_stats.get('SoloKill', 0)
+        logs_found = len(user_kills_timeline)
+        forensic_alert = ""
+        if solo_kills > logs_found:
+            forensic_alert = f"""
+**FORENSIC ALERT (KILL MISMATCH):**
+- Scoreboard reports {solo_kills} kills, but only {logs_found} events were found in the raw log.
+- REASON: Likely 'Ghost Deaths' (Tyrael Trait, Leoric, or Uther) where the final blow is system-attributed.
+- INSTRUCTION: You MUST account for these {solo_kills - logs_found} missing kills in your summary and 'Your Kills' list. Label them based on context (e.g. 'Inferred via Scoreboard' or 'Teamfight Cleanup').
+"""
 
-        draft = {
-            "allies": [{"hero": p['hero'], "name": p['name']} for p in user_team],
-            "enemies": [{"hero": p['hero'], "name": p['name']} for p in enemy_team]
-        }
-        user_talents = user_player.get('talents', [])
-        
-        # 7. Strategic Audit Prompt (Clean)
-        ColoredLogger.info(f"Generating audit with {len(players)} players and {len(merc_events)} merc events.", "REPLAY")
+        # 7. Strategic Audit Prompt (Forensic Persona)
+        ColoredLogger.info(f"Generating audit with {len(players)} players, {len(user_kills_timeline)} kills found.", "REPLAY")
         prompt = f"""## Mode B: STRATEGIC FORENSIC AUDIT
-You are the Cerebrate Strategic Analyst. Perform a clinical audit. Separate mechanical execution from **Strategic Trade-offs**.
+You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tactical energy. 
+Focus on **FORCE MULTIPLIERS** and **STRATEGIC GAPS**.
 
-**COMMANDER DATA:**
+**GOLD STANDARD EXAMPLE (FOR FORMAT & TONE):**
+```json
+{{
+    "verdict": "WIN", 
+    "summary": "**APEX PREDATOR (BLOOD MONK)**. You didn't just play healer; you were the lobby's **Top Fragger**. Securing **8 Solo Kills** as Kharazim is a statistical anomaly that utterly breaks standard match prediction models. You effectively operated as a third assassin while maintaining support duties.", 
+    "key_insights": {{ "kill_streak": "8 Solo Kills (Lobby High)", "mercenary_camps": 10, "downtime": "1:05", "minion_xp": 22040, "contribution_index": "Top Fragger" }},
+    "areas_for_improvement": [
+        {{ "title": "Deaths", "items": [{{ "time": "18:34", "killer": "Zeratul", "context": "DeuceGenius" }}] }},
+        {{ "title": "Your Kills", "items": [{{ "time": "08:51", "victim": "Anduin", "context": "lbran1" }}, {{ "time": "SUMMARY", "victim": "Stats", "context": "8 Total Solo Kills (Verify against Scoreboard)" }}] }}
+    ],
+    "critical_mistake": "The ONE specific mistake that shifted the momentum.",
+    "win_condition": "Actionable advice on how to carry harder next time."
+}}
+```
+
+**COMMANDER PERFORMANCE DATA (TRUTH SCALE):**
 - Map: {map_name}
 - Hero: {hero}
 - Result: {result}
 - Game Duration: {duration}
-- DC Status: {user_dc_event if user_dc_event else "Stable Uplink"}
+- Solo Kills: {solo_kills} (Lobby Impact)
+- Kill Streak: {kill_streak}
+- Mercenary Captures: {personal_mercs} personal / {team_merc_count} team
+- Minion XP Contribution: {minion_xp} (Lane Presence)
+- Downtime: {downtime} (Time Dead)
+{f"- CRITICAL: {user_dc_event}" if user_dc_event else ""}
+
+{forensic_alert}
+
+**KILL/DEATH TIMELINE (RAW DATA):**
+- YOUR KILLS: {", ".join(user_kills_timeline) if user_kills_timeline else "None recorded"}
+- YOUR DEATHS: {", ".join(user_deaths_timeline) if user_deaths_timeline else "Zero Deaths (Pure Efficiency)"}
 
 **DRAFT COMPOSITION & SEQUENCE:**
-- Team Allies: {", ".join([f"{p['hero']} ({p['name']})" for p in draft['allies']])}
-- Team Enemies: {", ".join([f"{p['hero']} ({p['name']})" for p in draft['enemies']])}
-*Action: Perform 'Compositional Forensics'. Identify if the Draft Sequence decided the outcome. Assess if the user's hero was a correct response to the map/enemy.*
+- Team Allies: {", ".join([f"{p['hero']} ({p['name']})" for p in [{"hero": p['hero'], "name": p['name']} for p in user_team]])}
+- Team Enemies: {", ".join([f"{p['hero']} ({p['name']})" for p in [{"hero": p['hero'], "name": p['name']} for p in enemy_team]])}
 
-**TEAM PERFORMANCE MARKERS:**
-- Your Team: {team_stats['own']['kills']} Kills, {team_stats['own']['deaths']} Deaths, {team_merc_count} Merc Captures.
-- Enemy Team: {team_stats['enemy']['kills']} Kills, {team_stats['enemy']['deaths']} Deaths, {enemy_merc_count} Merc Captures.
+**TEAM COMPARISON:**
+- Your Team: {team_stats['own']['kills']} Kills, {team_stats['own']['deaths']} Deaths.
+- Enemy Team: {team_stats['enemy']['kills']} Kills, {team_stats['enemy']['deaths']} Deaths.
 - User Contribution: {contribution['HeroDamage']}% Hero Dmg, {contribution['SiegeDamage']}% Siege, {contribution['ExperienceContribution']}% XP.
 
-**USER TALENT TIMELINE (SPEC AUDIT):**
-{json.dumps(user_talents, indent=2)}
+**USER TALENT TIMELINE:**
+{json.dumps(user_player.get('talents', []), indent=2)}
 
-**FORENSIC TIMELINE (ADVANCED):**
-- Team Merc Captures: {team_merc_count} (Detailed: {json.dumps(merc_events[:20], indent=2)})
-- Enemy Merc Captures: {enemy_merc_count}
-- Structure losses: {json.dumps([s for s in structure_events if s['destroyed_by_team'] != user_player['team']][:50], indent=2)}
-
-**CORE OPERATIONAL PHILOSOPHY (COMMANDER'S DIRECTIVES):**
-1. **The Signal Noise Lexicon**: Any signal termination (DC) that occurs at the 'Match Conclusion' (e.g., 24:14 in a 24:14 game) is **NOT a disconnect**. It is a system exit. Do not mention it or analyze it.
-2. **The Mercenary Ground-Truth**: Use the `FORENSIC TIMELINE` counts explicitly.
-3. **Draft Recognition**: If the enemy heroes were just a hard counter to yours (like Stitches vs Raynor), call it a 'DRAFT LOSS'.
-4. **Speak Plain English**: Use simple, direct, human language. You are forbidden from using "aggregate attrition", "variance in player mortality", "combat units", or "neural sync" in the summary. Instead, say "total deaths", "some players died more than others", "teammates", or "teamwork". Speak like a veteran tactical advisor, not a laboratory computer.
-5. **Data Isolation**: Only the current match data exists. No ghosts.
-6. **Draft Order Context**: When discussing the draft, analyze the sequence of picks if possible (who was picked into whom).
-
-**REQUIREMENTS:**
-1. **Macro Trade-offs**: Explain if trades like "letting them have the objective to take a fort" were actually good or bad in plain words.
-2. **Direct Feedback**: If the team failed to protect you, say it plainly.
-3. **Talent Latency**: Group talent audits with "Level Spikes".
-4. **Causal Trigger**: Identify the ONE big mistake that lost the game in one simple sentence.
+**CORE OPERATIONAL PHILOSOPHY:**
+1. **The Forensic Persona**: You are an elite tactical advisor. Your tone is sharp, analytical, and impressed by high-skill anomalies. 
+2. **Data Isolation**: Only use provided numbers. If there is a KILL MISMATCH (see above), use the Scoreboard count as the primary truth.
+3. **No Hallucinations**: Do not mention heroes or locations that are not in the provided RAW DATA.
 
 **OUTPUT SCHEMA (STRICT JSON ONLY):**
 ```json
 {{
     "verdict": "WIN" or "LOSS" or "DRAFT LOSS",
-    "summary": "2-3 sentence strategic clinical overview. MANDATORY: If 'DC Status' is NOT 'Stable Uplink', you MUST mention the timestamp and impact.",
+    "summary": "3-5 high-impact sentences using SPECIFIC NUMBERS. Analyze WHY the result happened.",
     "key_insights": {{
-        "commander_kills": {user_core_stats.get('SoloKill', 0)},
-        "personal_merc_caps": {user_core_stats.get('MercCampCaptures', 0)},
-        "team_global_merc_caps": {team_merc_count},
-        "enemy_global_merc_caps": {enemy_merc_count},
+        "kill_streak": "{kill_streak}",
+        "mercenary_camps": {personal_mercs},
+        "downtime": "{downtime}",
+        "minion_xp": {minion_xp},
         "contribution_index": "{contribution['HeroDamage']}% Dmg / {contribution['ExperienceContribution']}% XP"
     }},
-    "areas_for_improvement": "Identify Recurrent Strategic Patterns. Suggest Tactical Adjustments.",
-    "critical_mistake": "Clinical identification of the primary strategic-based failure.",
-    "win_condition": "One sentence defining the precise causal trigger for the match outcome."
+    "areas_for_improvement": [
+        {{ 
+            "title": "Deaths", 
+            "items": [
+                {{ "time": "MM:SS", "killer": "HeroName", "context": "Name of the player" }}
+            ] 
+        }},
+        {{ 
+            "title": "Your Kills", 
+            "items": [
+                {{ "time": "MM:SS", "victim": "HeroName", "context": "Name of the player" }},
+                {{ "time": "SUMMARY", "victim": "Stats", "context": "{solo_kills} Solo Kills / {user_core_stats.get('Assists', 0)} Assists" }}
+            ] 
+        }}
+    ],
+    "critical_mistake": "The ONE specific mistake that shifted the momentum.",
+    "win_condition": "Actionable advice on how to carry harder next time."
 }}
 ```
 Do not include any text before or after the JSON block.
 """
 
-        try:
-            response = intel_service.model.generate_content([prompt])
-            res_text = response.text.strip()
-            ColoredLogger.info(f"FORENSIC AUDIT GENERATED for {hero} on {map_name}", "REPLAY")
-            
-            # Parse JSON
-            if "```json" in res_text:
-                res_text = res_text.split("```json")[1].split("```")[0].strip()
-            elif "```" in res_text:
-                res_text = res_text.split("```")[1].split("```")[0].strip()
-            
+        # Execute BeforeAnalysis hooks
+        hook_data = {
+            'match_data': match_data,
+            'db_manager': self.db,
+            'force': force
+        }
+        before_response = self.hooks.execute_hooks('BeforeAnalysis', hook_data)
+        
+        # Check if cache hit
+        if before_response.decision == HookResponse.SKIP:
+            ColoredLogger.success("Using cached analysis", "HOOKS")
+            return before_response.cached_result
+        
+        # Use modified data if hooks changed it
+        if before_response.decision == HookResponse.MODIFY:
+            hook_data = before_response.modified_data
+            match_data = hook_data.get('match_data', match_data)
+        
+        # Store cache key for later
+        cache_key = hook_data.get('_cache_key')
+        
+        # Retry loop for quality validation
+        for attempt in range(max_retries):
             try:
-                analysis = json.loads(res_text)
-            except Exception as json_e:
-                print(f"DEBUG: FAILED TO PARSE JSON. RAW TEXT: {res_text}")
-                raise json_e
-            return {'success': True, 'analysis': analysis}
-        except Exception as e:
-            ColoredLogger.warn(f"Forensic Audit parse error: {e}", "REPLAY")
-            return None
+                try:
+                    response = intel_service.model.generate_content([prompt])
+                except Exception as gen_e:
+                    print(f"DEBUG: generate_content FAILED: {gen_e}")
+                    raise gen_e
+                res_text = response.text.strip()
+                ColoredLogger.info(f"FORENSIC AUDIT GENERATED for {hero} on {map_name} (attempt {attempt + 1}/{max_retries})", "REPLAY")
+                
+                try:
+                    analysis = self._parse_json_response(res_text)
+                    if not analysis:
+                        raise ValueError("Failed to parse analysis JSON")
+                    
+                    for key, value in analysis.items():
+                        if isinstance(value, str):
+                            analysis[key] = self.clean_text(value)
+                        elif isinstance(value, dict):
+                            for subkey, subvalue in value.items():
+                                if isinstance(subvalue, str):
+                                    value[subkey] = self.clean_text(subvalue)
+                        elif isinstance(value, list):
+                            for i, item in enumerate(value):
+                                if isinstance(item, str):
+                                    value[i] = self.clean_text(item)
+                                elif isinstance(item, dict):
+                                    for subkey, subvalue in item.items():
+                                        if isinstance(subvalue, str):
+                                            item[subkey] = self.clean_text(subvalue)
+                except Exception as json_e:
+                    print(f"DEBUG: FAILED TO PARSE JSON. RAW TEXT: {res_text}")
+                    raise json_e
+                
+                # Execute AfterAnalysis hooks
+                after_hook_data = {
+                    'summary': analysis,
+                    'match_data': match_data
+                }
+                after_response = self.hooks.execute_hooks('AfterAnalysis', after_hook_data)
+                
+                if after_response.decision == HookResponse.DENY:
+                    if attempt < max_retries - 1:
+                        ColoredLogger.warn(
+                            f"Validation failed (attempt {attempt + 1}/{max_retries}): {after_response.reason}",
+                            "HOOKS"
+                        )
+                        # Add feedback to prompt for next attempt
+                        prompt += f"\n\nPREVIOUS ATTEMPT FAILED VALIDATION:\n{after_response.reason}\n\nPlease correct these issues in your response."
+                        continue
+                    else:
+                        ColoredLogger.error(
+                            f"Validation failed after {max_retries} attempts: {after_response.reason}",
+                            "HOOKS"
+                        )
+                        # Return anyway but log the failure
+                        result = {'success': True, 'analysis': analysis, 'validation_failed': True}
+                        if cache_key:
+                            store_in_cache(cache_key, result)
+                        return result
+                
+                # Validation passed
+                result = {'success': True, 'analysis': analysis}
+                
+                # Store in cache if we have a cache key
+                if cache_key:
+                    store_in_cache(cache_key, result)
+                
+                return result
+                
+            except Exception as e:
+                import traceback
+                traceback.print_exc()
+                if attempt < max_retries - 1:
+                    ColoredLogger.warn(f"Attempt {attempt + 1} failed: {e}, retrying...", "REPLAY")
+                    continue
+                else:
+                    ColoredLogger.warn(f"Forensic Audit parse error after {max_retries} attempts: {e}", "REPLAY")
+                    return None
 
     def _generate_social_insights(self, match_data, dcs=None):
         """Generates a separate layer of social intelligence (rivalries, DCs, teammate synergy)."""
@@ -326,10 +539,10 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
 
 **REQUIREMENTS:**
 1. **Highlight Rivalries**: Identify if a specific enemy neutralized the user multiple times.
-2. **Teammate Synergy**: Note if an ally's performance was notably high or low.
+2. **Teammate Synergy**: Note if an ally performance was notably high or low.
 3. **Neural Briefing Correlation**: Did players in your notes live up to their reputation?
 4. **Tone**: Forensic but 'notable' (highlight interesting human patterns).
-5. **Instruction**: If you are commenting on a teammate's performance as a 'failure' or 'asset', be specific about their stats relative to the user.
+5. **Instruction**: If you are commenting on a teammate performance as a 'failure' or 'asset', be specific about their stats relative to the user.
 
 **OUTPUT SCHEMA (JSON ONLY):**
 {{
@@ -344,14 +557,28 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
         try:
             response = intel_service.model.generate_content([prompt])
             res_text = response.text.strip()
-            if "```json" in res_text:
-                res_text = res_text.split("```json")[1].split("```")[0].strip()
-            return json.loads(res_text)
+            social = self._parse_json_response(res_text)
+            if not social:
+                return None
+            
+            # Clean text in social insights
+            for key, value in social.items():
+                if isinstance(value, str):
+                    social[key] = self.clean_text(value)
+                elif isinstance(value, list):
+                    for i, item in enumerate(value):
+                        if isinstance(item, str):
+                            value[i] = self.clean_text(item)
+                        elif isinstance(item, dict):
+                            for subkey, subvalue in item.items():
+                                if isinstance(subvalue, str):
+                                    item[subkey] = self.clean_text(subvalue)
+            return social
         except:
             return None
 
-    def get_match_history(self, limit=50, include_details=False):
-        return self.db.get_matches(limit=limit, include_details=include_details)
+    def get_match_history(self, limit=50, include_details=False, search=None):
+        return self.db.get_matches(limit=limit, include_details=include_details, search=search)
 
     def analyze_match(self, match_id, force=False):
         """Forces or performs AI analysis on a match."""
@@ -372,7 +599,7 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
         # (Assuming handled by separate trigger or standard flow)
 
         # 4. RUN FORENSIC AUDIT (Main Verdict)
-        summary = self._generate_match_summary(match_data)
+        summary = self._generate_match_summary(match_data, force=force)
         
         # 5. RUN SOCIAL INSIGHTS (Deep Social Network)
         players = match_data.get('players', [])
@@ -397,7 +624,7 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
             try:
                 from agents.cerebrate_orchestrator import CerebrateOrchestrator
                 intel = self._get_intel_service()
-                orchestrator = CerebrateOrchestrator(call_gemini_fn=intel.generate_chat_response)
+                orchestrator = CerebrateOrchestrator(call_gemini_api_fn=intel.generate_chat_response)
                 
                 # Context for audit includes core stats
                 audit_context = {
