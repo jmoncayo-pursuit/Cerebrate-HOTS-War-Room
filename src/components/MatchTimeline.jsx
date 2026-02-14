@@ -12,7 +12,6 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
     const [timelineData, setTimelineData] = useState(null);
     const [loading, setLoading] = useState(!matchProp);
     const [activeSection, setActiveSection] = useState('match'); // 'match' or 'draft'
-    const [draftFilter, setDraftFilter] = useState('');
 
     useEffect(() => {
         if (matchProp) {
@@ -246,24 +245,9 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                     </>
                 ) : (
                     <div className="draft-sequence-tab animate-in fade-in zoom-in-95 duration-300">
-                        <div className="flex items-center justify-between mb-8">
-                            <div className="flex items-center gap-3">
-                                <Swords className="text-purple-400" size={24} />
-                                <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Draft sequence audit</h2>
-                            </div>
-
-                            {/* Search Filter */}
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-cyan-400 transition-colors">
-                                    <Users size={14} />
-                                </div>
-                                <input
-                                    type="text"
-                                    placeholder="Filter hero protocols..."
-                                    className="bg-black/40 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-xs font-bold text-white focus:outline-none focus:border-cyan-500/50 focus:bg-black/60 transition-all w-64 uppercase tracking-wider"
-                                    onChange={(e) => setDraftFilter(e.target.value.toLowerCase())}
-                                />
-                            </div>
+                        <div className="flex items-center gap-3 mb-8">
+                            <Swords className="text-purple-400" size={24} />
+                            <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Draft Composition</h2>
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -272,25 +256,23 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                 <div className="col-span-full bg-black/20 p-6 rounded-xl border border-white/5">
                                     <div className="text-[10px] text-gray-500 uppercase font-black mb-4 tracking-[0.2em]">Banned Protocols (Sequential)</div>
                                     <div className="flex flex-wrap gap-4">
-                                        {originalMatch.advanced_stats?.bans
-                                            .filter(ban => !draftFilter || ban.hero.toLowerCase().includes(draftFilter))
-                                            .map((ban, i) => (
-                                                <div key={i} className="relative group">
-                                                    <div className="w-14 h-14 bg-black/40 rounded-lg border border-red-500/20 grayscale group-hover:grayscale-0 transition-all overflow-hidden shadow-2xl">
-                                                        <img
-                                                            src={getHeroPortrait(ban.hero)}
-                                                            alt={ban.hero}
-                                                            className="w-full h-full object-cover opacity-60 group-hover:opacity-100"
-                                                            onError={(e) => { e.target.style.display = 'none'; }}
-                                                        />
-                                                        <div className="absolute inset-0 border-2 border-red-500/50 rotate-45 scale-150 pointer-events-none" />
-                                                    </div>
-                                                    <div className="absolute -top-2 -left-2 bg-gray-900/90 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border border-white/10 text-gray-400">
-                                                        {i + 1}
-                                                    </div>
-                                                    <div className="absolute -bottom-2 -right-2 bg-red-600 text-[9px] font-black px-1.5 py-0.5 rounded border border-white/20 shadow-lg">BAN</div>
+                                        {originalMatch.advanced_stats?.bans?.map((ban, i) => (
+                                            <div key={i} className="relative group">
+                                                <div className="w-14 h-14 bg-black/40 rounded-lg border border-red-500/20 grayscale group-hover:grayscale-0 transition-all overflow-hidden shadow-2xl">
+                                                    <img
+                                                        src={getHeroPortrait(ban.hero)}
+                                                        alt={ban.hero}
+                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100"
+                                                        onError={(e) => { e.target.style.display = 'none'; }}
+                                                    />
+                                                    <div className="absolute inset-0 border-2 border-red-500/50 rotate-45 scale-150 pointer-events-none" />
                                                 </div>
-                                            ))}
+                                                <div className="absolute -top-2 -left-2 bg-gray-900/90 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border border-white/10 text-gray-400">
+                                                    {i + 1}
+                                                </div>
+                                                <div className="absolute -bottom-2 -right-2 bg-red-600 text-[9px] font-black px-1.5 py-0.5 rounded border border-white/20 shadow-lg">BAN</div>
+                                            </div>
+                                        ))}
                                     </div>
                                 </div>
                             )}
@@ -301,17 +283,15 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                     <Users size={12} /> Allied Deployment
                                 </div>
                                 <div className="grid grid-cols-5 gap-3">
-                                    {originalMatch.players?.filter(p => p.team === userPlayer?.team)
-                                        .filter(p => !draftFilter || p.hero.toLowerCase().includes(draftFilter))
-                                        .map((p, i) => (
-                                            <div key={i} className="flex flex-col items-center gap-2">
-                                                <div className="w-full aspect-square rounded-lg border-2 border-cyan-500/30 overflow-hidden shadow-lg group relative bg-black/40" title={p.hero}>
-                                                    <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                    <div className="absolute inset-x-0 bottom-0 h-1 bg-cyan-500 shadow-[0_0_10px_#22d3ee]" />
-                                                </div>
-                                                <div className="text-[9px] font-bold text-cyan-200 truncate w-full text-center">{p.hero}</div>
+                                    {originalMatch.players?.filter(p => p.team === userPlayer?.team).map((p, i) => (
+                                        <div key={i} className="flex flex-col items-center gap-2">
+                                            <div className="w-full aspect-square rounded-lg border-2 border-cyan-500/30 overflow-hidden shadow-lg group relative bg-black/40" title={p.hero}>
+                                                <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                                <div className="absolute inset-x-0 bottom-0 h-1 bg-cyan-500 shadow-[0_0_10px_#22d3ee]" />
                                             </div>
-                                        ))}
+                                            <div className="text-[9px] font-bold text-cyan-200 truncate w-full text-center">{p.hero}</div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
 
@@ -321,17 +301,15 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                     <Swords size={12} /> Hostile Manifest
                                 </div>
                                 <div className="grid grid-cols-5 gap-3">
-                                    {originalMatch.players?.filter(p => p.team !== userPlayer?.team)
-                                        .filter(p => !draftFilter || p.hero.toLowerCase().includes(draftFilter))
-                                        .map((p, i) => (
-                                            <div key={i} className="flex flex-col items-center gap-2">
-                                                <div className="w-full aspect-square rounded-lg border-2 border-red-500/30 overflow-hidden shadow-lg group relative bg-black/40" title={p.hero}>
-                                                    <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                    <div className="absolute inset-x-0 bottom-0 h-1 bg-red-500 shadow-[0_0_10px_#ef4444]" />
-                                                </div>
-                                                <div className="text-[9px] font-bold text-red-200 truncate w-full text-center">{p.hero}</div>
+                                    {originalMatch.players?.filter(p => p.team !== userPlayer?.team).map((p, i) => (
+                                        <div key={i} className="flex flex-col items-center gap-2">
+                                            <div className="w-full aspect-square rounded-lg border-2 border-red-500/30 overflow-hidden shadow-lg group relative bg-black/40" title={p.hero}>
+                                                <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
+                                                <div className="absolute inset-x-0 bottom-0 h-1 bg-red-500 shadow-[0_0_10px_#ef4444]" />
                                             </div>
-                                        ))}
+                                            <div className="text-[9px] font-bold text-red-200 truncate w-full text-center">{p.hero}</div>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
                         </div>

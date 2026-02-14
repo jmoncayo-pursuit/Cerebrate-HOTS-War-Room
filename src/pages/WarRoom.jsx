@@ -38,8 +38,8 @@ const MatchList = ({ hero, mapName, filter, matches, seasonStartDate }) => {
         <div className="pl-2 mt-1 space-y-0.5 border-l border-slate-700/50 ml-1">
           {relevantMatches.map(m => (
             <div key={m.id} className="text-[9px] flex items-center gap-2 font-mono">
-              <span className={`font-bold ${m.result === 'WIN' ? 'text-green-500' : 'text-red-500'}`}>
-                {m.result === 'WIN' ? 'W' : 'L'}
+              <span className={`font-bold ${m.result?.toUpperCase() === 'WIN' ? 'text-green-500' : 'text-red-500'}`}>
+                {m.result?.toUpperCase() === 'WIN' ? 'W' : 'L'}
               </span>
               <span className="text-slate-400">{new Date(m.date || m.timestamp_iso).toLocaleDateString(undefined, { month: 'numeric', day: 'numeric' })}</span>
             </div>
@@ -164,7 +164,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
           buildCounts[buildStr] = { wins: 0, games: 0 };
         }
         buildCounts[buildStr].games += 1;
-        if (m.result === 'WIN') buildCounts[buildStr].wins += 1;
+        if (m.result?.toUpperCase() === 'WIN') buildCounts[buildStr].wins += 1;
       }
     });
 
@@ -259,7 +259,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
     matchHistory.forEach(m => {
       if (new Date(m.date || m.timestamp_iso) > new Date(SEASON_START_DATE)) {
         if (!maps[m.map]) maps[m.map] = { name: m.map, w: 0, l: 0 };
-        if (m.result === 'WIN') maps[m.map].w += 1;
+        if (m.result?.toUpperCase() === 'WIN') maps[m.map].w += 1;
         else maps[m.map].l += 1;
       }
     });
@@ -353,13 +353,13 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
         // Add parsed matches after baseline
         newReplays.forEach(match => {
           s3Games++;
-          if (match.result === 'WIN') s3Wins++;
+          if (match.result?.toUpperCase() === 'WIN') s3Wins++;
         });
       } else {
         // Fallback to parsed matches only
         s3Matches.forEach(match => {
           s3Games++;
-          if (match.result === 'WIN') s3Wins++;
+          if (match.result?.toUpperCase() === 'WIN') s3Wins++;
         });
       }
       const s3WR = s3Games > 0 ? (s3Wins / s3Games) * 100 : 0;

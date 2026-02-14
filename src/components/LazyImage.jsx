@@ -17,9 +17,29 @@ export default function LazyImage({
 
   // Reset state if src changes
   useEffect(() => {
-    setIsLoading(true)
     setHasError(false)
-  }, [src])
+    setIsLoading(true)
+
+    const img = new Image()
+    img.src = src
+
+    // If cached, it might complete immediately
+    if (img.complete) {
+      setIsLoading(false)
+    } else {
+      img.onload = () => setIsLoading(false)
+      img.onerror = () => {
+        setHasError(true)
+        setIsLoading(false)
+        if (onError) onError()
+      }
+    }
+
+    return () => {
+      img.onload = null
+      img.onerror = null
+    }
+  }, [src, onError])
 
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -38,13 +58,8 @@ export default function LazyImage({
         <img
           src={src}
           alt={alt}
-          className={`w-full h-full object-cover transition-opacity duration-200 ${isLoading ? 'opacity-0' : 'opacity-100'}`}
-          onLoad={() => setIsLoading(false)}
-          onError={() => {
-            setHasError(true)
-            setIsLoading(false)
-            if (onError) onError()
-          }}
+          loading="lazy"
+          className={`w-full h-full object-cover ${isLoading ? 'invisible' : 'visible'}`}
         />
       ) : (
         fallback || (
@@ -55,8 +70,9 @@ export default function LazyImage({
       )}
 
       {isLoading && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50">
-          <div className="w-1/2 h-1/2 border-2 border-cyan-500/10 border-t-cyan-500/80 rounded-full animate-spin" />
+        <div className="absolute inset-0 flex items-center justify-center bg-slate-900/50 backdrop-blur-sm">
+          {/* Use a much subtler spinner */}
+          <div className="w-1/2 h-1/2 border-2 border-white/5 border-t-cyan-500/50 rounded-full animate-spin" />
         </div>
       )}
     </div>

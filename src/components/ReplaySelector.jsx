@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Upload, FileText, CheckCircle, AlertTriangle, XCircle, Clock, Calendar, Hash, ChevronRight, Activity } from 'lucide-react'
+import { Upload, FileText, CheckCircle, AlertTriangle, XCircle, Clock, Calendar, Hash, ChevronRight, Activity, Search } from 'lucide-react'
 import HeroPortrait from './HeroPortrait'
 import { formatElegantDate } from '../utils/dateUtils'
 import BuildDisplay from './BuildDisplay'
@@ -10,9 +10,9 @@ import { useReplayData } from '../hooks/useReplayData'
 import VirtualList from './VirtualList'
 import './ReplaySelector.css'
 
-export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSelectMatch, matches, contained = true }) {
+export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSelectMatch, matches, onSearch, contained = true }) {
   const PLAYER_NAME = 'CerebrateUser';
-  const { matches: hookMatches, heroData, talentMap: talentMapData, talentData, loading: replayLoading, refresh } = useReplayData()
+  const { heroData, talentMap: talentMapData, talentData, loading: replayLoading, refresh } = useReplayData()
   const [processedMatches, setProcessedMatches] = useState([])
   const [loading, setLoading] = useState(true)
   const [processing, setProcessing] = useState(false)
@@ -23,17 +23,25 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
   const [rejectedMatches, setRejectedMatches] = useState([])
   const [showIncompatible, setShowIncompatible] = useState(false)
   const [loadingRejected, setLoadingRejected] = useState(false)
+  const [searchTerm, setSearchTerm] = useState('')
 
   // Effect: Sync with external matches or load hook matches
+  // Effect: Sync matches from props
   useEffect(() => {
     if (matches) {
       setProcessedMatches(matches)
       setLoading(false)
-    } else if (!replayLoading && hookMatches) {
-      setProcessedMatches(hookMatches)
-      setLoading(false)
     }
-  }, [matches, hookMatches, replayLoading])
+  }, [matches])
+
+  // Server-side search debounce to find matches beyond the initial 500
+  useEffect(() => {
+    if (searchTerm === undefined) return;
+    const timer = setTimeout(() => {
+      if (onSearch) onSearch(searchTerm);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [searchTerm, onSearch]);
 
   const loadRejectedMatches = async () => {
     try {
@@ -252,9 +260,24 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
     )
   }
 
-  // Memoized sorted matches for virtual list
-  const sortedMatches = useMemo(() => {
-    return [...processedMatches].sort((a, b) => {
+  // Memoized filtered and sorted matches for virtual list
+  const filteredAndSortedMatches = useMemo(() => {
+    let results = [...processedMatches]
+
+    if (searchTerm) {
+      const lowSearch = searchTerm.toLowerCase()
+      results = results.filter(m => {
+        const heroMatch = m.hero?.toLowerCase().includes(lowSearch)
+        const mapMatch = m.map?.toLowerCase().includes(lowSearch)
+        const idMatch = (m.id || '').toLowerCase().includes(lowSearch)
+        const playerMatch = m.players?.some(p =>
+          (p.name || p.player_name || '').toLowerCase().includes(lowSearch)
+        )
+        return heroMatch || mapMatch || playerMatch || idMatch
+      })
+    }
+
+    return results.sort((a, b) => {
       let aVal, bVal
       switch (sortBy) {
         case 'result':
@@ -295,7 +318,7 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
       }
       return sortDir === 'desc' ? bVal - aVal : aVal - bVal
     })
-  }, [processedMatches, sortBy, sortDir])
+  }, [processedMatches, sortBy, sortDir, searchTerm])
 
   // Render function for virtual list item
   const renderMatchItem = (match, index) => {
@@ -358,44 +381,56 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
           {duration}
         </div>
 
-        {/* Talent Build */}
-        <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-          {(() => {
-            const tiers = [1, 4, 7, 10, 13, 16, 20];
-            const builds = tiers.map((tier, i) => {
-              const tierId = i + 1;
-              let index = stats[`Tier${tierId}Talent`];
-              if (!index && player.talents) {
-                const tObj = player.talents[i];
-                if (tObj?.talent_name) {
-                  const m = tObj.talent_name.match(/(?:Index|#)\s*(\d+)/i);
-                  if (m) index = parseInt(m[1]) + (tObj.talent_name.includes('Index') ? 1 : 0);
-                }
-              }
-              return index || 0;
-            });
-
-            if (builds.every(b => b === 0)) {
-              return <span className="text-[9px] text-slate-700 uppercase font-bold tracking-widest">No Data</span>;
-            }
-
-            return (
-              <BuildDisplay
-                hero={match.hero}
-                buildStr={builds}
-                source="HISTORY"
-                compact={true}
-                heroData={heroData}
-                talentMap={talentMapData}
-                talentData={talentData}
-              />
-            );
-          })()}
+        {/* Kills */}
+        <div className="text-[10px] font-bold text-slate-300">
+          {stats.SoloKill ?? '-'}
         </div>
 
-        {/* XP Contribution */}
-        <div className="text-[10px] font-mono text-cyan-400/70 group-hover:text-cyan-300">
-          {(stats.ExperienceContribution || 0).toLocaleString()}
+        {/* Talent Build & Insight */}
+        <div className="flex flex-col gap-1 min-w-0">
+          <div className="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+            {(() => {
+              const tiers = [1, 4, 7, 10, 13, 16, 20];
+              const builds = tiers.map((tier, i) => {
+                const tierId = i + 1;
+                let index = stats[`Tier${tierId}Talent`];
+                if (!index && player.talents) {
+                  const tObj = player.talents[i];
+                  if (tObj?.talent_name) {
+                    const m = tObj.talent_name.match(/(?:Index|#)\s*(\d+)/i);
+                    if (m) index = parseInt(m[1]) + (tObj.talent_name.includes('Index') ? 1 : 0);
+                  }
+                }
+                return index || 0;
+              });
+
+              if (builds.every(b => b === 0)) {
+                return <span className="text-[9px] text-slate-700 uppercase font-bold tracking-widest">No Data</span>;
+              }
+
+              return (
+                <BuildDisplay
+                  hero={match.hero}
+                  buildStr={builds}
+                  source="HISTORY"
+                  compact={true}
+                  heroData={heroData}
+                  talentMap={talentMapData}
+                  talentData={talentData}
+                />
+              );
+            })()}
+          </div>
+          {match.analysis?.verdict && (
+            <div className="text-[9px] text-cyan-400/60 font-medium truncate italic max-w-full">
+              {match.analysis.verdict}
+            </div>
+          )}
+        </div>
+
+        {/* Summary Snippet / XP */}
+        <div className="text-[10px] text-slate-400/80 group-hover:text-slate-300 transition-colors line-clamp-1 italic">
+          {match.analysis?.summary ? match.analysis.summary.substring(0, 100).replace(/\*\*/g, '') + '...' : `XP: ${(stats.ExperienceContribution || 0).toLocaleString()}`}
         </div>
 
         {/* Arrow */}
@@ -422,7 +457,21 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-4">
+          {/* Search Bar */}
+          <div className="relative group/search">
+            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within/search:text-cyan-400 transition-colors">
+              <Search size={14} />
+            </div>
+            <input
+              type="text"
+              placeholder="Search Hero, Map, or Player..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="bg-black/40 border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-[11px] w-[220px] focus:w-[300px] focus:outline-none focus:border-cyan-500/50 focus:bg-black/60 transition-all placeholder:text-slate-600 text-slate-200"
+            />
+          </div>
+
           <div className="flex bg-black/40 p-1 rounded-full border border-white/5 backdrop-blur-sm mr-2">
             <button
               onClick={() => setShowIncompatible(false)}
@@ -456,8 +505,8 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
             <SortableHeader column="hero">Hero / Map</SortableHeader>
             <SortableHeader column="date">Date</SortableHeader>
             <SortableHeader column="duration">Duration</SortableHeader>
-            <div className="text-slate-500">Talent Build</div>
-            <SortableHeader column="xp">XP Contrib</SortableHeader>
+            <SortableHeader column="kills">Kills</SortableHeader>
+            <div className="text-slate-500">Talent Build / Insights</div>
             <div></div>
           </div>
         )}
@@ -502,7 +551,7 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
             </div>
           ) : (
             <VirtualList
-              items={sortedMatches}
+              items={filteredAndSortedMatches}
               itemHeight={60}
               containerHeight={600}
               renderItem={renderMatchItem}

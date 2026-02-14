@@ -15,11 +15,19 @@ export default function VirtualList({
   const [scrollTop, setScrollTop] = useState(0)
   const scrollRef = useRef(null)
 
+  // Reset scroll position when items change (e.g. during search/filtering)
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = 0
+      setScrollTop(0)
+    }
+  }, [items.length])
+
   // Calculate visible range
   const visibleRange = useMemo(() => {
     const start = Math.floor(scrollTop / itemHeight)
     const end = Math.ceil((scrollTop + containerHeight) / itemHeight)
-    
+
     return {
       start: Math.max(0, start - overscan),
       end: Math.min(items.length, end + overscan)

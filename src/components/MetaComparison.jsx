@@ -98,10 +98,10 @@ export default function MetaComparison() {
                 <div>
                     <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-300 bg-clip-text text-transparent flex items-center gap-3">
                         <Target className="text-cyan-400" size={28} />
-                        Meta Comparison
+                        HeroesProfile Comparison
                     </h3>
                     <p className="text-sm text-slate-400 mt-1 font-mono tracking-wide">
-                        Your performance vs Global Storm League meta
+                        Your performance vs HeroesProfile Storm League meta
                     </p>
                 </div>
             </div>
@@ -183,12 +183,12 @@ export default function MetaComparison() {
                                                                 {hero.s3.wr - meta.win_rate > 0 ? '+' : ''}{(hero.s3.wr - meta.win_rate).toFixed(1)}%
                                                             </div>
                                                         ) : (
-                                                            <div className="text-[10px] text-slate-500 italic">No Global Data</div>
+                                                            <div className="text-[10px] text-slate-500 italic">No HP Data</div>
                                                         )
                                                     ) : (
                                                         <div className="text-[10px] text-slate-600 italic">Need 5 games</div>
                                                     )}
-                                                    <span className="text-[9px] text-slate-500 uppercase tracking-wide">vs Global</span>
+                                                    <span className="text-[9px] text-slate-500 uppercase tracking-wide">vs HP Avg</span>
                                                 </div>
                                             </div>
 
@@ -211,16 +211,16 @@ export default function MetaComparison() {
                                                             {hero.lifetime.wr - meta.win_rate > 0 ? '+' : ''}{(hero.lifetime.wr - meta.win_rate).toFixed(1)}%
                                                         </div>
                                                     ) : (
-                                                        <div className="text-[10px] text-slate-500 italic">No Global Data</div>
+                                                        <div className="text-[10px] text-slate-500 italic">No HP Data</div>
                                                     )}
-                                                    <div className="text-[9px] text-slate-500 uppercase tracking-wide">vs Global</div>
+                                                    <div className="text-[9px] text-slate-500 uppercase tracking-wide">vs HP Avg</div>
                                                 </div>
                                             </div>
 
                                             {/* Col 3: Global SL (Source) */}
                                             <div className="pl-2">
                                                 <div className="text-slate-500 text-[10px] font-black uppercase tracking-wider mb-2">
-                                                    GLOBAL AVERAGE
+                                                    HEROESPROFILE AVG
                                                 </div>
                                                 <div className="text-2xl font-black text-slate-200">
                                                     {meta.win_rate !== null ? `${meta.win_rate.toFixed(1)}%` : 'N/A'}
@@ -252,7 +252,7 @@ export default function MetaComparison() {
                                 <div className="px-4 pb-4 space-y-4 border-t border-md-outline-variant/30">
                                     {/* Meta Stats */}
                                     <div className="pt-4">
-                                        <div className="text-xs font-bold text-md-on-surface-variant mb-2">META STATS</div>
+                                        <div className="text-xs font-bold text-md-on-surface-variant mb-2">HP STATS</div>
                                         <div className="grid grid-cols-3 gap-2 text-xs">
                                             <div>
                                                 <span className="text-slate-500 font-bold uppercase">Popularity:</span>
@@ -271,7 +271,7 @@ export default function MetaComparison() {
 
                                     {/* Top Builds */}
                                     <div>
-                                        <div className="text-xs font-bold text-md-on-surface-variant mb-2">TOP 3 GLOBAL BUILDS</div>
+                                        <div className="text-xs font-bold text-md-on-surface-variant mb-2">TOP 3 HEROESPROFILE BUILDS</div>
                                         <div className="space-y-2">
                                             {meta.builds && Array.isArray(meta.builds) ? meta.builds.slice(0, 3).map((build, idx) => (
                                                 <div key={idx} className="bg-md-surface-container-high rounded-lg p-2">
@@ -341,8 +341,8 @@ export default function MetaComparison() {
 
                                         <div className="text-xs text-slate-300 leading-relaxed font-medium">
                                             {delta > 10 && `🔥 You're crushing it! Keep playing ${hero.hero} - your build is working!`}
-                                            {delta > 5 && delta <= 10 && `✅ Great performance! Consider trying the #1 global build to optimize further.`}
-                                            {delta > 0 && delta <= 5 && `✅ Above average. Compare your build to top 3 global builds.`}
+                                            {delta > 5 && delta <= 10 && `✅ Great performance! Consider trying the #1 HP build to optimize further.`}
+                                            {delta > 0 && delta <= 5 && `✅ Above average. Compare your build to top 3 HP builds.`}
                                             {delta > -5 && delta <= 0 && `⚠️ Slightly below meta. Try switching to build #1 above.`}
                                             {delta <= -5 && `❌ Underperforming. Switch to build #1 for 10 games or consider dropping this hero.`}
                                         </div>

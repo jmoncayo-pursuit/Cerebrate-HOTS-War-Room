@@ -21,12 +21,13 @@ export function useReplayData() {
     cachedAt: null
   })
 
-  const loadData = async (isInitial = false) => {
+  const loadData = async (isInitial = false, query = '') => {
     if (isInitial) setLoading(true)
     try {
-      // 1. Fetch Core Data (Reduced limit for performance, with pagination)
+      // 1. Fetch Core Data (With search support)
+      const searchParam = query ? `&search=${encodeURIComponent(query)}` : ''
       const [historyResponse, profileResponse] = await Promise.all([
-        fetch('/api/match_history?limit=500&pagination=true&t=' + Date.now()).catch(() => null),
+        fetch(`/api/match_history?limit=500&pagination=true${searchParam}&t=` + Date.now()).catch(() => null),
         fetch('/api/player_profile?t=' + Date.now()).catch(() => null)
       ])
 
@@ -135,8 +136,13 @@ export function useReplayData() {
 
   useEffect(() => {
     loadData(true)
-    // Reduced refresh frequency: 60s instead of 15s (4x less frequent)
-    const refreshInterval = setInterval(() => loadData(), 60000)
+    // Only auto-refresh if not searching to avoid interrupting the user
+    const refreshInterval = setInterval(() => {
+      const searchInput = document.querySelector('input[placeholder*="Search"]');
+      if (!searchInput || !searchInput.value) {
+        loadData();
+      }
+    }, 60000)
     const handleFocus = () => loadData()
     window.addEventListener('focus', handleFocus)
     return () => {
@@ -146,6 +152,7 @@ export function useReplayData() {
   }, [])
 
   const refresh = () => loadData(true)
+  const search = (query) => loadData(false, query)
 
   return {
     matches,
@@ -157,6 +164,7 @@ export function useReplayData() {
     loading,
     error,
     refresh,
+    search,
     lastUpdated,
     dataChanged
   }

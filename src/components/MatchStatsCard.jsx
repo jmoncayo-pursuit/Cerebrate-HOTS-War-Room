@@ -13,7 +13,7 @@ export default function MatchStatsCard({ match }) {
 
     // Find user's stats from the match data (if available in future)
     // For now, we'll use the analysis data
-    const isWin = result === 'WIN'
+    const isWin = result?.toUpperCase() === 'WIN'
 
     return (
         <motion.div

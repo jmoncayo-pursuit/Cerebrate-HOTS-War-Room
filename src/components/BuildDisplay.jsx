@@ -108,19 +108,7 @@ const BuildDisplay = ({ hero, buildStr, stats, source = 'META', talentMap = {}, 
                                 const index = item.toString();
                                 const iconKey = `${heroKey}-${tier}-${index}`;
                                 finalIcon = talentMap[iconKey];
-
-                                if (!finalIcon) {
-                                    // Only warn if talentMap is actually loaded
-                                    if (Object.keys(talentMap).length > 0) {
-                                        console.warn(`[BuildDisplay] Missing talent icon: ${iconKey}`, {
-                                            hero,
-                                            heroKey,
-                                            tier,
-                                            index,
-                                            talentMapSize: Object.keys(talentMap).length
-                                        });
-                                    }
-                                }
+                                // Silently fall back to placeholder if icon is missing
                             }
                         }
 
