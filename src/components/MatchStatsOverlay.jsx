@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef, Fragment } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer, RefreshCw, Users, BrainCircuit } from 'lucide-react'
@@ -394,7 +394,7 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
     }, [onClose])
 
     const { map, hero, result, date, analysis, advanced_stats, players } = localMatch
-    const isWin = result === 'WIN'
+    const isWin = result?.toUpperCase() === 'WIN'
 
     return (
         <AnimatePresence>
@@ -438,16 +438,6 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
 
                         {/* Action Buttons */}
                         <div className="flex items-center gap-4">
-                            <button
-                                onClick={() => {
-                                    window.dispatchEvent(new CustomEvent('nav_to_dossier', { detail: localMatch.hero }));
-                                    onClose();
-                                }}
-                                className="px-6 py-2 bg-indigo-500/20 hover:bg-indigo-500/30 border border-indigo-500/50 rounded-lg text-indigo-400 font-bold uppercase tracking-tight text-xs flex items-center gap-2 transition-all group"
-                            >
-                                <BrainCircuit size={16} className="group-hover:rotate-12 transition-transform" />
-                                Consult Protocol Archive
-                            </button>
                             <button
                                 onClick={onClose}
                                 className="p-2 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white transition-all"
@@ -758,6 +748,7 @@ function renderMarkdown(text) {
         parts = newParts;
     });
 
+
     // 2. Process bolding (**text**) on remaining string parts
     const finalParts = [];
     parts.forEach((part, partIdx) => {
@@ -779,8 +770,125 @@ function renderMarkdown(text) {
         }
     });
 
-    return <>{finalParts}</>;
+    // 3. Process Headers (##)
+    const headerProcessedParts = [];
+    finalParts.forEach((part, i) => {
+        if (typeof part === 'string') {
+            // Split by markdown headers
+            const headerSplit = part.split(/^(#{1,6})\s+(.+)$/gm);
+
+            // If split has matches, it looks like [pre-text, ##, Header Text, post-text...]
+            for (let j = 0; j < headerSplit.length; j++) {
+                const chunk = headerSplit[j];
+                // Check if this chunk is a header marker
+                if (/^#{1,6}$/.test(chunk) && headerSplit[j + 1]) {
+                    const level = chunk.length;
+                    const content = headerSplit[j + 1];
+
+                    headerProcessedParts.push(
+                        <div key={`h${level}-${i}-${j}`} className={`font-bold text-cyan-400 mt-4 mb-2 ${level === 1 ? 'text-xl' : 'text-lg'}`}>
+                            {content}
+                        </div>
+                    );
+                    j++; // Skip the content chunk since we used it
+                } else if (chunk) {
+                    headerProcessedParts.push(chunk);
+                }
+            }
+        } else {
+            headerProcessedParts.push(part);
+        }
+    });
+
+
+    // 4. Process horizontal rules (---)
+    const hrProcessedParts = [];
+    headerProcessedParts.forEach((part, i) => {
+        if (typeof part === 'string') {
+            const hrSplit = part.split(/(^---\s*$)/gm);
+            hrSplit.forEach((hrPart, j) => {
+                if (hrPart.trim() === '---') {
+                    hrProcessedParts.push(<hr key={`hr-${i}-${j}`} className="border-t border-white/10 my-4" />);
+                } else if (hrPart) {
+                    hrProcessedParts.push(hrPart);
+                }
+            });
+        } else {
+            hrProcessedParts.push(part);
+        }
+    });
+
+    // 5. Process newlines and block elements with an inline accumulator
+    const blockProcessedParts = [];
+    let currentInlineItems = [];
+
+    const flushInline = (keyBase) => {
+        if (currentInlineItems.length > 0) {
+            blockProcessedParts.push(
+                <div key={keyBase} className="mb-2 text-inherit text-sm leading-relaxed last:mb-0">
+                    {currentInlineItems.map((item, idx) => (
+                        <Fragment key={idx}>{item}</Fragment>
+                    ))}
+                </div>
+            );
+            currentInlineItems = [];
+        }
+    };
+
+    hrProcessedParts.forEach((part, i) => {
+        // Distinguish between block elements (div, hr) and inline elements (string, span, strong)
+        const isBlockElement = React.isValidElement(part) && (part.type === 'div' || part.type === 'hr');
+
+        if (isBlockElement) {
+            flushInline(`para-before-block-${i}`);
+            blockProcessedParts.push(part);
+        } else if (typeof part !== 'string') {
+            // Inline components (Hero icons, bold text)
+            currentInlineItems.push(part);
+        } else {
+            // Split by newline to respect paragraph breaks and list items
+            const lines = part.split('\n');
+            lines.forEach((line, j) => {
+                const trimmed = line.trim();
+
+                // Double newline or significantly empty line acts as a paragraph break
+                if (line === '' && currentInlineItems.length > 0) {
+                    flushInline(`para-${i}-${j}`);
+                    return;
+                }
+
+                if (!trimmed) return;
+
+                // Handle list items
+                if (trimmed.startsWith('- ') || trimmed.startsWith('* ')) {
+                    flushInline(`para-before-list-${i}-${j}`);
+                    blockProcessedParts.push(
+                        <div key={`li-${i}-${j}`} className="flex gap-2 mb-1 pl-4 text-cyan-100/80 text-sm">
+                            <span className="text-cyan-500/50">•</span>
+                            <span className="flex-1">{trimmed.substring(2)}</span>
+                        </div>
+                    );
+                } else {
+                    // Normal text line - join with previous if it's a continuation
+                    if (currentInlineItems.length > 0) {
+                        // Check if the last item was a string and if we need a space
+                        const lastItem = currentInlineItems[currentInlineItems.length - 1];
+                        if (typeof lastItem === 'string' && !lastItem.endsWith(' ') && !trimmed.startsWith(' ')) {
+                            currentInlineItems.push(" ");
+                        }
+                    }
+                    currentInlineItems.push(trimmed);
+                }
+            });
+        }
+    });
+
+    // Final flush
+    flushInline(`para-final`);
+
+    return <div className="space-y-1">{blockProcessedParts}</div>;
 }
+
 
 function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onClose, handleForceRefresh, isVerifying }) {
     const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
@@ -797,15 +905,17 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
     // Calculate team max for each stat
     const teamMax = {
-        HeroDamage: Math.max(...userTeam.map(p => p.stats?.HeroDamage || 0)),
-        SiegeDamage: Math.max(...userTeam.map(p => p.stats?.SiegeDamage || 0)),
-        Healing: Math.max(...userTeam.map(p => p.stats?.Healing || 0)),
-        ExperienceContribution: Math.max(...userTeam.map(p => p.stats?.ExperienceContribution || 0)),
-        Assists: Math.max(...userTeam.map(p => p.stats?.Assists || 0)),
+        HeroDamage: Math.max(0, ...userTeam.map(p => p.stats?.HeroDamage || 0)),
+        SiegeDamage: Math.max(0, ...userTeam.map(p => p.stats?.SiegeDamage || 0)),
+        Healing: Math.max(0, ...userTeam.map(p => p.stats?.Healing || 0)),
+        ExperienceContribution: Math.max(0, ...userTeam.map(p => p.stats?.ExperienceContribution || 0)),
+        Assists: Math.max(0, ...userTeam.map(p => p.stats?.Assists || 0)),
     };
 
     // Helper to render a stat bar
     const StatBar = ({ label, value, max, color, icon: Icon }) => {
+
+
         const percentage = max > 0 ? (value / max) * 100 : 0;
         const isTop = value === max && value > 0;
 
@@ -931,9 +1041,9 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                         </button>
                     </div>
                     <div className="text-5xl font-black text-white mb-6 italic tracking-tight">{analysis?.verdict || "ANALYZING..."}</div>
-                    <p className="text-gray-300 leading-relaxed text-lg font-light border-t border-white/10 pt-4">
+                    <div className="text-gray-300 leading-relaxed text-lg font-light border-t border-white/10 pt-4">
                         {renderMarkdown(analysis?.summary)}
-                    </p>
+                    </div>
                 </div>
 
                 {/* Summary Stats Visualization */}
@@ -1121,7 +1231,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                         {/* Parse killer stats with timestamps - "**Alarak** (4 deaths: 01:59, 08:20, 15:46, 16:56)" */}
                         {(() => {
-                            const text = analysis?.areas_for_improvement || '';
+                            const text = typeof analysis?.areas_for_improvement === 'string' ? analysis.areas_for_improvement : '';
                             const killerMatch = text.match(/\*\*(\w+)\*\*\s*\((\d+)\s+deaths?:\s*([^)]+)\)/i);
 
                             if (killerMatch) {
@@ -1162,7 +1272,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                         {/* Parse distance from team at death - "distance of **38.1**" */}
                         {(() => {
-                            const text = analysis?.areas_for_improvement || '';
+                            const text = typeof analysis?.areas_for_improvement === 'string' ? analysis.areas_for_improvement : '';
                             const distanceMatch = text.match(/Your death at (\d+:\d+).*?distance of \*\*([\d.]+)\*\*/i);
 
                             if (distanceMatch) {
@@ -1187,7 +1297,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                         {/* Parse capital losses (dropped gems, coins, etc.) */}
                         {(() => {
-                            const text = (analysis?.summary || '') + ' ' + (analysis?.areas_for_improvement || '');
+                            const text = (analysis?.summary || '') + ' ' + (typeof analysis?.areas_for_improvement === 'string' ? analysis.areas_for_improvement : '');
                             const capitalMatch = text.match(/Capital Losses.*?(\d+)\s+(gems?|coins?)/i);
 
                             if (capitalMatch) {
@@ -1284,7 +1394,65 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                             );
                         })()}
 
-                        {/* Parse Objective Occupancy - handle seconds or MM:SS */}
+
+                        {/* Other Sections (Deaths, etc.) */}
+                        {(() => {
+                            let sections = [];
+                            if (Array.isArray(analysis?.areas_for_improvement)) {
+                                sections = analysis.areas_for_improvement;
+                            } else if (analysis?.areas_for_improvement && typeof analysis.areas_for_improvement === 'object') {
+                                sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
+                            }
+
+                            // Filter out "Your Kills" as we'll show it in a dedicated tile
+                            return sections.filter(s => s.title !== "Your Kills").map((section, idx) => {
+
+                                if (!section.title || !section.items) return null;
+
+                                // Deaths section with hero portraits
+                                if (section.title === "Deaths") {
+                                    return (
+                                        <div key={idx} className="bg-black/30 rounded-lg p-4 border border-red-500/20 shadow-lg shadow-red-900/10">
+                                            <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Deaths</div>
+                                            <div className="space-y-3">
+                                                {section.items.map((death, i) => {
+                                                    // Handle both object and string formats
+                                                    const isObject = typeof death === 'object';
+                                                    const time = isObject ? death.time : death.match(/(\d+:\d+)/)?.[1];
+                                                    const killer = isObject ? death.killer : death.match(/Killed by (\w+)/)?.[1] || death.match(/- (\w+) -/)?.[1];
+                                                    const context = isObject ? death.context : death;
+
+                                                    return (
+                                                        <div key={i} className="flex items-center gap-3 p-2 bg-red-500/5 rounded border border-red-500/10">
+                                                            {killer && killer !== 'Unknown' && (
+                                                                <div className="w-10 h-10 rounded border-2 border-red-500/50 overflow-hidden shrink-0">
+                                                                    <HeroPortrait heroName={killer} size="full" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="flex items-center gap-2 mb-1">
+                                                                    <span className="text-xs font-mono text-red-300 font-bold">{time}</span>
+                                                                    {killer && <span className="text-xs text-gray-400">Killed by {killer}</span>}
+                                                                </div>
+                                                                <div className="text-[11px] text-gray-400">{isObject ? context : context.replace(/^\d+:\d+\s*-\s*/, '').replace(/Killed by \w+\s*-\s*/, '')}</div>
+                                                            </div>
+                                                        </div>
+                                                    );
+                                                })}
+                                                {section.outnumbered && (
+                                                    <div className="text-[10px] text-yellow-400 mt-2">⚠️ Outnumbered: {section.outnumbered}</div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                return null;
+
+                            });
+                        })()}
+
+                        {/* Parse Objective Occupancy (already in place) */}
                         {(() => {
                             const text = (analysis?.summary || '') + ' ' + (analysis?.dominance || '');
                             const objMatch = text.match(/([\d]+:[\d]+|[\d]+)\s+(?:seconds\s+of\s+)?(?:Temple|Objective|Occupancy)/i);
@@ -1325,7 +1493,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
             <div className="space-y-8 z-10">
                 {/* Critical Mistake */}
                 {analysis?.critical_mistake && (
-                    <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-lg">
+                    <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl">
                         <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
                             <div className="p-2 bg-orange-500/10 rounded">
                                 <Activity className="text-orange-400" size={24} />
@@ -1333,27 +1501,113 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                             <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
                         </div>
                         <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
-                            <p className="text-orange-100/90 leading-relaxed text-sm font-medium italic">
+                            <div className="text-orange-100/90 leading-relaxed text-sm font-medium italic">
                                 {renderMarkdown(analysis.critical_mistake)}
-                            </p>
+                            </div>
                         </Questionable>
                     </div>
                 )}
 
                 {/* Win Condition */}
                 {(analysis?.win_condition || analysis?.win_condition_analysis) && (
-                    <div className="bg-[#0f2026] border border-emerald-500/20 p-6 rounded relative hover:border-emerald-500/40 transition-colors">
+                    <div className="bg-[#0f2026] border border-emerald-500/20 p-6 rounded relative hover:border-emerald-500/40 transition-colors shadow-xl">
                         <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
                             <div className="p-2 bg-white/5 rounded">
-                                <Target className={match.result === 'WIN' ? 'text-cyan-400' : 'text-red-400'} size={24} />
+                                <Target className={(match.result?.toUpperCase() === 'WIN') ? 'text-cyan-400' : 'text-red-400'} size={24} />
                             </div>
                             <h3 className="text-emerald-400 font-bold uppercase tracking-wider text-sm">Win Condition</h3>
                         </div>
                         <Questionable title="Win Condition" value={analysis.win_condition || analysis.win_condition_analysis} onDiscuss={onDiscuss}>
-                            <p className="text-gray-300 leading-relaxed text-sm">{renderMarkdown(analysis.win_condition || analysis.win_condition_analysis)}</p>
+                            <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">{renderMarkdown(analysis.win_condition || analysis.win_condition_analysis)}</p>
                         </Questionable>
                     </div>
                 )}
+
+                {/* YOUR KILLS - DEDICATED TILE */}
+                {(() => {
+                    let sections = [];
+                    if (Array.isArray(analysis?.areas_for_improvement)) {
+                        sections = analysis.areas_for_improvement;
+                    } else if (analysis?.areas_for_improvement && typeof analysis.areas_for_improvement === 'object') {
+                        sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
+                    }
+
+                    const killSection = sections.find(s => s.title === "Your Kills");
+                    if (!killSection) return null;
+
+                    return (
+                        <div className="bg-[#052e16]/30 border border-green-500/30 p-6 rounded-lg relative hover:bg-[#052e16]/40 transition-all shadow-2xl shadow-green-900/20 group">
+                            <div className="absolute right-0 top-0 opacity-10 p-4 transition-transform group-hover:scale-110 duration-700 pointer-events-none">
+                                <Swords size={120} className="text-green-500" />
+                            </div>
+                            <div className="flex items-center gap-3 mb-6 pb-2 border-b border-white/5">
+                                <div className="p-2 bg-green-500/20 rounded-lg border border-green-500/40">
+                                    <Target className="text-green-400" size={24} />
+                                </div>
+                                <div>
+                                    <h3 className="text-green-400 font-black uppercase tracking-[0.2em] text-xs">Combat Dominance</h3>
+                                    <div className="text-white font-bold text-sm">Target Eliminations</div>
+                                </div>
+                                <div className="ml-auto flex flex-col items-end">
+                                    <div className="text-2xl font-black text-green-400 leading-none">
+                                        {userStats.SoloKill || killSection.items.filter(k => (typeof k === 'object' ? (k.time !== 'SUMMARY' && k.victim !== 'Stats') : !k.includes('SUMMARY'))).length}
+                                    </div>
+                                    <div className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Kills</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                {killSection.items.map((kill, i) => {
+                                    const isObject = typeof kill === 'object';
+                                    const time = isObject ? kill.time : kill.match(/(\d+:\d+)/)?.[1];
+                                    const victim = isObject ? kill.victim : kill.match(/Killed (\w+)/)?.[1];
+                                    const context = isObject ? kill.context : kill.split('-')[1]?.trim();
+
+                                    const isSummary = time === 'SUMMARY' || victim === 'Stats';
+                                    const isAssist = victim === 'Assisted';
+
+                                    let PortraitComponent = <HeroPortrait heroName={victim} size="full" />;
+
+                                    if (isSummary) {
+                                        PortraitComponent = (
+                                            <div className="w-full h-full flex items-center justify-center bg-cyan-950/50 text-cyan-400">
+                                                <BarChart3 size={20} />
+                                            </div>
+                                        );
+                                    } else if (isAssist) {
+                                        const realVictim = context?.match(/on\s+([A-Za-z0-9'.\s-]+)/)?.[1];
+                                        if (realVictim) {
+                                            PortraitComponent = <HeroPortrait heroName={realVictim} size="full" />;
+                                        } else {
+                                            PortraitComponent = (
+                                                <div className="w-full h-full flex items-center justify-center bg-purple-950/50 text-purple-400">
+                                                    <Users size={20} />
+                                                </div>
+                                            );
+                                        }
+                                    }
+
+                                    return (
+                                        <div key={i} className="flex items-center gap-3 p-2.5 bg-black/40 rounded border border-green-500/20 hover:border-green-400/50 transition-colors">
+                                            {victim && (
+                                                <div className="w-10 h-10 rounded border border-green-500/40 overflow-hidden shrink-0 relative bg-black shadow-inner">
+                                                    {PortraitComponent}
+                                                </div>
+                                            )}
+                                            <div className="flex-1 min-w-0">
+                                                <div className="flex items-center justify-between gap-2 mb-0.5">
+                                                    <span className="text-[10px] font-mono text-green-400 font-bold bg-green-900/30 px-1.5 py-0.5 rounded border border-green-500/20">{time}</span>
+                                                    {victim && !isSummary && !isAssist && <span className="text-[11px] font-black text-white uppercase tracking-tight truncate">{victim}</span>}
+                                                </div>
+                                                {context && <div className="text-[10px] text-gray-500 font-medium truncate">{context}</div>}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    );
+                })()}
             </div>
         </div>
     )
@@ -1362,11 +1616,59 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 // --- TALENT GRID ---
 
 function PersonnelTab({ match, analysis }) {
+    // Fallback: Show basic roster if no social insights
     if (!analysis || !analysis.social_insights) {
+        const userPlayer = match.players?.find(p => p.name === 'Discerning' || p.hero === match.hero);
+        const userTeam = userPlayer ? userPlayer.team : 0;
+
+        const allies = match.players?.filter(p => p.team === userTeam) || [];
+        const enemies = match.players?.filter(p => p.team !== userTeam) || [];
+
+        const PlayerCard = ({ player, isAlly }) => {
+            const stats = player.stats || {};
+            return (
+                <div className={`p-4 rounded-lg border ${isAlly ? 'bg-cyan-500/5 border-cyan-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
+                    <div className="flex items-center gap-3 mb-3">
+                        <div className="w-10 h-10 rounded bg-black/40 border border-white/10 overflow-hidden shrink-0">
+                            <HeroPortrait heroName={player.hero} size="full" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className={`font-black text-sm ${isAlly ? 'text-cyan-400' : 'text-red-400'}`}>{player.name}</span>
+                            <span className="text-[10px] text-slate-500 uppercase font-bold">{player.hero}</span>
+                        </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                        <div className="bg-black/20 p-2 rounded">
+                            <div className="text-gray-500 text-[10px]">K/D/A</div>
+                            <div className="text-white font-bold">{stats.SoloKill || 0}/{stats.Deaths || 0}/{stats.Assists || 0}</div>
+                        </div>
+                        <div className="bg-black/20 p-2 rounded">
+                            <div className="text-gray-500 text-[10px]">Hero Dmg</div>
+                            <div className="text-white font-bold">{(stats.HeroDamage || 0).toLocaleString()}</div>
+                        </div>
+                        <div className="bg-black/20 p-2 rounded">
+                            <div className="text-gray-500 text-[10px]">XP</div>
+                            <div className="text-white font-bold">{(stats.ExperienceContribution || 0).toLocaleString()}</div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
         return (
-            <div className="flex flex-col items-center justify-center h-64 text-gray-500 uppercase tracking-widest bg-black/20 rounded-lg border border-white/5 gap-4">
-                <BrainCircuit size={48} className="text-gray-700" />
-                <span>Neural social link not established for this match.</span>
+            <div className="space-y-6">
+                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-4">
+                    <h3 className="text-cyan-400 font-bold uppercase text-sm mb-4">Your Team</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {allies.map((p, i) => <PlayerCard key={i} player={p} isAlly={true} />)}
+                    </div>
+                </div>
+                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
+                    <h3 className="text-red-400 font-bold uppercase text-sm mb-4">Enemy Team</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        {enemies.map((p, i) => <PlayerCard key={i} player={p} isAlly={false} />)}
+                    </div>
+                </div>
             </div>
         );
     }
@@ -1439,7 +1741,7 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
 
     // Talent tier to level mapping (tier 1-7 -> levels 1, 4, 7, 10, 13, 16, 20)
     const levelToTier = {
-        1: 1, 4: 2, 7: 3, 10: 4, 13: 5, 16: 6, 7: 20
+        1: 1, 4: 2, 7: 3, 10: 4, 13: 5, 16: 6, 20: 7
     }
     const levels = [1, 4, 7, 10, 13, 16, 20]
 
