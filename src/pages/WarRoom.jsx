@@ -10,7 +10,7 @@ import { calculateYourStats } from '../utils/statsUtils';
 import { useReplayData } from '../hooks/useReplayData';
 
 // Default season config (will be overridden by API)
-const DEFAULT_SEASON = { slug: 'season_2025_3', name: 'Season 3 2025', start_date: '2025-09-01' };
+const DEFAULT_SEASON = { slug: 'season_2026_1', name: 'Season 1 2026', start_date: '2026-01-06' };
 
 const MatchList = ({ hero, mapName, filter, matches, seasonStartDate }) => {
   const [expanded, setExpanded] = useState(false);
@@ -328,11 +328,11 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
       // Get map-specific stats - combine verified stats with parsed matches (like Operational Ledger)
       const mapData = heroMapStats[heroName] || {};
       const heroStats = profile.hero_stats?.[heroName];
-      const verifiedS3 = heroStats?.verified_season_2025_3;
+      const verifiedSeason = heroStats?.[`verified_${SEASON_SLUG}`];
       const verifiedLifetime = heroStats?.verified_lifetime || heroStats?.verified;
 
       // Baseline cutoff: verified stats snapshot date (if available)
-      const BASELINE_CUTOFF = verifiedS3?.verified_date || verifiedLifetime?.verified_date || SEASON_START_DATE;
+      const BASELINE_CUTOFF = verifiedSeason?.verified_date || verifiedLifetime?.verified_date || SEASON_START_DATE;
       const s3Matches = matchHistory.filter(m =>
         m.hero === heroName &&
         m.map === mapName &&
@@ -340,10 +340,10 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
       );
       const newReplays = s3Matches.filter(m => new Date(m.date || m.timestamp_iso) > new Date(BASELINE_CUTOFF));
 
-      // Calculate S3 stats: verified baseline + parsed matches after baseline
+      // Calculate seasonal stats: verified baseline + parsed matches after baseline
       let s3Games = 0;
       let s3Wins = 0;
-      if (verifiedS3 && mapName) {
+      if (verifiedSeason && mapName) {
         // Check if verified stats include this map
         const verifiedMapData = (mapData[SEASON_SLUG] || []).find(m => m.game_map === mapName);
         if (verifiedMapData) {
@@ -388,8 +388,8 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
       const buildInfo = getBestBuild(heroName);
 
       // Check if this hero has verified stats (for display badge)
-      const verified = verifiedS3 || mapData[`verified_${SEASON_SLUG}`];
-      const verifiedWR = verifiedS3?.wr || verified?.win_rate || 0;
+      const verified = verifiedSeason || mapData[`verified_${SEASON_SLUG}`];
+      const verifiedWR = verifiedSeason?.wr || verified?.win_rate || 0;
       const isVerified = !!verified && s3Games > 0;
 
       if (lifetimeGames >= 20 && lifetimeWR >= 50) {
@@ -432,8 +432,8 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
         result.pockets.push({
           hero: heroName,
           wr: verified ? verifiedWR : lifetimeWR,
-          games: verified ? (verifiedS3?.games || verified?.games || lifetimeGames) : lifetimeGames,
-          s3Games: verified ? (verifiedS3?.games || verified?.games || s3Games) : s3Games,
+          games: verified ? (verifiedSeason?.games || verified?.games || lifetimeGames) : lifetimeGames,
+          s3Games: verified ? (verifiedSeason?.games || verified?.games || s3Games) : s3Games,
           s3WR: verified ? verifiedWR : s3WR,
           isVerified: !!verified,
           notes: verified ? "Verified In-Game" : "High Confidence",

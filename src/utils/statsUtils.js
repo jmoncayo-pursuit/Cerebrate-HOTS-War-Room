@@ -3,22 +3,23 @@ import { normalizeHeroName } from './heroUtils'
 export const calculateYourStats = (matches, profileData = null) => {
     const getVerifiedOverride = (heroName) => {
         if (!profileData) return null
-        
+
         // Check hero_stats first (primary location for verified stats)
         const heroStats = profileData.hero_stats?.[heroName]
         if (heroStats) {
-            const s3Verified = heroStats.verified_season_2025_3
+            const sSlug = profileData.active_season?.slug || 'season_2025_3'
+            const sVerified = heroStats[`verified_${sSlug}`]
             const lifetimeVerified = heroStats.verified_lifetime || heroStats.verified
-            
-            if (s3Verified) {
-                const wr = s3Verified.wr || s3Verified.win_rate || 0
-                const games = s3Verified.games || 0
+
+            if (sVerified) {
+                const wr = sVerified.wr || sVerified.win_rate || 0
+                const games = sVerified.games || 0
                 return {
                     s3: {
                         wr: wr,
                         games: games,
-                        wins: s3Verified.wins || Math.round(games * (wr / 100)),
-                        losses: s3Verified.losses || (games - Math.round(games * (wr / 100)))
+                        wins: sVerified.wins || Math.round(games * (wr / 100)),
+                        losses: sVerified.losses || (games - Math.round(games * (wr / 100)))
                     },
                     lifetime: lifetimeVerified ? {
                         wr: lifetimeVerified.wr || lifetimeVerified.win_rate || 0,
@@ -29,7 +30,7 @@ export const calculateYourStats = (matches, profileData = null) => {
                     source: s3Verified.source || "Verified In-Game"
                 }
             }
-            
+
             if (lifetimeVerified) {
                 const wr = lifetimeVerified.wr || lifetimeVerified.win_rate || 0
                 const games = lifetimeVerified.games || 0
@@ -45,21 +46,22 @@ export const calculateYourStats = (matches, profileData = null) => {
                 }
             }
         }
-        
+
         // Fallback to hero_map_stats (legacy structure)
         const heroData = profileData.hero_map_stats?.[heroName]
         if (!heroData) return null
 
-        if (heroData.verified_season_2025_3) {
-            const s3 = heroData.verified_season_2025_3
-            const wr = s3.win_rate || s3.wr || 0
-            const games = s3.games || 0
+        const sSlug = profileData.active_season?.slug || 'season_2025_3'
+        const sData = heroData[`verified_${sSlug}`]
+        if (sData) {
+            const wr = sData.win_rate || sData.wr || 0
+            const games = sData.games || 0
             return {
                 s3: {
                     wr: wr,
                     games: games,
-                    wins: s3.wins || Math.round(games * (wr / 100)),
-                    losses: s3.losses || (games - Math.round(games * (wr / 100)))
+                    wins: sData.wins || Math.round(games * (wr / 100)),
+                    losses: sData.losses || (games - Math.round(games * (wr / 100)))
                 },
                 lifetime: heroData.verified_ingame ? {
                     wr: heroData.verified_ingame.win_rate || heroData.verified_ingame.wr || 0,
@@ -90,7 +92,7 @@ export const calculateYourStats = (matches, profileData = null) => {
     }
 
     const heroStats = {}
-    const S3_START = new Date('2025-09-01')
+    const SEASON_START = new Date(profileData?.active_season?.start_date || '2026-01-06')
 
     // 1. Initialize from Profile Data
     // A. Verified Stats (hero_map_stats)
@@ -142,7 +144,7 @@ export const calculateYourStats = (matches, profileData = null) => {
         }
 
         const matchDate = new Date(match.date || match.timestamp_iso)
-        if (matchDate > S3_START) {
+        if (matchDate > SEASON_START) {
             heroStats[hero].s3.total++
             if (match.result === 'WIN' || match.win === true) {
                 heroStats[hero].s3.wins++
@@ -179,23 +181,23 @@ export const calculateYourStats = (matches, profileData = null) => {
             if (verified && verified.s3) {
                 // Start with verified stats as baseline
                 const baselineDate = new Date('2026-01-06') // BASELINE_CUTOFF from QuickStatsPanel
-                const parsedAfterBaseline = matches.filter(m => 
-                    m.hero === hero && 
+                const parsedAfterBaseline = matches.filter(m =>
+                    m.hero === hero &&
                     new Date(m.date || m.timestamp_iso) > baselineDate &&
-                    new Date(m.date || m.timestamp_iso) > S3_START
+                    new Date(m.date || m.timestamp_iso) > SEASON_START
                 )
-                
+
                 // Add parsed matches after baseline to verified stats
                 let combinedWins = verified.s3.wins
                 let combinedGames = verified.s3.games
-                
+
                 parsedAfterBaseline.forEach(m => {
                     combinedGames++
                     if (m.result === 'WIN' || m.win === true) {
                         combinedWins++
                     }
                 })
-                
+
                 finalS3 = {
                     wr: combinedGames > 0 ? (combinedWins / combinedGames) * 100 : verified.s3.wr,
                     games: combinedGames,
@@ -224,21 +226,21 @@ export const calculateYourStats = (matches, profileData = null) => {
             if (verified && verified.lifetime) {
                 // Add parsed matches after baseline to verified lifetime stats
                 const baselineDate = new Date('2026-01-06') // BASELINE_CUTOFF
-                const parsedAfterBaseline = matches.filter(m => 
-                    m.hero === hero && 
+                const parsedAfterBaseline = matches.filter(m =>
+                    m.hero === hero &&
                     new Date(m.date || m.timestamp_iso) > baselineDate
                 )
-                
+
                 let combinedWins = verified.lifetime.wins
                 let combinedGames = verified.lifetime.games
-                
+
                 parsedAfterBaseline.forEach(m => {
                     combinedGames++
                     if (m.result === 'WIN' || m.win === true) {
                         combinedWins++
                     }
                 })
-                
+
                 finalLifetime = {
                     wr: combinedGames > 0 ? (combinedWins / combinedGames) * 100 : verified.lifetime.wr,
                     games: combinedGames,

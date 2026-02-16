@@ -44,8 +44,8 @@ export default function QuickStatsPanel({ onSelectMatch }) {
     const slumping = audit.slumping_heroes || []
     const maps = profile.map_preferences || {}
 
-    // Calculate Season 3 Strong Heroes: Baseline + Parsed Replays
-    const SEASON_START_DATE = '2025-09-01' // Season 3 2025 start
+    // Calculate Current Season Performance: Baseline + Parsed Replays
+    const SEASON_START_DATE = profile?.active_season?.start_date || '2026-01-06'
     const BASELINE_CUTOFF = '2026-01-06' // Date when we established baseline
     const s3Matches = allMatches.filter(m => new Date(m.date || m.timestamp_iso) > new Date(SEASON_START_DATE))
     const newReplays = s3Matches.filter(m => new Date(m.date || m.timestamp_iso) > new Date(BASELINE_CUTOFF))
@@ -59,12 +59,13 @@ export default function QuickStatsPanel({ onSelectMatch }) {
         const hasVerifiedStats = Object.keys(verifiedHeroes).length > 0;
 
         if (hasVerifiedStats) {
+            const sSlug = profile.active_season?.slug || 'season_2025_3';
             Object.entries(verifiedHeroes).forEach(([heroName, data]) => {
-                const s3 = data.verified_season_2025_3;
-                if (s3 && parseInt(s3.games) > 0) {
+                const seasonData = data[`verified_${sSlug}`];
+                if (seasonData && parseInt(seasonData.games) > 0) {
                     // Start with verified stats as baseline
-                    let wins = parseInt(s3.wins);
-                    let total = parseInt(s3.games);
+                    let wins = parseInt(seasonData.wins);
+                    let total = parseInt(seasonData.games);
 
                     // ADD parsed matches after baseline cutoff to verified stats
                     const parsedAfterBaseline = newReplays.filter(m => m.hero === heroName);
@@ -91,7 +92,8 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                 heroStats[hero] = { wins: 0, total: 0, hero, role: null }
             }
             // Only count matches if hero doesn't have verified stats (already counted above)
-            if (!hasVerifiedStats || !verifiedHeroes[hero] || !verifiedHeroes[hero].verified_season_2025_3) {
+            const sSlug = profile.active_season?.slug || 'season_2025_3';
+            if (!hasVerifiedStats || !verifiedHeroes[hero] || !verifiedHeroes[hero][`verified_${sSlug}`]) {
                 heroStats[hero].total++
                 if (match.result === 'WIN') heroStats[hero].wins++
             }
@@ -115,7 +117,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                     lt_wr: ltWR,
                     lt_games: ltGames,
                     role: role,
-                    notes: `Season 3 2025`
+                    notes: profile?.active_season?.name || 'Season 1 2026'
                 }
             })
             .sort((a, b) => b.season_wr - a.season_wr)
@@ -154,7 +156,8 @@ export default function QuickStatsPanel({ onSelectMatch }) {
             if (!heroStats[hero]) {
                 heroStats[hero] = { wins: 0, total: 0, hero, role: null }
             }
-            if (!hasVerifiedStats || !verifiedHeroes[hero] || !verifiedHeroes[hero].verified_season_2025_3) {
+            const sSlug = profile.active_season?.slug || 'season_2025_3';
+            if (!hasVerifiedStats || !verifiedHeroes[hero] || !verifiedHeroes[hero][`verified_${sSlug}`]) {
                 heroStats[hero].total++
                 if (match.result === 'WIN') heroStats[hero].wins++
             }
@@ -205,7 +208,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                                 <ConfidenceScore
                                     value={displayWR}
                                     n={displayGames}
-                                    label="S3 Performance"
+                                    label={`${profile?.active_season?.name || 'S1'} Performance`}
                                     className="scale-75 origin-left"
                                 />
                                 {peakRank && (
