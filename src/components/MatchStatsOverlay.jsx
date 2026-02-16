@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer, RefreshCw, Users, BrainCircuit } from 'lucide-react'
+import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer, RefreshCw, Users, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react'
 import HeroPortrait from './HeroPortrait'
 import talentData from '../data/talents.json'
 // import profileData from '../data/player_profile.json' // Removed
@@ -467,9 +467,9 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
                         <div className="w-full">
                             {activeTab === 'stats' && <StatsScoreboard match={localMatch} players={players} onDiscuss={onDiscuss} />}
-                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={initialMatch.analysis || localMatch.analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} handleForceRefresh={handleForceRefresh} isVerifying={isVerifying} />}
+                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={localMatch.analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} handleForceRefresh={handleForceRefresh} isVerifying={isVerifying} />}
                             {activeTab === 'talents' && <TalentGrid match={localMatch} players={players} talentMap={talentMap} onDiscuss={onDiscuss} playerProfile={playerProfile} />}
-                            {activeTab === 'personnel' && <PersonnelTab match={localMatch} analysis={initialMatch.analysis || localMatch.analysis} />}
+                            {activeTab === 'personnel' && <PersonnelTab match={localMatch} analysis={localMatch.analysis} />}
                             {activeTab === 'timeline' && (
                                 <MatchTimeline
                                     matchId={localMatch.id}
@@ -1031,93 +1031,135 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                     <div className="flex items-center gap-3 mb-4">
                         <Award className="text-cyan-500" size={24} />
                         <h2 className="text-cyan-500 text-sm font-bold uppercase tracking-widest">Analytical Verdict</h2>
-                        <button
-                            onClick={handleForceRefresh}
-                            disabled={isVerifying}
-                            className={`ml-auto p-1.5 rounded bg-cyan-900/20 border border-cyan-500/30 text-cyan-400 hover:bg-cyan-500/20 transition-all ${isVerifying ? 'animate-spin' : ''}`}
-                            title="Force Re-parse & Analyze"
-                        >
-                            <RefreshCw size={14} />
-                        </button>
                     </div>
                     <div className="text-5xl font-black text-white mb-6 italic tracking-tight">{analysis?.verdict || "ANALYZING..."}</div>
-                    <div className="text-gray-300 leading-relaxed text-lg font-light border-t border-white/10 pt-4">
+                    <div className="text-gray-300 leading-relaxed text-2xl font-light border-t border-white/10 pt-4">
                         {renderMarkdown(analysis?.summary)}
                     </div>
                 </div>
 
+                {/* Critical Mistake */}
+                {analysis?.critical_mistake && (
+                    <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
+                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                            <div className="p-2 bg-orange-500/10 rounded">
+                                <Activity className="text-orange-400" size={24} />
+                            </div>
+                            <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                        </div>
+                        <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
+                            <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
+                                {renderMarkdown(analysis.critical_mistake)}
+                            </div>
+                        </Questionable>
+                    </div>
+                )}
+
+                {/* Win Condition */}
+                {(analysis?.win_condition || analysis?.win_condition_analysis) && (
+                    <div className="bg-[#0f2026] border border-emerald-500/20 p-6 rounded relative hover:border-emerald-500/40 transition-colors shadow-xl mb-8">
+                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                            <div className="p-2 bg-white/5 rounded">
+                                <Target className={(match.result?.toUpperCase() === 'WIN') ? 'text-cyan-400' : 'text-red-400'} size={24} />
+                            </div>
+                            <h3 className="text-emerald-400 font-bold uppercase tracking-wider text-sm">Win Condition</h3>
+                        </div>
+                        <Questionable title="Win Condition" value={analysis.win_condition || analysis.win_condition_analysis} onDiscuss={onDiscuss}>
+                            <p className="text-gray-300 leading-relaxed text-lg whitespace-pre-wrap">{renderMarkdown(analysis.win_condition || analysis.win_condition_analysis)}</p>
+                        </Questionable>
+                    </div>
+                )}
+
                 {/* Summary Stats Visualization */}
                 <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f172a] border border-purple-500/20 rounded-lg p-6 shadow-2xl">
                     <div className="flex items-center gap-2 mb-6 pb-3 border-b border-purple-500/20">
-                        <Activity className="text-purple-400" size={20} />
-                        <h3 className="text-purple-300 font-bold uppercase tracking-wider text-xs">Key Insights</h3>
+                        <Activity className="text-purple-400" size={24} />
+                        <h3 className="text-purple-300 font-bold uppercase tracking-wider text-base">Key Insights</h3>
                     </div>
 
                     <div className="space-y-4">
                         {/* Display AI-generated Key Insights if available */}
                         {analysis?.key_insights && (
                             <>
-                                {analysis.key_insights.kill_streak && parseInt(analysis.key_insights.kill_streak) > 0 && (
-                                    <div className="bg-black/30 rounded-lg p-4 border border-green-500/20">
-                                        <div className="text-[10px] text-green-400 uppercase tracking-wider mb-3 font-bold">Kill Streak</div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Swords size={16} className="text-green-400" />
-                                                <span className="text-sm text-gray-300">Longest streak</span>
-                                            </div>
-                                            <span className="text-2xl font-black text-green-300">{analysis.key_insights.kill_streak}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {analysis.key_insights.mercenary_camps && parseInt(analysis.key_insights.mercenary_camps) > 0 && (
-                                    <div className="bg-black/30 rounded-lg p-4 border border-purple-500/20">
-                                        <div className="text-[10px] text-purple-400 uppercase tracking-wider mb-3 font-bold">Mercenary Camps</div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <TrendingUp size={16} className="text-purple-400" />
-                                                <span className="text-sm text-gray-300">Camps captured</span>
-                                            </div>
-                                            <span className="text-2xl font-black text-purple-300">{analysis.key_insights.mercenary_camps}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
-                                    <div className="bg-black/30 rounded-lg p-4 border border-red-500/20">
-                                        <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Skull size={16} className="text-red-400" />
-                                                <span className="text-sm text-gray-300">Time spent dead</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-2xl font-black text-red-300">{analysis.key_insights.downtime}</div>
-                                                <div className="text-[9px] text-gray-500">respawn time</div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )}
-                                {(analysis.key_insights.true_soak || analysis.key_insights.minion_xp) && (() => {
-                                    const soakValue = analysis.key_insights.minion_xp || analysis.key_insights.true_soak;
-                                    const numValue = typeof soakValue === 'string' ? parseInt(soakValue.replace(/,/g, '')) : soakValue;
-                                    if (!numValue || numValue <= 0) return null;
+                                {(() => {
+                                    // Medals / Awards
+                                    const user = match.players?.find(p => p.name === 'CerebrateUser' || (p.name && p.name.includes('CerebrateUser')) || p.hero === match.hero);
+                                    // Standard parser output often puts awards in 'awards' array or directly in stats as booleans
+                                    let awards = user?.awards || [];
+
+                                    // Fallback: Check stats for Boolean awards if array is empty
+                                    if (awards.length === 0 && user?.stats) {
+                                        Object.keys(user.stats).forEach(key => {
+                                            if (key.startsWith('EndOfMatchAward') && key.endsWith('Boolean') && user.stats[key] === 1) {
+                                                // Extract name: EndOfMatchAwardMostKillsBoolean -> Most Kills
+                                                let name = key.replace('EndOfMatchAward', '').replace('Boolean', '');
+                                                // Add spaces to CamelCase
+                                                name = name.replace(/([A-Z])/g, ' $1').trim();
+                                                awards.push(name);
+                                            }
+                                        });
+                                    }
+
+                                    if (!awards || awards.length === 0) return null;
+
                                     return (
-                                        <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/20">
-                                            <div className="text-[10px] text-cyan-400 uppercase tracking-wider mb-3 font-bold">Minion XP</div>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Activity size={16} className="text-cyan-400" />
-                                                    <span className="text-sm text-gray-300">Lane Pressure</span>
-                                                </div>
-                                                <div className="text-right">
-                                                    <div className="text-2xl font-black text-cyan-300">
-                                                        {numValue.toLocaleString()}
-                                                    </div>
-                                                    <div className="text-[9px] text-gray-500">EXCL. PASSIVE XP</div>
-                                                </div>
+                                        <div className="bg-black/30 rounded-lg p-5 border border-yellow-500/20">
+                                            <div className="text-sm text-yellow-400 uppercase tracking-wider mb-3 font-bold">Medals Earned</div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {awards.map((a, i) => {
+                                                    const name = typeof a === 'string' ? a : (a.award || 'Unknown');
+                                                    return (
+                                                        <div key={i} className="flex items-center gap-2 bg-yellow-500/10 px-3 py-2 rounded border border-yellow-500/30">
+                                                            <Award size={20} className="text-yellow-400" />
+                                                            <span className="text-base font-bold text-yellow-100">{name.replace(/_/g, ' ')}</span>
+                                                            {a.count > 1 && <span className="text-sm text-yellow-500 font-black">x{a.count}</span>}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
                                     );
                                 })()}
+                                {analysis.key_insights.kill_streak && parseInt(analysis.key_insights.kill_streak) > 0 && (
+                                    <div className="bg-black/30 rounded-lg p-5 border border-green-500/20">
+                                        <div className="text-sm text-green-400 uppercase tracking-wider mb-3 font-bold">Kill Streak</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Swords size={20} className="text-green-400" />
+                                                <span className="text-base text-gray-300">Longest streak</span>
+                                            </div>
+                                            <span className="text-4xl font-black text-green-300">{analysis.key_insights.kill_streak}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {analysis.key_insights.mercenary_camps && parseInt(analysis.key_insights.mercenary_camps) > 0 && (
+                                    <div className="bg-black/30 rounded-lg p-5 border border-purple-500/20">
+                                        <div className="text-sm text-purple-400 uppercase tracking-wider mb-3 font-bold">Mercenary Camps</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <TrendingUp size={20} className="text-purple-400" />
+                                                <span className="text-base text-gray-300">Camps captured</span>
+                                            </div>
+                                            <span className="text-4xl font-black text-purple-300">{analysis.key_insights.mercenary_camps}</span>
+                                        </div>
+                                    </div>
+                                )}
+                                {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
+                                    <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
+                                        <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Skull size={20} className="text-red-400" />
+                                                <span className="text-base text-gray-300">Time spent dead</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-4xl font-black text-red-300">{analysis.key_insights.downtime}</div>
+                                                <div className="text-[10px] text-gray-500">respawn time</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+
 
                                 {economyInsight && (
                                     <div className={`bg-black/30 rounded-lg p-4 border ${economyInsight.isTop ? 'border-yellow-500/30' : 'border-blue-500/20'}`}>
@@ -1369,247 +1411,548 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                             return null;
                         })()}
 
-                        {/* Structure Damage */}
-                        {(() => {
-                            const playerStats = match.players?.find(p => p.name === 'CerebrateUser' || (p.name && p.name.includes('CerebrateUser')) || p.hero === match.hero)?.stats;
-                            if (!playerStats?.SiegeDamage) return null;
 
-                            const siegeDmg = playerStats.SiegeDamage;
-                            if (siegeDmg < 10000) return null; // Only show if significant
-
-                            return (
-                                <div className="bg-black/30 rounded-lg p-4 border border-orange-500/20">
-                                    <div className="text-[10px] text-orange-400 uppercase tracking-wider mb-3 font-bold">Structure Damage</div>
-                                    <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                            <Target size={16} className="text-orange-400" />
-                                            <span className="text-sm text-gray-300">Siege Pressure</span>
-                                        </div>
-                                        <div className="text-right">
-                                            <div className="text-2xl font-black text-orange-300">{siegeDmg.toLocaleString()}</div>
-                                            <div className="text-[9px] text-gray-500">BUILDINGS</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        })()}
+                    </div>
 
 
-                        {/* Other Sections (Deaths, etc.) */}
-                        {(() => {
-                            let sections = [];
-                            if (Array.isArray(analysis?.areas_for_improvement)) {
-                                sections = analysis.areas_for_improvement;
-                            } else if (analysis?.areas_for_improvement && typeof analysis.areas_for_improvement === 'object') {
-                                sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
+                    {/* Other Sections (Deaths, etc.) */}
+                    {(() => {
+                        let sections = [];
+                        if (Array.isArray(analysis?.areas_for_improvement)) {
+                            sections = analysis.areas_for_improvement;
+                        } else if (analysis?.areas_for_improvement && typeof analysis.areas_for_improvement === 'object') {
+                            sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
+                        }
+
+                        // Filter out "Your Kills" and potentially "Deaths" (if Stitches forensics exist) to prevent redundancy
+                        return sections.filter(s => {
+                            if (s.title === "Your Kills") return false;
+
+                            // If we have Stitches forensics with a death log, the "Deaths" section in main summary is redundant
+                            if (s.title === "Deaths" && match.hero === 'Stitches' && analysis?.forensics?.death_highlights) {
+                                return false;
                             }
 
-                            // Filter out "Your Kills" as we'll show it in a dedicated tile
-                            return sections.filter(s => s.title !== "Your Kills").map((section, idx) => {
+                            return true;
+                        }).map((section, idx) => {
 
-                                if (!section.title || !section.items) return null;
+                            if (!section.title || !section.items) return null;
 
-                                // Deaths section with hero portraits
-                                if (section.title === "Deaths") {
-                                    return (
-                                        <div key={idx} className="bg-black/30 rounded-lg p-4 border border-red-500/20 shadow-lg shadow-red-900/10">
-                                            <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Deaths</div>
-                                            <div className="space-y-3">
-                                                {section.items.map((death, i) => {
-                                                    // Handle both object and string formats
-                                                    const isObject = typeof death === 'object';
-                                                    const time = isObject ? death.time : death.match(/(\d+:\d+)/)?.[1];
-                                                    const killer = isObject ? death.killer : death.match(/Killed by (\w+)/)?.[1] || death.match(/- (\w+) -/)?.[1];
-                                                    const context = isObject ? death.context : death;
-
-                                                    return (
-                                                        <div key={i} className="flex items-center gap-3 p-2 bg-red-500/5 rounded border border-red-500/10">
-                                                            {killer && killer !== 'Unknown' && (
-                                                                <div className="w-10 h-10 rounded border-2 border-red-500/50 overflow-hidden shrink-0">
-                                                                    <HeroPortrait heroName={killer} size="full" />
-                                                                </div>
-                                                            )}
-                                                            <div className="flex-1 min-w-0">
-                                                                <div className="flex items-center gap-2 mb-1">
-                                                                    <span className="text-xs font-mono text-red-300 font-bold">{time}</span>
-                                                                    {killer && <span className="text-xs text-gray-400">Killed by {killer}</span>}
-                                                                </div>
-                                                                <div className="text-[11px] text-gray-400">{isObject ? context : context.replace(/^\d+:\d+\s*-\s*/, '').replace(/Killed by \w+\s*-\s*/, '')}</div>
-                                                            </div>
-                                                        </div>
-                                                    );
-                                                })}
-                                                {section.outnumbered && (
-                                                    <div className="text-[10px] text-yellow-400 mt-2">⚠️ Outnumbered: {section.outnumbered}</div>
-                                                )}
-                                            </div>
-                                        </div>
-                                    );
-                                }
-
-                                return null;
-
-                            });
-                        })()}
-
-                        {/* Parse Objective Occupancy (already in place) */}
-                        {(() => {
-                            const text = (analysis?.summary || '') + ' ' + (analysis?.dominance || '');
-                            const objMatch = text.match(/([\d]+:[\d]+|[\d]+)\s+(?:seconds\s+of\s+)?(?:Temple|Objective|Occupancy)/i);
-
-                            if (objMatch) {
-                                let timeStr = objMatch[1];
-                                if (!timeStr.includes(':')) {
-                                    const totalSec = parseInt(timeStr);
-                                    if (totalSec <= 0) return null;
-                                    const mins = Math.floor(totalSec / 60);
-                                    const secs = totalSec % 60;
-                                    timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
-                                }
-                                if (timeStr === '0:00' || timeStr === '00:00') return null;
+                            // Deaths section with hero portraits
+                            if (section.title === "Deaths") {
                                 return (
-                                    <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/20">
-                                        <div className="text-[10px] text-cyan-400 uppercase tracking-wider mb-3 font-bold">Objective Control</div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Timer size={16} className="text-cyan-400" />
-                                                <span className="text-sm text-gray-300">Time on Point</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-2xl font-black text-cyan-300">{timeStr}</div>
-                                                <div className="text-[9px] text-gray-500">MM:SS</div>
-                                            </div>
+                                    <div key={idx} className="bg-black/30 rounded-lg p-4 border border-red-500/20 shadow-lg shadow-red-900/10">
+                                        <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Deaths</div>
+                                        <div className="space-y-3">
+                                            {section.items.map((death, i) => {
+                                                // Handle both object and string formats
+                                                const isObject = typeof death === 'object';
+                                                const time = isObject ? death.time : death.match(/(\d+:\d+)/)?.[1];
+                                                const killer = isObject ? death.killer : death.match(/Killed by (\w+)/)?.[1] || death.match(/- (\w+) -/)?.[1];
+                                                const context = isObject ? death.context : death;
+
+                                                return (
+                                                    <div key={i} className="flex items-center gap-3 p-2 bg-red-500/5 rounded border border-red-500/10">
+                                                        {killer && killer !== 'Unknown' && (
+                                                            <div className="w-10 h-10 rounded border-2 border-red-500/50 overflow-hidden shrink-0">
+                                                                <HeroPortrait heroName={killer} size="full" />
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="flex items-center gap-2 mb-1">
+                                                                <span className="text-xs font-mono text-red-300 font-bold">{time}</span>
+                                                                {killer && <span className="text-xs text-gray-400">Killed by {killer}</span>}
+                                                            </div>
+                                                            <div className="text-[11px] text-gray-400">{isObject ? context : context.replace(/^\d+:\d+\s*-\s*/, '').replace(/Killed by \w+\s*-\s*/, '')}</div>
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                            {section.outnumbered && (
+                                                <div className="text-[10px] text-yellow-400 mt-2">⚠️ Outnumbered: {section.outnumbered}</div>
+                                            )}
                                         </div>
                                     </div>
                                 );
                             }
+
                             return null;
-                        })()}
-                    </div>
+
+                        });
+                    })()}
+
+                    {/* Parse Objective Occupancy (already in place) */}
+                    {(() => {
+                        const text = (analysis?.summary || '') + ' ' + (analysis?.dominance || '');
+                        const objMatch = text.match(/([\d]+:[\d]+|[\d]+)\s+(?:seconds\s+of\s+)?(?:Temple|Objective|Occupancy)/i);
+
+                        if (objMatch) {
+                            let timeStr = objMatch[1];
+                            if (!timeStr.includes(':')) {
+                                const totalSec = parseInt(timeStr);
+                                if (totalSec <= 0) return null;
+                                const mins = Math.floor(totalSec / 60);
+                                const secs = totalSec % 60;
+                                timeStr = `${mins}:${secs.toString().padStart(2, '0')}`;
+                            }
+                            if (timeStr === '0:00' || timeStr === '00:00') return null;
+                            return (
+                                <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/20">
+                                    <div className="text-[10px] text-cyan-400 uppercase tracking-wider mb-3 font-bold">Objective Control</div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Timer size={16} className="text-cyan-400" />
+                                            <span className="text-sm text-gray-300">Time on Point</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-2xl font-black text-cyan-300">{timeStr}</div>
+                                            <div className="text-[9px] text-gray-500">MM:SS</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        }
+                        return null;
+                    })()}
                 </div>
 
-            </div >
+
+            </div>
 
             <div className="space-y-8 z-10">
-                {/* Critical Mistake */}
-                {analysis?.critical_mistake && (
-                    <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl">
-                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
-                            <div className="p-2 bg-orange-500/10 rounded">
-                                <Activity className="text-orange-400" size={24} />
-                            </div>
-                            <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                {/* Forensic Deep Dive - Dedicated Mechanical Analytics */}
+                {analysis?.forensics && (
+                    <div className="bg-[#0f172a] border border-cyan-500/30 rounded-lg p-6 shadow-2xl relative overflow-hidden group">
+                        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                            <Terminal size={100} className="text-cyan-400" />
                         </div>
-                        <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
-                            <div className="text-orange-100/90 leading-relaxed text-sm font-medium italic">
-                                {renderMarkdown(analysis.critical_mistake)}
-                            </div>
-                        </Questionable>
-                    </div>
-                )}
-
-                {/* Win Condition */}
-                {(analysis?.win_condition || analysis?.win_condition_analysis) && (
-                    <div className="bg-[#0f2026] border border-emerald-500/20 p-6 rounded relative hover:border-emerald-500/40 transition-colors shadow-xl">
-                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
-                            <div className="p-2 bg-white/5 rounded">
-                                <Target className={(match.result?.toUpperCase() === 'WIN') ? 'text-cyan-400' : 'text-red-400'} size={24} />
-                            </div>
-                            <h3 className="text-emerald-400 font-bold uppercase tracking-wider text-sm">Win Condition</h3>
+                        <div className="flex items-center gap-2 mb-6 pb-3 border-b border-cyan-500/20">
+                            <BrainCircuit className="text-cyan-400" size={20} />
+                            <h3 className="text-cyan-300 font-bold uppercase tracking-wider text-xs">{analysis.forensics.hero_deep_dive || 'Forensic Hero Analysis'}</h3>
                         </div>
-                        <Questionable title="Win Condition" value={analysis.win_condition || analysis.win_condition_analysis} onDiscuss={onDiscuss}>
-                            <p className="text-gray-300 leading-relaxed text-sm whitespace-pre-wrap">{renderMarkdown(analysis.win_condition || analysis.win_condition_analysis)}</p>
-                        </Questionable>
-                    </div>
-                )}
 
-                {/* YOUR KILLS - DEDICATED TILE */}
-                {(() => {
-                    let sections = [];
-                    if (Array.isArray(analysis?.areas_for_improvement)) {
-                        sections = analysis.areas_for_improvement;
-                    } else if (analysis?.areas_for_improvement && typeof analysis.areas_for_improvement === 'object') {
-                        sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
-                    }
-
-                    const killSection = sections.find(s => s.title === "Your Kills");
-                    if (!killSection) return null;
-
-                    return (
-                        <div className="bg-[#052e16]/30 border border-green-500/30 p-6 rounded-lg relative hover:bg-[#052e16]/40 transition-all shadow-2xl shadow-green-900/20 group">
-                            <div className="absolute right-0 top-0 opacity-10 p-4 transition-transform group-hover:scale-110 duration-700 pointer-events-none">
-                                <Swords size={120} className="text-green-500" />
-                            </div>
-                            <div className="flex items-center gap-3 mb-6 pb-2 border-b border-white/5">
-                                <div className="p-2 bg-green-500/20 rounded-lg border border-green-500/40">
-                                    <Target className="text-green-400" size={24} />
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            {analysis.forensics.mechanics?.filter(m => m.label !== 'Lethality Rate').map((m, i) => (
+                                <div key={i} className="bg-black/30 rounded-lg p-3 border border-cyan-500/10 hover:border-cyan-500/30 transition-colors">
+                                    <div className="text-[10px] text-cyan-500/70 uppercase tracking-widest mb-1 font-bold">{m.label}</div>
+                                    <Questionable title={m.label} value={m.value} context={m.details} onDiscuss={onDiscuss}>
+                                        <div className="text-xl font-black text-white">{m.value}</div>
+                                    </Questionable>
+                                    {m.details && <div className="text-[9px] text-slate-500 uppercase mt-1">{m.details}</div>}
                                 </div>
-                                <div>
-                                    <h3 className="text-green-400 font-black uppercase tracking-[0.2em] text-xs">Combat Dominance</h3>
-                                    <div className="text-white font-bold text-sm">Target Eliminations</div>
-                                </div>
-                                <div className="ml-auto flex flex-col items-end">
-                                    <div className="text-2xl font-black text-green-400 leading-none">
-                                        {userStats.SoloKill || killSection.items.filter(k => (typeof k === 'object' ? (k.time !== 'SUMMARY' && k.victim !== 'Stats') : !k.includes('SUMMARY'))).length}
+                            ))}
+                        </div>
+
+                        {/* Quest & Lethality Split View */}
+                        <div className="grid grid-cols-2 gap-4 mb-6">
+                            {analysis.forensics.quest_progression ? (
+                                <div className="bg-cyan-500/5 rounded-lg border border-cyan-500/20 p-4 hover:bg-cyan-500/10 transition-colors">
+                                    <div className="flex justify-between items-start mb-2">
+                                        <div>
+                                            <div className="text-[10px] text-cyan-400 uppercase font-black tracking-widest leading-tight">Quest Progress</div>
+                                            <div className="text-sm font-bold text-white truncate">{analysis.forensics.quest_progression.name}</div>
+                                        </div>
+                                        <div className="px-1.5 py-0.5 bg-cyan-500/20 rounded text-[9px] font-black text-cyan-300 border border-cyan-500/30">
+                                            {analysis.forensics.quest_progression.verdict}
+                                        </div>
                                     </div>
-                                    <div className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Kills</div>
+                                    <div className="flex items-end justify-between">
+                                        <div>
+                                            <div className="text-2xl font-black text-white leading-none">{analysis.forensics.quest_progression.value}</div>
+                                            <div className="text-[9px] text-slate-500 uppercase mt-0.5">{analysis.forensics.quest_progression.stat}</div>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-lg font-black text-cyan-400 leading-none">{analysis.forensics.quest_progression.bonus}</div>
+                                            <div className="text-[8px] text-slate-500 uppercase">Reward</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : <div />}
+
+                            {(() => {
+                                const mechanics = analysis.forensics.mechanics || [];
+                                const lethalHooks = mechanics.find(m => m.label === 'Lethal Hooks')?.value;
+                                const landedHooks = mechanics.find(m => m.label === 'Hooks Landed')?.value;
+
+                                let val = '0%';
+                                if (lethalHooks !== undefined && landedHooks !== undefined) {
+                                    const lethal = parseInt(lethalHooks);
+                                    const landed = parseInt(landedHooks);
+                                    if (landed > 0) {
+                                        val = ((lethal / landed) * 100).toFixed(1) + '%';
+                                    }
+                                } else {
+                                    const lethality = mechanics.find(m => m.label === 'Lethality Rate');
+                                    if (lethality) val = lethality.value;
+                                }
+
+                                return (
+                                    <div className="bg-red-500/5 rounded-lg border border-red-500/20 p-4 hover:bg-red-500/10 transition-colors">
+                                        <div className="flex justify-between items-start mb-2">
+                                            <div>
+                                                <div className="text-[10px] text-red-400 uppercase font-black tracking-widest leading-tight">Hook Lethality</div>
+                                                <div className="text-xs font-bold text-red-200">Kill Conversion</div>
+                                            </div>
+                                            <div className="px-1.5 py-0.5 bg-red-500/20 rounded text-[9px] font-black text-red-300 border border-red-500/30 animate-pulse">
+                                                LETHAL
+                                            </div>
+                                        </div>
+                                        <div className="flex items-end justify-between">
+                                            <div>
+                                                <div className="text-3xl font-black text-white leading-none">{val}</div>
+                                                <div className="text-[9px] text-slate-500 uppercase mt-1">Landed → Kill %</div>
+                                            </div>
+                                            <Skull size={24} className="text-red-500/20 mb-1" />
+                                        </div>
+                                    </div>
+                                );
+                            })()}
+                        </div>
+
+                        {/* Hook Range Distribution */}
+                        {analysis.forensics.tactical_highlights && (
+                            <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/10 mb-6 mx-1">
+                                <div className="text-[10px] text-cyan-400 uppercase font-black tracking-widest mb-3 flex justify-between items-center">
+                                    <div className="flex items-center gap-2">
+                                        <img
+                                            src="/images/talents/stitches-7-1.png"
+                                            className="w-4 h-4 rounded-full border border-white/10 shadow-[0_0_5px_rgba(168,85,247,0.3)]"
+                                            alt="Serrated Edge"
+                                        />
+                                        <span>Hook Range Distribution</span>
+                                    </div>
+                                    <span className="text-slate-500 font-normal">Displacement Analysis</span>
+                                </div>
+                                <div className="relative flex items-center group/bar">
+                                    <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex ring-1 ring-white/5 relative z-0">
+                                        {(() => {
+                                            const hooks = analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK');
+                                            const short = hooks.filter(h => h.displacement < 6);
+                                            const med = hooks.filter(h => h.displacement >= 6 && h.displacement <= 12);
+                                            const long = hooks.filter(h => h.displacement > 12);
+
+                                            const total = hooks.length || 1;
+                                            const s_lethal = short.filter(h => h.lethal).length;
+                                            const m_lethal = med.filter(h => h.lethal).length;
+                                            const l_lethal = long.filter(h => h.lethal).length;
+
+                                            return (
+                                                <>
+                                                    <div style={{ width: `${(short.length / total) * 100}%` }} className="h-full bg-slate-600 border-r border-black/20" title={`Short: ${short.length} (${s_lethal} lethal)`}></div>
+                                                    <div style={{ width: `${(med.length / total) * 100}%` }} className="h-full bg-cyan-700 border-r border-black/20" title={`Medium: ${med.length} (${m_lethal} lethal)`}></div>
+                                                    <div style={{ width: `${(long.length / total) * 100}%` }} className="h-full bg-cyan-400" title={`Long: ${long.length} (${l_lethal} lethal)`}></div>
+                                                </>
+                                            );
+                                        })()}
+                                    </div>
+                                </div>
+                                <div className="flex justify-between mt-2 text-[9px] uppercase font-bold tracking-tighter">
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 bg-slate-600 rounded-full"></div>
+                                        <span className="text-slate-400">Short: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement < 6).length} </span>
+                                        <span className="text-[7px] text-red-400 opacity-70">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement < 6 && h.lethal).length} L)</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 bg-cyan-700 rounded-full"></div>
+                                        <span className="text-cyan-600">Med: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement >= 6 && h.displacement <= 12).length} </span>
+                                        <span className="text-[7px] text-red-400 opacity-70">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement >= 6 && h.displacement <= 12 && h.lethal).length} L)</span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5">
+                                        <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                                        <span className="text-cyan-400">Long: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement > 12).length} </span>
+                                        <span className="text-[7px] text-red-500 font-black">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement > 12 && h.lethal).length} L)</span>
+                                    </div>
                                 </div>
                             </div>
+                        )}
 
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                {killSection.items.map((kill, i) => {
-                                    const isObject = typeof kill === 'object';
-                                    const time = isObject ? kill.time : kill.match(/(\d+:\d+)/)?.[1];
-                                    const victim = isObject ? kill.victim : kill.match(/Killed (\w+)/)?.[1];
-                                    const context = isObject ? kill.context : kill.split('-')[1]?.trim();
+                        {/* Unified Tactical Log (Hooks, Kills, Deaths) */}
+                        {(analysis.forensics.tactical_highlights || analysis.forensics.highlights) && (() => {
+                            const highlights = analysis.forensics.tactical_highlights || analysis.forensics.highlights;
 
-                                    const isSummary = time === 'SUMMARY' || victim === 'Stats';
-                                    const isAssist = victim === 'Assisted';
+                            // Aggregate data for summary view
+                            const tally = highlights.reduce((acc, h) => {
+                                if (!h.victim) return acc;
+                                if (!acc[h.victim]) acc[h.victim] = { count: 0, lethal: 0 };
+                                acc[h.victim].count++;
+                                if (h.lethal) acc[h.victim].lethal++;
+                                return acc;
+                            }, {});
 
-                                    let PortraitComponent = <HeroPortrait heroName={victim} size="full" />;
+                            const totalHooks = highlights.filter(h => h.event.includes('Hooked')).length;
+                            const totalLethal = highlights.filter(h => h.lethal).length;
 
-                                    if (isSummary) {
-                                        PortraitComponent = (
-                                            <div className="w-full h-full flex items-center justify-center bg-cyan-950/50 text-cyan-400">
-                                                <BarChart3 size={20} />
-                                            </div>
-                                        );
-                                    } else if (isAssist) {
-                                        const realVictim = context?.match(/on\s+([A-Za-z0-9'.\s-]+)/)?.[1];
-                                        if (realVictim) {
-                                            PortraitComponent = <HeroPortrait heroName={realVictim} size="full" />;
-                                        } else {
-                                            PortraitComponent = (
-                                                <div className="w-full h-full flex items-center justify-center bg-purple-950/50 text-purple-400">
-                                                    <Users size={20} />
+                            return (
+                                <div className="bg-[#0f172a]/50 border border-cyan-500/20 rounded-lg p-3 mt-4">
+                                    <details className="group/timeline open:bg-black/20 transition-colors rounded">
+                                        <summary className="flex items-center justify-between cursor-pointer list-none p-1 select-none">
+                                            <div className="flex items-center gap-3">
+                                                <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold flex items-center gap-2">
+                                                    <Swords size={12} />
+                                                    Tactical Engagement Timeline
                                                 </div>
-                                            );
+                                                <div className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-900/30 text-cyan-300 border border-cyan-500/20 group-open/timeline:hidden">
+                                                    {highlights.length} Events &bull; {totalLethal} Lethal
+                                                </div>
+                                            </div>
+
+                                            {/* Collapsed Preview: Mini Icons */}
+                                            <div className="flex items-center gap-1 group-open/timeline:hidden overflow-hidden max-w-[50%] opacity-70">
+                                                {Object.entries(tally).slice(0, 5).map(([hero, stats], i) => (
+                                                    <div key={i} className="w-5 h-5 rounded-full border border-white/10 overflow-hidden relative" title={`${hero}: ${stats.count} events`}>
+                                                        <HeroPortrait heroName={hero} size="full" />
+                                                        {stats.lethal > 0 && <div className="absolute inset-0 bg-red-500/30 ring-1 ring-inset ring-red-500/50"></div>}
+                                                    </div>
+                                                ))}
+                                                {Object.keys(tally).length > 5 && <span className="text-[9px] text-gray-500">+{Object.keys(tally).length - 5}</span>}
+                                                <div className="ml-2 text-cyan-500/50 hover:text-cyan-400"><ChevronDown size={14} /></div>
+                                            </div>
+
+                                            <div className="hidden group-open/timeline:block text-cyan-500/50 hover:text-cyan-400">
+                                                <ChevronUp size={14} />
+                                            </div>
+                                        </summary>
+
+                                        <div className="pt-3 animate-in slide-in-from-top-2 duration-300">
+                                            {/* Hero Tally Grid */}
+                                            {Object.keys(tally).length > 0 && (
+                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 pb-4 border-b border-white/5">
+                                                    {Object.entries(tally).sort((a, b) => b[1].count - a[1].count).map(([hero, stats]) => {
+                                                        const lethalRate = stats.count > 0 ? (stats.lethal / stats.count * 100).toFixed(0) : 0;
+                                                        return (
+                                                            <div key={hero} className="flex items-center gap-2 bg-black/40 p-1.5 rounded border border-white/5 hover:border-cyan-500/30 transition-colors">
+                                                                <div className="w-8 h-8 rounded border border-white/10 overflow-hidden shrink-0 relative">
+                                                                    <HeroPortrait heroName={hero} size="full" />
+                                                                </div>
+                                                                <div className="flex flex-col leading-none">
+                                                                    <div className="text-[11px] font-bold text-slate-200">{hero}</div>
+                                                                    <div className="text-[9px] text-slate-500 flex items-center gap-1">
+                                                                        <span className="text-cyan-400 font-bold">{stats.count}</span>
+                                                                        <span>{stats.count === 1 ? 'hook' : 'hooks'}</span>
+                                                                        {stats.lethal > 0 && (
+                                                                            <span className="text-red-400 font-bold ml-1">({lethalRate}%)</span>
+                                                                        )}
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            )}
+
+                                            {/* Detailed Log */}
+                                            <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
+                                                {highlights.map((h, i) => (
+                                                    <div key={i} className={`flex items-center gap-3 p-2 rounded border text-[11px] group/item transition-colors ${h.lethal ? 'bg-red-900/20 border-red-500/30' : 'bg-black/40 border-white/5 hover:bg-white/5'}`}>
+                                                        <span className={`font-mono w-10 shrink-0 text-right font-bold ${h.lethal ? 'text-red-400' : 'text-cyan-500/70'}`}>{h.time}</span>
+                                                        {h.victim ? (
+                                                            <div className={`w-6 h-6 rounded border overflow-hidden shrink-0 bg-black ${h.lethal ? 'border-red-500/50' : 'border-cyan-500/30'}`}>
+                                                                <HeroPortrait heroName={h.victim} size="full" />
+                                                            </div>
+                                                        ) : (
+                                                            <div className="w-6 h-6 flex items-center justify-center">
+                                                                <Target size={12} className="text-cyan-500/50" />
+                                                            </div>
+                                                        )}
+                                                        <div className="flex-1 truncate pr-2 flex items-center gap-2">
+                                                            <span className={`transition-colors ${h.lethal ? 'text-red-300 font-bold' : 'text-slate-400 group-hover/item:text-slate-200'}`}>
+                                                                {h.event.includes('Hooked') || h.event.includes('Direct Kill') ? (
+                                                                    <span>{h.event}</span>
+                                                                ) : (
+                                                                    <span>{h.event} {h.victim ? `-> ${h.victim}` : ''}</span>
+                                                                )}
+                                                            </span>
+                                                            {h.type === 'HOOK' && (
+                                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-black flex items-center gap-1 shadow-sm whitespace-nowrap ${h.displacement > 12 ? 'text-cyan-400 bg-cyan-900/40 ring-1 ring-cyan-500/50 animate-pulse' : h.displacement > 0 ? 'text-slate-400 bg-black/60 border border-white/5' : 'text-slate-600 bg-black/20 border border-white/5 opacity-50'}`}>
+                                                                    {h.displacement > 12 && <Target size={10} className="animate-spin-slow" />}
+                                                                    {h.displacement || 0} units
+                                                                </span>
+                                                            )}
+                                                        </div>
+                                                        {h.lethal && (
+                                                            <div className="px-1.5 py-0.5 bg-red-500/20 rounded text-[9px] font-bold text-red-400 border border-red-500/30 uppercase tracking-wider flex items-center gap-1">
+                                                                <Skull size={8} /> Lethal
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    </details>
+                                </div>
+                            );
+                        })()}
+                    </div >
+                )}
+
+                {/* Neural Attrition Audit - Dedicated Death Logic */}
+                {
+                    analysis?.forensics?.death_highlights && analysis.forensics.death_highlights.length > 0 && (
+                        <div className="bg-[#1a0f1a] border border-red-500/30 rounded-lg p-6 shadow-2xl relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <Skull size={100} className="text-red-500" />
+                            </div>
+                            <div className="flex items-center gap-2 mb-6 pb-3 border-b border-red-500/20">
+                                <Skull className="text-red-400" size={20} />
+                                <h3 className="text-red-300 font-bold uppercase tracking-wider text-xs">Neural Attrition Audit</h3>
+                            </div>
+
+                            <div className="space-y-3">
+                                {analysis.forensics.death_highlights.map((d, i) => {
+                                    const isNonPlayer = d.killer === 'Minions / Towers / Mercs' || d.killer === 'Environmental / Structure' || d.killer === 'Unknown';
+
+                                    // Try to find matching context from AI analysis
+                                    let deathContext = "";
+                                    if (analysis.areas_for_improvement) {
+                                        const deathSection = Array.isArray(analysis.areas_for_improvement)
+                                            ? analysis.areas_for_improvement.find(s => s.title === "Deaths")
+                                            : null;
+
+                                        if (deathSection && deathSection.items) {
+                                            const aiDeath = deathSection.items.find(item => {
+                                                const aiTime = typeof item === 'object' ? item.time : item.match(/(\d+:\d+)/)?.[1];
+                                                return aiTime === d.time;
+                                            });
+                                            if (aiDeath) {
+                                                deathContext = typeof aiDeath === 'object' ? aiDeath.context : aiDeath;
+                                                // Clean up if it starts with timestamp/killer
+                                                deathContext = deathContext.replace(/^\d+:\d+\s*-\s*/, '').replace(/Killed by \w+\s*-\s*/, '');
+                                            }
                                         }
                                     }
 
                                     return (
-                                        <div key={i} className="flex items-center gap-3 p-2.5 bg-black/40 rounded border border-green-500/20 hover:border-green-400/50 transition-colors">
-                                            {victim && (
-                                                <div className="w-10 h-10 rounded border border-green-500/40 overflow-hidden shrink-0 relative bg-black shadow-inner">
-                                                    {PortraitComponent}
+                                        <div key={i} className="bg-red-500/5 p-3 rounded border border-red-500/10 hover:bg-red-500/10 transition-colors">
+                                            <div className="flex items-center gap-3 mb-2">
+                                                <span className="font-mono text-red-400 w-12 shrink-0 font-bold">{d.time}</span>
+                                                {isNonPlayer ? (
+                                                    <div className="w-8 h-8 flex items-center justify-center bg-slate-800 rounded border border-white/10 shrink-0">
+                                                        <Shield size={16} className="text-slate-400" />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-8 h-8 rounded border-2 border-red-500/30 overflow-hidden shrink-0 bg-black">
+                                                        <HeroPortrait heroName={d.killer} size="full" />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="text-xs text-red-100 font-bold">
+                                                        {isNonPlayer ? (
+                                                            <span>Destroyed by <span className="text-red-400">{d.killer === 'Unknown' ? 'Environment' : d.killer}</span></span>
+                                                        ) : (
+                                                            <span>Killed by <span className="text-red-400">{d.killer}</span></span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {deathContext && (
+                                                <div className="text-[11px] text-gray-400 pl-15 leading-relaxed pl-[44px]">
+                                                    {deathContext}
                                                 </div>
                                             )}
-                                            <div className="flex-1 min-w-0">
-                                                <div className="flex items-center justify-between gap-2 mb-0.5">
-                                                    <span className="text-[10px] font-mono text-green-400 font-bold bg-green-900/30 px-1.5 py-0.5 rounded border border-green-500/20">{time}</span>
-                                                    {victim && !isSummary && !isAssist && <span className="text-[11px] font-black text-white uppercase tracking-tight truncate">{victim}</span>}
-                                                </div>
-                                                {context && <div className="text-[10px] text-gray-500 font-medium truncate">{context}</div>}
-                                            </div>
                                         </div>
                                     );
                                 })}
                             </div>
                         </div>
-                    );
-                })()}
-            </div>
-        </div>
+                    )
+                }
+
+
+
+                {/* YOUR KILLS - DEDICATED TILE */}
+                {
+                    (() => {
+                        let sections = [];
+                        if (Array.isArray(analysis?.areas_for_improvement)) {
+                            sections = analysis.areas_for_improvement;
+                        } else if (analysis?.areas_for_improvement && typeof analysis.areas_for_improvement === 'object') {
+                            sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
+                        }
+
+                        const killSection = sections.find(s => s.title === "Your Kills");
+                        if (!killSection) return null;
+
+                        // If we have Stitches forensics, the "Your Kills" section is redundant with the Tactical Engagement Timeline
+                        if (match.hero === 'Stitches' && analysis?.forensics?.tactical_highlights) {
+                            return null;
+                        }
+
+                        return (
+                            <div className="bg-[#052e16]/30 border border-green-500/30 p-6 rounded-lg relative hover:bg-[#052e16]/40 transition-all shadow-2xl shadow-green-900/20 group">
+                                <div className="absolute right-0 top-0 opacity-10 p-4 transition-transform group-hover:scale-110 duration-700 pointer-events-none">
+                                    <Swords size={120} className="text-green-500" />
+                                </div>
+                                <div className="flex items-center gap-3 mb-6 pb-2 border-b border-white/5">
+                                    <div className="p-2 bg-green-500/20 rounded-lg border border-green-500/40">
+                                        <Target className="text-green-400" size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="text-green-400 font-black uppercase tracking-[0.2em] text-xs">Combat Dominance</h3>
+                                        <div className="text-white font-bold text-sm">Target Eliminations</div>
+                                    </div>
+                                    <div className="ml-auto flex flex-col items-end">
+                                        <div className="text-2xl font-black text-green-400 leading-none">
+                                            {userStats.SoloKill || killSection.items.filter(k => (typeof k === 'object' ? (k.time !== 'SUMMARY' && k.victim !== 'Stats') : !k.includes('SUMMARY'))).length}
+                                        </div>
+                                        <div className="text-[10px] text-green-500 font-bold uppercase tracking-widest">Kills</div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    {killSection.items.map((kill, i) => {
+                                        const isObject = typeof kill === 'object';
+                                        const time = isObject ? kill.time : kill.match(/(\d+:\d+)/)?.[1];
+                                        const victim = isObject ? kill.victim : kill.match(/Killed (\w+)/)?.[1];
+                                        const context = isObject ? kill.context : kill.split('-')[1]?.trim();
+
+                                        const isSummary = time === 'SUMMARY' || victim === 'Stats';
+                                        const isAssist = victim === 'Assisted';
+
+                                        let PortraitComponent = <HeroPortrait heroName={victim} size="full" />;
+
+                                        if (isSummary) {
+                                            PortraitComponent = (
+                                                <div className="w-full h-full flex items-center justify-center bg-cyan-950/50 text-cyan-400">
+                                                    <BarChart3 size={20} />
+                                                </div>
+                                            );
+                                        } else if (isAssist) {
+                                            const realVictim = context?.match(/on\s+([A-Za-z0-9'.\s-]+)/)?.[1];
+                                            if (realVictim) {
+                                                PortraitComponent = <HeroPortrait heroName={realVictim} size="full" />;
+                                            } else {
+                                                PortraitComponent = (
+                                                    <div className="w-full h-full flex items-center justify-center bg-purple-950/50 text-purple-400">
+                                                        <Users size={20} />
+                                                    </div>
+                                                );
+                                            }
+                                        }
+
+                                        return (
+                                            <div key={i} className="flex items-center gap-3 p-2.5 bg-black/40 rounded border border-green-500/20 hover:border-green-400/50 transition-colors">
+                                                {victim && (
+                                                    <div className="w-10 h-10 rounded border border-green-500/40 overflow-hidden shrink-0 relative bg-black shadow-inner">
+                                                        {PortraitComponent}
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center justify-between gap-2 mb-0.5">
+                                                        <span className="text-[10px] font-mono text-green-400 font-bold bg-green-900/30 px-1.5 py-0.5 rounded border border-green-500/20">{time}</span>
+                                                        {victim && !isSummary && !isAssist && <span className="text-[11px] font-black text-white uppercase tracking-tight truncate">{victim}</span>}
+                                                    </div>
+                                                    {context && <div className="text-[10px] text-gray-500 font-medium truncate">{context}</div>}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })()
+                }
+            </div >
+        </div >
     )
 }
 
