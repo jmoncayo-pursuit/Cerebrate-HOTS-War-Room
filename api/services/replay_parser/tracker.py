@@ -201,7 +201,7 @@ def process_tracker_events(events, players, stats_data):
 
             elif ename == 'PlayerDeath':
                 victim_pid = data_map.get('PlayerID')
-                killer_pid = data_map.get('KillingPlayerID')
+                killer_pid = data_map.get('KillingPlayer')
                 if victim_pid:
                     if 'player_deaths' not in stats_data: stats_data['player_deaths'] = []
                     
@@ -225,14 +225,35 @@ def process_tracker_events(events, players, stats_data):
 
 def process_game_events(events, players, stats_data):
     """
-    Process game events to extract data not found in tracker events (e.g. talents in some replays).
+    Process game events to extract data not found in tracker events (e.g. talents, hook casts).
     """
     for event in events:
         etype = event['_event']
         if '.' in etype: etype = etype.split('.')[-1]
         gameloop = event['_gameloop']
+        
+        # --- STITCHES HOOK TRACKING ---
+        if etype == 'SCmdEvent':
+             raw_uid = event.get('_userid', {}).get('m_userId')
+             # m_userId is 0-indexed relative to human slots usually?
+             # Actually, in parser.py logic: pid = uid + 1
+             if raw_uid is not None:
+                 pid = raw_uid + 1
+                 if 0 < pid <= len(players):
+                     player = players[raw_uid]
+                     if 'Stitches' in player['hero']:
+                         abil = event.get('m_abil')
+                         if abil:
+                             link = abil.get('m_abilLink')
+                             # Link 579 is confirmed Hook cast
+                             if link == 579:
+                                 if 'specific_stats' not in stats_data[pid]:
+                                     stats_data[pid]['specific_stats'] = {}
+                                 
+                                 current = stats_data[pid]['specific_stats'].get('HooksThrown', 0)
+                                 stats_data[pid]['specific_stats']['HooksThrown'] = current + 1
 
-        if etype == 'SHeroTalentTreeSelectedEvent':
+        elif etype == 'SHeroTalentTreeSelectedEvent':
             uid = event.get('_userid', {}).get('m_userId')
             if uid is not None:
                 pid = uid + 1

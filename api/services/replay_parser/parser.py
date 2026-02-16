@@ -98,9 +98,13 @@ def parse_replay(replay_path, options=None):
         stats_containers = {i: {'stats': {}, 'talents': []} for i in range(1, 11)} 
         stats_data, bans = process_tracker_events(tracker_events, players, stats_containers)
         
-        # 3.5 Game Events (Backup for talents)
-        game_events = protocol.decode_replay_game_events(archive.read_file('replay.game.events'))
-        stats_data = process_game_events(game_events, players, stats_data)
+        # 3.5 Game Events (Backup for talents & Stitches Hooks)
+        try:
+            game_events_list = list(protocol.decode_replay_game_events(archive.read_file('replay.game.events')))
+            stats_data = process_game_events(game_events_list, players, stats_data)
+        except Exception as e:
+            # Game events are optional for basic stats, but needed for Stitches hook count
+            pass
         
         # 4. Normalization & User Detection
         for i, p in enumerate(players):
@@ -124,6 +128,12 @@ def parse_replay(replay_path, options=None):
                 'Healing': s.get('Healing', 0),
                 'XP': s.get('ExperienceContribution', 0)
             }
+            
+            # Stitches Hook Injection
+            if 'Stitches' in p['hero'] and 'HooksThrown' in src.get('specific_stats', {}):
+                 hooks_val = src['specific_stats']['HooksThrown']
+                 p['stats']['HooksThrown'] = hooks_val
+                 p['kv_stats']['HooksThrown'] = hooks_val
 
         # User detection (More robust: prioritize specific IDs over generic 'Player')
         known_identifiers = ['discerning', 'cerebrate', 'ozyroth'] 

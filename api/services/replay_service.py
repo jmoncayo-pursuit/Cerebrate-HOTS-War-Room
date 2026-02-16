@@ -1,13 +1,16 @@
 import os
 import time
 import json
+from pathlib import Path
 from datetime import datetime
 from api.logger import ColoredLogger
 from api.services.replay_parser import parse_replay
+from api.services.replay_parser.header import get_match_id
 from api.services.database import DatabaseManager
 from api.services.quota_manager import QuotaManager
 from agents.hooks_manager import HooksManager, HookResponse
 from agents.hooks import context_injector_hook, summary_validator_hook, cache_manager_hook, store_in_cache
+from api.services.mechanical_analysis_service import MechanicalAnalysisService
 
 class ReplayService:
     def __init__(self):
@@ -15,6 +18,31 @@ class ReplayService:
         self.quota = QuotaManager()
         self._intel_service = None  # Lazy-loaded
         self.hooks = self._init_hooks()  # Initialize hooks system
+        self._replay_dir_cache = None
+
+    def _find_replay_file(self, match_id):
+        """Attempts to find the physical .StormReplay file for a given match_id."""
+        if not self._replay_dir_cache:
+            # Re-use discovery logic from replay_watcher
+            home = Path.home()
+            search_paths = [
+                home / "Library/Application Support/Blizzard/Heroes of the Storm",
+                home / "Documents/Heroes of the Storm",
+            ]
+            for base_path in search_paths:
+                if base_path.exists():
+                    for replay_dir in base_path.rglob("Replays/Multiplayer"):
+                        if replay_dir.is_dir():
+                            self._replay_dir_cache = replay_dir
+                            break
+                if self._replay_dir_cache: break
+        
+        if self._replay_dir_cache:
+            # Scan the directory (this can be slow if there are thousands, but usually okay for deep analysis)
+            for f in self._replay_dir_cache.glob("*.StormReplay"):
+                if get_match_id(str(f)) == match_id:
+                    return str(f)
+        return None
     
     def _init_hooks(self):
         """Initialize hooks manager with default hooks"""
@@ -158,7 +186,7 @@ class ReplayService:
             if success and self.quota.can_make_request():
                 try:
                     # analyze_match(force=True) triggers both Forensic Audit and Social Insights
-                    analysis_result = self.analyze_match(result['match_id'], force=True)
+                    analysis_result = self.analyze_match(result['match_id'], force=True, replay_path=temp_path)
                 except Exception as e:
                     ColoredLogger.warn(f"Analysis generation failed: {e}", "REPLAY")
 
@@ -182,11 +210,12 @@ class ReplayService:
         if s is None: return "0:00"
         return f"{int(s//60)}:{int(s%60):02d}"
 
-    def _generate_match_summary(self, match_data, max_retries=3, force=False):
+    def _generate_match_summary(self, match_data, forensics=None, max_retries=3, force=False):
         """Generate a clinical forensic AI summary for a match (Mode B: FORENSIC AUDIT).
         
         Args:
             match_data: Match data dictionary
+            forensics: Optional forensic analysis data (e.g. Stitches hooks)
             max_retries: Maximum retry attempts if validation fails
         
         Returns:
@@ -206,10 +235,37 @@ class ReplayService:
         game_length = match_data.get('game_length', 0)
         
         players = match_data.get('players', [])
-        advanced = match_data.get('raw_stats', {})
+        advanced = match_data.get('advanced_stats', {})
         
         if not intel_service.model:
             return None
+
+        # --- DATA PREPARATION (STRICT VALIDATION) ---
+        valid_hero_names = [p['hero'] for p in players]
+        
+        # Build Talent Tree for ALL players
+        all_talents = {}
+        for p in players:
+             all_talents[p['hero']] = [t['talent_name'] for t in p.get('talents', [])]
+
+        # Extract Forensics if available
+        mech_stats = ""
+        social_stats = ""
+        tactical_timeline_data = ""
+        if forensics:
+             # Mechanics
+             m_list = [f"{m['label']}: {m['value']}" for m in forensics.get('mechanics', [])]
+             mech_stats = " | ".join(m_list)
+             
+             # Social Logic (Focus)
+             soc = forensics.get('social_mechanics', {})
+             focus = soc.get('most_targeted_enemy', 'None')
+             social_stats = f"Most Targeted Enemy: {focus}"
+
+             # Tactical Highlights (Timeline)
+             highlights = forensics.get('tactical_highlights', [])
+             h_lines = [f"[{h['time']}] {h['event']} (Victim: {h['victim']})" for h in highlights]
+             tactical_timeline_data = "\n".join(h_lines)
 
         # 1. Forensic Extraction: Identify User & Teams
         print(f"DEBUG: Analyzing match with {len(players)} players.")
@@ -255,6 +311,7 @@ class ReplayService:
         
         # 3. User Contribution %
         user_core_stats = user_player.get('stats', {})
+        solo_kills = user_core_stats.get('SoloKill', 0)
         contribution = {}
         for k in ['HeroDamage', 'SiegeDamage', 'ExperienceContribution', 'SoloKill']:
             team_val = team_stats['own'][k.lower() if k != 'SoloKill' else 'kills']
@@ -267,6 +324,13 @@ class ReplayService:
         solo_kills = user_core_stats.get('SoloKill', 0)
         personal_mercs = user_core_stats.get('MercCampCaptures', 0)
 
+        # Stitches Specific Context
+        stitches_context = ""
+        if 'Stitches' in hero:
+             hooks_thrown = user_player.get('kv_stats', {}).get('HooksThrown', 
+                            user_player.get('stats', {}).get('HooksThrown', 0))
+             stitches_context = f"- STITCHES SPECIFIC: {hooks_thrown} Hooks Thrown (Note: Landed count unavailable, judge based on Takedowns)"
+
         # 4. Forensic Timeline Correlation (Deaths vs Objectives)
         merc_events = advanced.get('merc_captures', [])
         boss_events = advanced.get('boss_captures', [])
@@ -275,21 +339,48 @@ class ReplayService:
 
         user_pid = None
         for i, p in enumerate(players):
-            if p.get('name') == user_player['name']:
+            if p.get('name') == user_player.get('name') and p.get('hero') == user_player.get('hero'):
                 user_pid = i + 1
                 break
+        
+        # Fallback to just hero match if name+hero match failed
+        if not user_pid:
+            for i, p in enumerate(players):
+                if p.get('hero') == hero:
+                    user_pid = i + 1
+                    break
 
         user_kills_timeline = []
         user_deaths_timeline = []
+        
+        # Priority 1: Forensic Highlights (High Accuracy for Stitches)
+        if forensics:
+            highlights = forensics.get('tactical_highlights', [])
+            for h in highlights:
+                if h.get('type') == 'KILL' or (h.get('type') == 'HOOK' and h.get('lethal')):
+                    user_kills_timeline.append(f"{h['time']}: Killed {h['victim']}")
+            
+            # Dedicated Death Highlights
+            d_highlights = forensics.get('death_highlights', [])
+            for dh in d_highlights:
+                user_deaths_timeline.append(f"{dh['time']}: Killed by {dh.get('killer', 'Enemy')}")
+
+        # Priority 2: Raw Death Events (Fallback/Support)
         for d in player_deaths:
             ts = self.fmt_ms(d['timestamp'])
+            
             victim_p = players[d['victim_pid'] - 1] if 0 < d['victim_pid'] <= len(players) else None
             killer_p = players[d['killer_pid'] - 1] if d['killer_pid'] and 0 < d['killer_pid'] <= len(players) else None
             
             if d['killer_pid'] == user_pid:
-                user_kills_timeline.append(f"{ts}: Killed {victim_p['hero'] if victim_p else 'Unknown'}")
+                # Check if already added
+                if not any(ts in entry for entry in user_kills_timeline):
+                    user_kills_timeline.append(f"{ts}: Killed {victim_p['hero'] if victim_p else 'Unknown'}")
+            
             if d['victim_pid'] == user_pid:
-                user_deaths_timeline.append(f"{ts}: Killed by {killer_p['hero'] if killer_p else 'Unknown'}")
+                # Check if already added
+                if not any(ts in entry for entry in user_deaths_timeline):
+                    user_deaths_timeline.append(f"{ts}: Killed by {killer_p['hero'] if killer_p else 'Unknown'}")
 
         # 5. Disconnects & Telemetry
         teammate_enemy_dcs = []
@@ -310,15 +401,14 @@ class ReplayService:
         enemy_merc_count = len([m for m in merc_events if m.get('captured_by_team') != user_player['team']])
 
         # 6. Kill Verification Alert
-        solo_kills = user_core_stats.get('SoloKill', 0)
+        # (Same logic as before, just kept for context)
         logs_found = len(user_kills_timeline)
         forensic_alert = ""
         if solo_kills > logs_found:
             forensic_alert = f"""
 **FORENSIC ALERT (KILL MISMATCH):**
 - Scoreboard reports {solo_kills} kills, but only {logs_found} events were found in the raw log.
-- REASON: Likely 'Ghost Deaths' (Tyrael Trait, Leoric, or Uther) where the final blow is system-attributed.
-- INSTRUCTION: You MUST account for these {solo_kills - logs_found} missing kills in your summary and 'Your Kills' list. Label them based on context (e.g. 'Inferred via Scoreboard' or 'Teamfight Cleanup').
+- INSTRUCTION: Trust the Scoreboard ({solo_kills}) for total count, but mention the timeline gaps if relevant.
 """
 
         # 7. Strategic Audit Prompt (Forensic Persona)
@@ -327,85 +417,78 @@ class ReplayService:
 You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tactical energy. 
 Focus on **FORCE MULTIPLIERS** and **STRATEGIC GAPS**.
 
-**GOLD STANDARD EXAMPLE (FOR FORMAT & TONE):**
-```json
-{{
-    "verdict": "WIN", 
-    "summary": "**APEX PREDATOR (BLOOD MONK)**. You didn't just play healer; you were the lobby's **Top Fragger**. Securing **8 Solo Kills** as Kharazim is a statistical anomaly that utterly breaks standard match prediction models. You effectively operated as a third assassin while maintaining support duties.", 
-    "key_insights": {{ "kill_streak": "8 Solo Kills (Lobby High)", "mercenary_camps": 10, "downtime": "1:05", "minion_xp": 22040, "contribution_index": "Top Fragger" }},
-    "areas_for_improvement": [
-        {{ "title": "Deaths", "items": [{{ "time": "18:34", "killer": "Zeratul", "context": "DeuceGenius" }}] }},
-        {{ "title": "Your Kills", "items": [{{ "time": "08:51", "victim": "Anduin", "context": "lbran1" }}, {{ "time": "SUMMARY", "victim": "Stats", "context": "8 Total Solo Kills (Verify against Scoreboard)" }}] }}
-    ],
-    "critical_mistake": "The ONE specific mistake that shifted the momentum.",
-    "win_condition": "Actionable advice on how to carry harder next time."
-}}
-```
+**STRICT VALIDATION PROTOCOL (DO NOT HALLUCINATE):**
+- **VALID HEROES ONLY**: You may ONLY mention these heroes: {", ".join(valid_hero_names)}. If a name is not in this list, do NOT use it.
+- **FACTUAL TALENTS**: Use the provided 'Talent Tree' to verify builds. Do not guess meta talents.
+- **NO GENERIC ADVICE**: Advice must be specific to the {hero} mechanics and the enemies present.
 
 **COMMANDER PERFORMANCE DATA (TRUTH SCALE):**
 - Map: {map_name}
 - Hero: {hero}
 - Result: {result}
 - Game Duration: {duration}
-- Solo Kills: {solo_kills} (Lobby Impact)
+- Solo Kills: {solo_kills} (Truth Scale)
 - Kill Streak: {kill_streak}
 - Mercenary Captures: {personal_mercs} personal / {team_merc_count} team
 - Minion XP Contribution: {minion_xp} (Lane Presence)
 - Downtime: {downtime} (Time Dead)
+{f"- MECHANICS (STITCHES): {mech_stats}" if mech_stats else ""}
+{stitches_context if stitches_context else ""}
+{f"- SOCIAL FOCUS: {social_stats}" if social_stats else ""}
 {f"- CRITICAL: {user_dc_event}" if user_dc_event else ""}
 
-{forensic_alert}
+**REQUIRED TACTICAL LOG (EXTRACTED FROM REPLAY):**
+You MUST process every single event in this log into the 'areas_for_improvement' JSON section. 
+- For 'Deaths', you MUST include all {user_core_stats.get('Deaths', 0)} deaths. Mention the Killer Hero.
+- For 'Your Kills', you MUST include all {solo_kills} solo kills.
 
-**KILL/DEATH TIMELINE (RAW DATA):**
-- YOUR KILLS: {", ".join(user_kills_timeline) if user_kills_timeline else "None recorded"}
-- YOUR DEATHS: {", ".join(user_deaths_timeline) if user_deaths_timeline else "Zero Deaths (Pure Efficiency)"}
+**User Death Log:**
+{chr(10).join(user_deaths_timeline) if user_deaths_timeline else "None recorded."}
 
-**DRAFT COMPOSITION & SEQUENCE:**
-- Team Allies: {", ".join([f"{p['hero']} ({p['name']})" for p in [{"hero": p['hero'], "name": p['name']} for p in user_team]])}
-- Team Enemies: {", ".join([f"{p['hero']} ({p['name']})" for p in [{"hero": p['hero'], "name": p['name']} for p in enemy_team]])}
+**User Kill Log:**
+{chr(10).join(user_kills_timeline) if user_kills_timeline else "None recorded."}
 
-**TEAM COMPARISON:**
-- Your Team: {team_stats['own']['kills']} Kills, {team_stats['own']['deaths']} Deaths.
-- Enemy Team: {team_stats['enemy']['kills']} Kills, {team_stats['enemy']['deaths']} Deaths.
-- User Contribution: {contribution['HeroDamage']}% Hero Dmg, {contribution['SiegeDamage']}% Siege, {contribution['ExperienceContribution']}% XP.
+**TACTICAL ENGAGEMENT TIMELINE (FORENSIC DATA):**
+{tactical_timeline_data if tactical_timeline_data else "None recorded via forensic scan."}
 
-**USER TALENT TIMELINE:**
-{json.dumps(user_player.get('talents', []), indent=2)}
+**DRAFT COMPOSITION:**
+- Team Allies: {", ".join([f"{p['hero']} ({p['name']})" for p in user_team])}
+- Team Enemies: {", ".join([f"{p['hero']} ({p['name']})" for p in enemy_team])}
 
-**CORE OPERATIONAL PHILOSOPHY:**
-1. **The Forensic Persona**: You are an elite tactical advisor. Your tone is sharp, analytical, and impressed by high-skill anomalies. 
-2. **Data Isolation**: Only use provided numbers. If there is a KILL MISMATCH (see above), use the Scoreboard count as the primary truth.
-3. **No Hallucinations**: Do not mention heroes or locations that are not in the provided RAW DATA.
+**TEAM STATS:**
+- Your Team: {team_stats['own']['kills']} K/ {team_stats['own']['deaths']} D
+- Enemy Team: {team_stats['enemy']['kills']} K/ {team_stats['enemy']['deaths']} D
+- User Participation: {contribution['HeroDamage']}% Hero Dmg / {contribution['ExperienceContribution']}% XP
 
 **OUTPUT SCHEMA (STRICT JSON ONLY):**
 ```json
 {{
-    "verdict": "WIN" or "LOSS" or "DRAFT LOSS",
-    "summary": "3-5 high-impact sentences using SPECIFIC NUMBERS. Analyze WHY the result happened.",
+    "verdict": "{result}",
+    "summary": "3-5 sentences analyzing WHY you lost. Use specific killer names in context.",
     "key_insights": {{
         "kill_streak": "{kill_streak}",
         "mercenary_camps": {personal_mercs},
         "downtime": "{downtime}",
-        "minion_xp": {minion_xp},
+        "minion_xp": "{minion_xp}",
         "contribution_index": "{contribution['HeroDamage']}% Dmg / {contribution['ExperienceContribution']}% XP"
     }},
     "areas_for_improvement": [
         {{ 
             "title": "Deaths", 
             "items": [
-                {{ "time": "MM:SS", "killer": "HeroName", "context": "Name of the player" }}
+                {{ "time": "MM:SS", "killer": "HeroName", "context": "Detailed breakdown using the Death Log" }}
             ] 
         }},
         {{ 
             "title": "Your Kills", 
             "items": [
-                {{ "time": "MM:SS", "victim": "HeroName", "context": "Name of the player" }},
+                {{ "time": "MM:SS", "victim": "HeroName", "context": "Forensic proof (e.g., Lethal Hook or Direct Kill)" }},
                 {{ "time": "SUMMARY", "victim": "Stats", "context": "{solo_kills} Solo Kills / {user_core_stats.get('Assists', 0)} Assists" }}
             ] 
         }}
     ],
-    "critical_mistake": "The ONE specific mistake that shifted the momentum.",
-    "win_condition": "Actionable advice on how to carry harder next time."
+    "critical_mistake": "The ONE mistake that led to the most attrition.",
+    "win_condition": "How to handle these enemies next time."
 }}
 ```
 Do not include any text before or after the JSON block.
@@ -513,7 +596,7 @@ Do not include any text before or after the JSON block.
                     ColoredLogger.warn(f"Forensic Audit parse error after {max_retries} attempts: {e}", "REPLAY")
                     return None
 
-    def _generate_social_insights(self, match_data, dcs=None):
+    def _generate_social_insights(self, match_data, dcs=None, social_mechanics=None):
         """Generates a separate layer of social intelligence (rivalries, DCs, teammate synergy)."""
         intel_service = self._get_intel_service()
         
@@ -525,6 +608,10 @@ Do not include any text before or after the JSON block.
         user_briefings = {p['name']: social_intel[p['name']].get('aiStrategy') 
                          for p in players if p['name'] in social_intel}
         
+        mech_context = ""
+        if social_mechanics:
+            mech_context = f"\n**MECHANICAL FOCUS (Aggression Logic):**\n{json.dumps(social_mechanics.get('focus_distribution', {}), indent=2)}\n"
+
         prompt = f"""## SOCIAL INSIGHTS ENGINE
 Analyze the 'Neural Network' of this match. Focus on Human Factors.
 
@@ -536,7 +623,7 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
 
 **TEAMMATE/ENEMY DISCONNECTS:**
 {", ".join(dcs) if dcs else "None"}
-
+{mech_context}
 **REQUIREMENTS:**
 1. **Highlight Rivalries**: Identify if a specific enemy neutralized the user multiple times.
 2. **Teammate Synergy**: Note if an ally performance was notably high or low.
@@ -580,13 +667,18 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
     def get_match_history(self, limit=50, include_details=False, search=None):
         return self.db.get_matches(limit=limit, include_details=include_details, search=search)
 
-    def analyze_match(self, match_id, force=False):
+    def analyze_match(self, match_data, force=False, replay_path=None):
         """Forces or performs AI analysis on a match."""
-        match_data_rows = self.db.get_matches(match_id=match_id, include_players=True)
-        if not match_data_rows or len(match_data_rows) == 0:
-            return {"status": "error", "message": "Match not found"}
-        match_data = match_data_rows[0]
-        
+        # Clean up match_data input as it might be an ID or a dictionary
+        if isinstance(match_data, str):
+            match_id = match_data
+            match_data_rows = self.db.get_matches(match_id=match_id, include_players=True)
+            if not match_data_rows or len(match_data_rows) == 0:
+                return {"status": "error", "message": "Match not found"}
+            match_data = match_data_rows[0]
+        else:
+            match_id = match_data.get('match_id')
+
         # 1. Quota Check
         if not force and not self.quota.can_make_request():
             return {"status": "quota_exceeded", "match_id": match_id}
@@ -595,13 +687,27 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
         if not force and match_data.get('analysis') and match_data['analysis'] != {}:
             return {"status": "complete", "match_id": match_id, "analysis": match_data['analysis']}
 
-        # 3. Force Re-parse logic (Optional)
-        # (Assuming handled by separate trigger or standard flow)
+        # 3. Dynamic Replay Discovery (for mechanical forensics)
+        if not replay_path:
+            replay_path = self._find_replay_file(match_id)
 
-        # 4. RUN FORENSIC AUDIT (Main Verdict)
-        summary = self._generate_match_summary(match_data, force=force)
+        # 4. RUN MECHANICAL FORENSICS (First, so we can use it in Summary)
+        forensics = None
+        social_mechanics = None
+        if replay_path and os.path.exists(replay_path):
+            try:
+                hero = match_data.get('hero', '')
+                forensics = MechanicalAnalysisService.analyze_replay(replay_path, hero)
+                if forensics:
+                    ColoredLogger.success(f"Mechanical Forensics ready for {hero}", "REPLAY")
+                    social_mechanics = forensics.get('social_mechanics')
+            except Exception as e:
+                ColoredLogger.error(f"Forensics failed: {e}", "REPLAY")
+
+        # 5. RUN FORENSIC AUDIT (Main Verdict) using Forensics Data
+        summary = self._generate_match_summary(match_data, forensics=forensics, force=force)
         
-        # 5. RUN SOCIAL INSIGHTS (Deep Social Network)
+        # 6. RUN SOCIAL INSIGHTS (Deep Social Network)
         players = match_data.get('players', [])
         game_length = match_data.get('game_length', 0)
         DC_GRACE_PERIOD = 60
@@ -615,10 +721,12 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
                     if not ('Discerning' in p.get('name', '') or p.get('hero') == match_data.get('hero')):
                         teammate_enemy_dcs.append(f"{p.get('name')} ({p.get('hero')}) at {self.fmt_ms(ts)}")
         
-        social = self._generate_social_insights(match_data, dcs=teammate_enemy_dcs)
+        social = self._generate_social_insights(match_data, dcs=teammate_enemy_dcs, social_mechanics=social_mechanics)
         
         if summary and summary.get('success'):
             results = summary['analysis']
+            if forensics:
+                results['forensics'] = forensics
             
             # --- 🕵️ NEURAL AUDIT: Match Summary ---
             try:
@@ -668,10 +776,19 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
                             conn.commit()
                 except Exception as db_e:
                     ColoredLogger.warn(f"Social Persistence error: {db_e}", "REPLAY")
-            
+
             self.db.update_match_analysis(match_id, results)
             self.quota.record_request()
             return {"status": "complete", "match_id": match_id, "analysis": results}
         
+        # FALLBACK: If summary failed but we have forensics, at least update those
+        if forensics:
+            current_results = match_data.get('analysis') or {}
+            current_results['forensics'] = forensics
+            self.db.update_match_analysis(match_id, current_results)
+            return {"status": "complete_forensics_only", "match_id": match_id, "analysis": current_results}
+        
         return {"status": "error", "match_id": match_id, "message": "Analysis generation failed"}
+
+
 
