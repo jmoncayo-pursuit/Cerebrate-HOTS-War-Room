@@ -1,0 +1,84 @@
+import sys
+import os
+import types
+import importlib.util
+import importlib.machinery
+import unicodedata
+
+# Shim for 'imp' module (removed in Python 3.12)
+def setup_imp_shim():
+    try:
+        import imp
+        return imp
+    except ImportError:
+        # Create a mock imp module
+        imp = types.ModuleType('imp')
+        sys.modules['imp'] = imp
+        
+        def find_module(name, path=None):
+            if path:
+                for directory in path:
+                    file_path = os.path.join(directory, name + ".py")
+                    if os.path.exists(file_path):
+                        fp = open(file_path, 'r')
+                        return (fp, file_path, (".py", "r", 1))
+            raise ImportError(f"No module named {name}")
+
+        def load_module(name, file, pathname, description):
+            if file: file.close()
+            loader = importlib.machinery.SourceFileLoader(name, pathname)
+            spec = importlib.util.spec_from_loader(loader.name, loader)
+            module = importlib.util.module_from_spec(spec)
+            loader.exec_module(module)
+            return module
+            
+        imp.find_module = find_module
+        imp.load_module = load_module
+        imp.load_source = load_module
+        imp.PY_SOURCE = 1
+        imp.PKG_DIRECTORY = 5
+        return imp
+
+def clean_text(s):
+    if not s: return ""
+    s = unicodedata.normalize('NFKD', s).encode('ASCII', 'ignore').decode('utf-8')
+    return s.lower().replace('.','').replace(' ','').replace("'", "")
+
+def get_hero_display_name(internal_name):
+    """Maps Blizzard internal engine names to playable display names."""
+    m = {
+        "tinker": "Gazlowe",
+        "medic": "Lt. Morales",
+        "witchdoctor": "Nazeebo",
+        "crusader": "Johanna",
+        "barbarian": "Sonya", 
+        "demonhunter": "Valla",
+        "monk": "Kharazim",
+        "traitorhero": "Varian",
+        "amazon": "Cassia",
+        "wizard": "Li-Ming",
+        "d3wizard": "Li-Ming",
+        "butcher": "The Butcher",
+        "faeriedragon": "Brightwing",
+        "necromancer": "Xul",
+        "wanderer": "Chen",
+        "dryad": "Lunara",
+        "siegebreaker": "Azmodan",
+        "firebat": "Blaze",
+        "cryptlord": "Anub'arak",
+        "lichlord": "Kel'Thuzad",
+        "nexuslord": "Deathwing",
+        "nexushunter": "Qhira",
+        "lostvikings": "The Lost Vikings",
+        "sgthammer": "Sgt. Hammer",
+        "l90etc": "E.T.C."
+    }
+    clean = clean_text(internal_name)
+    return m.get(clean, internal_name)
+import json; sys.modules['imp'] = setup_imp_shim(); import types; import mpyq; from heroprotocol.versions import latest; from api.services.replay_parser.tracker import process_tracker_events; archive = mpyq.MPQArchive('/Users/jmoncayopursuit.org/Library/Application Support/Blizzard/Heroes of the Storm/Accounts/474575/1-Hero-1-3446653/Replays/Multiplayer/2026-01-21 00.52.33 Dragon Shire.StormReplay'); protocol = latest(); events = protocol.decode_replay_tracker_events(archive.read_file('replay.tracker.events'));
+
+# Manual inspection of specific death events
+for e in events:
+    if e['_event'] == 'NNet.Replay.Tracker.SUnitDiedEvent':
+        if e.get('m_killerPlayerId') == 0 or e.get('m_killerPlayerId') is None:
+             print(f"Death at {e['_gameloop']}: KillerPID={e.get('m_killerPlayerId')} Tag={e.get('m_unitTagIndex')} KillerTag={e.get('m_killerUnitTagIndex')}")
