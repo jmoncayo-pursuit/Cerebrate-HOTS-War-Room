@@ -93,26 +93,9 @@ class CerebrateOrchestrator:
             # Fallback if called outside api_server scope
             context['brain_context'] = ""
 
-        # 0.5. INJECT LIVE TELEMETRY (MCP BRIDGE)
-        from api.services.mcp_bridge_service import mcp_bridge
-        if mcp_bridge.is_healthy():
-            import asyncio
-            try:
-                # We use a short timeout for live telemetry to avoid blocking
-                # Since we are in a sync Flask context, we need to run the async call
-                loop = asyncio.get_event_loop()
-                if loop.is_running():
-                    # This is tricky in Flask, but usually we handle it via a helper
-                    pass
-                else:
-                    dom = loop.run_until_complete(asyncio.wait_for(mcp_bridge.get_dom_snapshot(), timeout=2.0))
-                    logs = loop.run_until_complete(asyncio.wait_for(mcp_bridge.get_console_logs(), timeout=1.0))
-                    context['live_telemetry'] = {
-                        "dom_snapshot": dom,
-                        "console_logs": logs
-                    }
-            except:
-                pass
+        # 0.5. LIVE TELEMETRY (DEPRECATED)
+        # MCP Bridge integration removed per user request.
+        # context['live_telemetry'] = None
 
         # PRIORITY 0: SYSTEM/DEBUG INTERVENTION
         # If the user is asking about the neural link or logs, route to ANALYST immediately
@@ -144,18 +127,18 @@ class CerebrateOrchestrator:
         for agent_name, agent in self.agents.items():
             if agent.can_handle(query, context):
                 capable_agents.append((agent_name, agent))
-        
-        if not capable_agents:
-            # FALLBACK: If we have telemetry but no specific agent claimed it, let the Analyst try
-            if context.get('live_telemetry'):
-                 return self.agents['analyst'].analyze(query, context)
 
-            return {
-                'success': False,
-                'error': 'No agent could handle this query',
+        if not capable_agents:
+            # FALLBACK: If no specific agent claimed it, default to Analyst for general Q&A
+            # This ensures we never return "Unknown" for valid conversational queries
+            response = self.agents['analyst'].analyze(query, context)
+            response['orchestrator'] = {
+                'selected_agent': 'analyst',
+                'capable_agents': ['analyst'],
                 'query': query,
-                'suggestion': 'Try asking about match analysis or draft recommendations'
+                'routing_reason': 'Fallback to General Analyst'
             }
+            return response
         
         # For now, use the first capable agent
         # TODO: In future, could call multiple agents and synthesize

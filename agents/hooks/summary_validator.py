@@ -91,6 +91,12 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
     if 'hanamura' in map_name and 'tribute' in (summary_text + critical_mistake).lower():
         issues.append("Hallucination detected: Hanamura has no Tributes.")
     
+    # Check 7: Stitches Hook Integrity
+    if 'stitches' in hero.lower():
+        analysis_text = (summary_text + critical_mistake).lower()
+        if "0 hooks thrown" in analysis_text or "complete absence of tactical application" in analysis_text:
+            issues.append("Invalid Data: Stitches analysis claims 0 Hooks. Check parser integrity.")
+    
     if issues:
         feedback = "Summary quality issues:\n" + "\n".join(f"- {issue}" for issue in issues)
         return HookResponse.deny(

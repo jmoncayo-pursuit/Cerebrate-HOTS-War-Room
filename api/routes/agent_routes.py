@@ -58,7 +58,7 @@ def get_agents():
     return jsonify({"agents": orchestrator.get_available_agents()})
 
 @agent_bp.route('/cerebrate/ask', methods=['POST'])
-async def ask_agent():
+def ask_agent():
     data = request.json or {}
     query = data.get('query')
     context = data.get('context', {})
@@ -69,25 +69,8 @@ async def ask_agent():
     if 'matches' not in context:
         context['matches'] = db.get_matches(limit=50)
 
-    # 🧠 NEURAL PARITY: Self-Inspection Capability
-    # If the user asks about "errors", "console", "logs", or "debug", 
-    # we inject the actual browser console logs into the context.
-    lower_query = query.lower() if query else ""
-    if any(k in lower_query for k in ['error', 'console', 'log', 'fail', 'debug', 'broken']):
-    if any(k in lower_query for k in ['error', 'console', 'log', 'fail', 'debug', 'broken']):
-        try:
-            # Async retrieval of console logs with safety check
-            if mcp_bridge.is_healthy():
-                logs_result = await mcp_bridge.get_console_logs()
-                if logs_result and 'logs' in logs_result:
-                    # Inject last 20 logs for context
-                    context['browser_logs'] = logs_result['logs'][-20:]
-                    ColoredLogger.info(f"Injecting {len(context['browser_logs'])} browser logs into context", "AGENT")
-            else:
-                ColoredLogger.warning("Skipping log injection: Neural Link not established", "AGENT")
-        except Exception as e:
-            # CRITICAL: Do not let optional context injection crash the main chat flow
-            ColoredLogger.warning(f"Could not inject console logs: {e}")
+    # Note: Neural/Console log injection has been deprecated per user request.
+    # The MCP bridge remains active for background tasks but is not queried here.
         
     orchestrator = get_orchestrator()
     result = orchestrator.route_query(query, context)
@@ -264,18 +247,17 @@ def get_hero_dossier():
         return jsonify({"error": str(e)}), 500
 
 @agent_bp.route('/mcp/inspect', methods=['GET'])
-async def inspect_mcp():
-    # Note: Flask 2.0+ supports async routes natively.
+def inspect_mcp():
     from api.services.mcp_bridge_service import mcp_bridge
     
     action = request.args.get('action')
     
     if action == 'logs':
-        result = await mcp_bridge.get_console_logs()
+        result = mcp_bridge.run_command(mcp_bridge.get_console_logs())
         return jsonify(result)
         
     if action == 'dom':
-        result = await mcp_bridge.get_dom_snapshot()
+        result = mcp_bridge.run_command(mcp_bridge.get_dom_snapshot())
         return jsonify(result)
 
     status = {

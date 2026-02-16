@@ -12,7 +12,7 @@ cleanup() {
 trap cleanup SIGINT SIGTERM
 
 # Kill existing processes
-export API_PORT=5001
+export API_PORT=8000
 lsof -i :${API_PORT},5173 -t | xargs kill -9 2>/dev/null || true
 pkill -9 -f replay_watcher.py 2>/dev/null || true
 pkill -9 -f cerebrate_healer.py 2>/dev/null || true

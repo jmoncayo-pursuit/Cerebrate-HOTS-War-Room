@@ -9,6 +9,7 @@ class MCPBridgeService:
         self.session = None
         self._connected = False
         self._loop = None
+        self._thread = None
         self.server_params = StdioServerParameters(
             command="npx",
             args=["-y", "chrome-devtools-mcp", "--browserUrl", "http://127.0.0.1:56991"],
@@ -24,8 +25,21 @@ class MCPBridgeService:
             self._loop = loop
             loop.run_until_complete(self.connect_forever())
 
-        thread = threading.Thread(target=run_async, daemon=True)
-        thread.start()
+        self._thread = threading.Thread(target=run_async, daemon=True)
+        self._thread.start()
+
+    def run_command(self, coro):
+        """Execute a coroutine on the bridge's event loop and return the result."""
+        if not self._loop:
+            return {"error": "Bridge loop not initialized"}
+        
+        from api.logger import ColoredLogger
+        try:
+            future = asyncio.run_coroutine_threadsafe(coro, self._loop)
+            return future.result(timeout=10)
+        except Exception as e:
+            ColoredLogger.error(f"Neural Link Command Error: {e}", "MCP")
+            return {"error": str(e)}
 
     async def connect_forever(self):
         """Maintain a persistent connection to the MCP server."""
@@ -40,8 +54,8 @@ class MCPBridgeService:
                         
                         # Keep alive loop
                         while self._connected:
-                            await asyncio.sleep(5)
-                            # Could do a heartbeat check here
+                            await asyncio.sleep(60)
+                            ColoredLogger.info("Neural Link: Linkage Heartbeat Stable", "MCP")
             except Exception as e:
                 self._connected = False
                 ColoredLogger.error(f"Neural Link Linkage Failure: {e}", "MCP")

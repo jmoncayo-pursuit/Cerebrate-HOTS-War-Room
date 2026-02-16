@@ -51,10 +51,14 @@ def inspect_replay(replay_path):
                 print(f"  {key}: {value}")
 
 if __name__ == "__main__":
-    REPLAYS_DIR = os.path.expanduser("~/Library/Application Support/Blizzard/Heroes of the Storm/Accounts/474575/1-Hero-1-3446653/Replays/Multiplayer")
-    import glob
-    replays = glob.glob(os.path.join(REPLAYS_DIR, "*.StormReplay"))
-    if replays:
-        inspect_replay(replays[0])
+    if len(sys.argv) > 1:
+        replay_path = sys.argv[1]
+        inspect_replay(replay_path)
     else:
-        print("No replays found.")
+        REPLAYS_DIR = os.path.expanduser("~/Library/Application Support/Blizzard/Heroes of the Storm/Accounts/474575/1-Hero-1-3446653/Replays/Multiplayer")
+        import glob
+        replays = sorted(glob.glob(os.path.join(REPLAYS_DIR, "*.StormReplay")), reverse=True)
+        if replays:
+            inspect_replay(replays[0])
+        else:
+            print("No replays found.")

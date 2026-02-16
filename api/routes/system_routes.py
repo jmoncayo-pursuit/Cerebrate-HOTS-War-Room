@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from api.services.database import DatabaseManager
+from api.services.mcp_bridge_service import mcp_bridge
 import os
+import asyncio
 
 system_bp = Blueprint('system', __name__, url_prefix='/api')
 db = DatabaseManager()
@@ -77,8 +79,27 @@ def system_health():
     return jsonify({
         "status": "operational",
         "database": "connected",
-        "kv_store": "active"
+        "kv_store": "active",
+        "neural_link": "connected" if mcp_bridge.is_healthy() else "disconnected"
     })
+
+@system_bp.route('/system/neural_link', methods=['GET'])
+def get_neural_link():
+    """Fetch DOM snapshot from MCP Bridge."""
+    if not mcp_bridge.is_healthy():
+        return jsonify({"error": "Neural Link disconnected"}), 503
+    
+    snapshot = mcp_bridge.run_command(mcp_bridge.get_dom_snapshot())
+    return jsonify(snapshot)
+
+@system_bp.route('/system/console_logs', methods=['GET'])
+def get_browser_logs():
+    """Fetch console logs from MCP Bridge."""
+    if not mcp_bridge.is_healthy():
+        return jsonify({"error": "Neural Link disconnected"}), 503
+    
+    logs = mcp_bridge.run_command(mcp_bridge.get_console_logs())
+    return jsonify(logs)
 
 PID_FILE = ".healer.pid"
 
