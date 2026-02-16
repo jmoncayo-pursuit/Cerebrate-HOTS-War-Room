@@ -163,99 +163,12 @@ const AgentDashboard = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-8">
       <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 gap-6">
-          <div>
-            <h1 className="text-4xl font-bold text-white mb-2">Cerebrate Agent Swarm</h1>
-            <p className="text-gray-400 italic">Specialized tactical intelligence agents working across the Neural Link</p>
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <h1 className="text-4xl font-bold text-white">Agent Routing Debugger</h1>
+            <span className="px-3 py-1 bg-orange-500/20 text-orange-400 rounded-lg text-sm font-mono font-bold">DEVELOPMENT ONLY</span>
           </div>
-
-          {/* Neural Link Telemetry - COMPREHENSIVE VIEW */}
-          {usage && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-black/40 border border-white/10 rounded-2xl p-4 backdrop-blur-md min-w-[300px]"
-            >
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-3">
-                  <div className={`w-2 h-2 rounded-full animate-pulse ${modelHealth?.quality?.includes('Nexus') ? 'bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.6)]' :
-                    modelHealth?.quality?.includes('Neural') ? 'bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]' :
-                      'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]'
-                    }`} />
-                  <div>
-                    <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Neural Link Status</div>
-                    <div className={`text-xs font-bold font-mono ${modelHealth?.quality?.includes('Nexus') ? 'text-cyan-400' :
-                      modelHealth?.quality?.includes('Neural') ? 'text-blue-400' :
-                        'text-green-400'
-                      }`}>
-                      {modelHealth?.quality} // {modelHealth?.last_model}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-[10px] text-slate-500 font-mono uppercase tracking-widest">Total Tokens</div>
-                  <div className="text-sm font-bold text-white font-mono">
-                    {usage.total_tokens?.toLocaleString() || '0'}
-                  </div>
-                </div>
-              </div>
-
-              {/* Nexus Integrity Block (PIPELINE HEALING) */}
-              <div className="grid grid-cols-2 gap-2 py-2 border-t border-white/5 mb-2">
-                <div className="bg-cyan-500/5 rounded p-2 border border-cyan-500/10">
-                  <div className="text-[8px] text-cyan-500/70 font-mono uppercase tracking-tighter">Self-Heal Pipeline</div>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${usage.services?.healer === 'ACTIVE' ? 'bg-cyan-400 animate-pulse' : 'bg-slate-600'}`} />
-                    <div className="text-[10px] font-black text-slate-200 font-mono italic">{usage.services?.healer || 'STANDBY'}</div>
-                  </div>
-                </div>
-                <div className="bg-purple-500/5 rounded p-2 border border-purple-500/10">
-                  <div className="text-[8px] text-purple-500/70 font-mono uppercase tracking-tighter">Combat Ingestion</div>
-                  <div className="flex items-center gap-1.5">
-                    <div className={`w-1.5 h-1.5 rounded-full ${usage.services?.watcher === 'ACTIVE' ? 'bg-purple-400 animate-pulse' : 'bg-slate-600'}`} />
-                    <div className="text-[10px] font-black text-slate-200 font-mono italic">{usage.services?.watcher || 'OFFLINE'}</div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-3 gap-2 py-2 border-t border-white/5">
-                <div>
-                  <div className="text-[8px] text-slate-600 font-mono uppercase">Prompt</div>
-                  <div className="text-[10px] text-blue-400 font-bold font-mono">{usage.prompt_tokens?.toLocaleString() || '0'}</div>
-                </div>
-                <div>
-                  <div className="text-[8px] text-slate-600 font-mono uppercase">Response</div>
-                  <div className="text-[10px] text-green-400 font-bold font-mono">{usage.response_tokens?.toLocaleString() || '0'}</div>
-                </div>
-                <div>
-                  <div className="text-[8px] text-slate-600 font-mono uppercase">Version</div>
-                  <div className="text-[10px] text-cyan-400 font-bold font-mono">{usage.pipeline_version || '2.1.0'}</div>
-                </div>
-              </div>
-
-              {/* History Sparklines */}
-              {usage.history && usage.history.length > 0 && (
-                <div className="mt-3 pt-3 border-t border-white/5">
-                  <div className="text-[8px] text-slate-600 font-mono uppercase mb-2">Neural Pulse History</div>
-                  <div className="flex gap-1 h-6 items-end">
-                    {usage.history.map((item, i) => (
-                      <motion.button
-                        key={i}
-                        whileHover={{ scale: 1.1, y: -2 }}
-                        onClick={() => setSelectedHistoryItem(item)}
-                        className={`flex-1 min-w-[4px] rounded-t-sm transition-colors ${item.model?.includes('pro') ? 'bg-blue-500/60 hover:bg-blue-400' :
-                          item.model?.includes('2.0') ? 'bg-cyan-500/60 hover:bg-cyan-400' :
-                            'bg-slate-500/60 hover:bg-slate-400'
-                          }`}
-                        style={{ height: `${Math.max(20, Math.min(100, (item.total_t / 2000) * 100))}%` }}
-                        title={`${item.total_t} tokens - ${item.model}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          )}
+          <p className="text-gray-400 italic">Test query routing and verify which agent handles specific questions. This page is for debugging the multi-agent system.</p>
         </div>
 
         {/* Telemetry Detail Modal */}

@@ -122,6 +122,8 @@ const DossierHub = () => {
 
                 <div className="relative max-w-md">
                     <input
+                        id="dossier-search"
+                        name="dossier-search"
                         type="text"
                         placeholder="Search Protocols..."
                         value={filter}

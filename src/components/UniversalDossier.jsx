@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Shield, Target, Zap, AlertTriangle, Crown, Map as MapIcon, BarChart3, TrendingUp, RefreshCw, ShieldCheck, AlertCircle, Info, ChevronDown, ChevronUp } from 'lucide-react';
+import { Shield, Target, Zap, AlertTriangle, Crown, Map as MapIcon, BarChart3, TrendingUp, RefreshCw, ShieldCheck, AlertCircle, Info, ChevronDown, ChevronUp, Swords } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import RankIcon from './RankIcon';
 import ServiceRecord from './ServiceRecord';
@@ -81,12 +81,16 @@ const AuditBadge = ({ audit }) => {
 
 const TruthBadge = ({ source }) => {
     const isSecure = source === 'SECURE_DATALINK';
+    const isMechanical = source === 'MECHANICAL_AUDIT';
+
+    let colors = 'bg-purple-500/10 border-purple-500/30 text-purple-400';
+    if (isSecure) colors = 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400';
+    if (isMechanical) colors = 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400';
+
     return (
-        <span className={`ml-2 px-1.5 py-0.5 rounded-[2px] text-[8px] font-black uppercase tracking-tighter border ${isSecure
-            ? 'bg-cyan-500/10 border-cyan-500/30 text-cyan-400'
-            : 'bg-purple-500/10 border-purple-500/30 text-purple-400'
-            }`} title={isSecure ? 'Verified Match Data' : 'AI Strategic Synthesis'}>
-            {isSecure ? 'TRUTH' : 'NEURAL'}
+        <span className={`ml-2 px-1.5 py-0.5 rounded-[2px] text-[8px] font-black uppercase tracking-tighter border ${colors}`}
+            title={isSecure ? 'Verified Match Data' : isMechanical ? 'Heuristic Mechanical Analysis' : 'AI Strategic Synthesis'}>
+            {isSecure ? 'TRUTH' : isMechanical ? 'CORE' : 'NEURAL'}
         </span>
     );
 };
@@ -118,18 +122,11 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
         );
     }
 
-    // Color Theme Logic based on Hero Role or Vibe
-    // We can pass a theme prop or derive it. Defaulting to Cyan/Blue (Protoss/Terran vibe).
     const theme = {
-        primary: stats.theme?.primary || 'cyan', // text-cyan-400
-        secondary: stats.theme?.secondary || 'blue', // text-blue-400
-        gradient: stats.theme?.gradient || 'from-cyan-600 to-blue-600',
+        primary: (stats.theme && stats.theme.primary) || 'cyan',
+        secondary: (stats.theme && stats.theme.secondary) || 'blue',
+        gradient: (stats.theme && stats.theme.gradient) || 'from-cyan-600 to-blue-600',
     };
-
-    // Dynamic styles helper
-    const getTextColor = (colorName) => `text-${colorName}-400`;
-    const getBgColor = (colorName) => `bg-${colorName}-500`;
-    const getBorderColor = (colorName) => `border-${colorName}-500`;
 
     return (
         <div className="min-h-full pb-20 animate-in fade-in duration-700">
@@ -199,7 +196,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                             <div className="bg-white/5 p-4 rounded-xl border border-white/5">
                                 <div className="text-xs text-slate-500 uppercase tracking-widest mb-1 flex items-center">
                                     Global Precision
-                                    <TruthBadge source={stats.statSources?.overallWR} />
+                                    <TruthBadge source={stats.statSources && stats.statSources.overallWR} />
                                 </div>
                                 <ConfidenceScore value={stats.overallWR} n={stats.totalGames} />
                                 <div className="w-full h-1.5 bg-slate-800 rounded-full mt-2 overflow-hidden">
@@ -209,7 +206,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                             <div className="bg-white/5 p-4 rounded-xl border border-white/5">
                                 <div className="text-xs text-slate-500 uppercase tracking-widest mb-1 flex items-center">
                                     Engagement Volume
-                                    <TruthBadge source={stats.statSources?.totalGames} />
+                                    <TruthBadge source={stats.statSources && stats.statSources.totalGames} />
                                 </div>
                                 <div className="text-2xl font-bold text-white">{stats.totalGames} <span className="text-sm font-normal text-slate-400 text-xs">Verified Samples</span></div>
                             </div>
@@ -245,11 +242,120 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
 
                 {/* Main Intel */}
                 <div className="lg:col-span-2 space-y-8">
+                    {/* Lethality Breakthrough */}
+                    {stats.lethality && stats.lethality.high.games > 0 && (
+                        <div className="bg-gradient-to-br from-red-900/20 via-black to-cyan-900/20 border border-white/10 rounded-2xl p-8 backdrop-blur-md relative overflow-hidden group">
+                            <div className="absolute -right-4 -top-4 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <Zap className="w-40 h-40 text-cyan-400" />
+                            </div>
+
+                            <div className="flex items-center justify-between mb-8">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-cyan-500/20 rounded-lg">
+                                        <Zap className="w-6 h-6 text-cyan-400" />
+                                    </div>
+                                    <h3 className="text-xl font-black text-white uppercase tracking-tighter">Lethality Breakthrough</h3>
+                                    <TruthBadge source="MECHANICAL_AUDIT" />
+                                </div>
+                                {stats.lethality.jump > 15 && (
+                                    <span className="px-3 py-1 bg-cyan-500 text-black text-[10px] font-black uppercase rounded animate-pulse">
+                                        Victory Condition Identified
+                                    </span>
+                                )}
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+                                <div className="space-y-6">
+                                    <div className="relative">
+                                        <div className="text-[10px] text-slate-500 uppercase font-black tracking-widest mb-2">Agency Shift (Win Rate Jump)</div>
+                                        <div className="text-5xl font-black text-white flex items-baseline gap-2">
+                                            +{stats.lethality.jump}%
+                                            <span className="text-sm font-bold text-cyan-500/70 tracking-normal uppercase">Agency Premium</span>
+                                        </div>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-end">
+                                            <div className="text-xs text-slate-400 font-bold uppercase tracking-tighter">Under {stats.lethality.threshold} Kills</div>
+                                            <div className="text-xs text-red-400 font-mono">{stats.lethality.low.wr}% WR</div>
+                                        </div>
+                                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
+                                            <div className="h-full bg-red-500/40" style={{ width: `${stats.lethality.low.wr}%` }}></div>
+                                        </div>
+
+                                        <div className="flex justify-between items-end mt-4">
+                                            <div className="text-xs text-cyan-400 font-bold uppercase tracking-tighter">{stats.lethality.threshold}+ Kills (Power Zone)</div>
+                                            <div className="text-xs text-cyan-400 font-mono font-bold">{stats.lethality.high.wr}% WR</div>
+                                        </div>
+                                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden shadow-[0_0_15px_rgba(6,182,212,0.2)]">
+                                            <div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${stats.lethality.high.wr}%` }}></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="bg-black/40 border border-white/5 p-6 rounded-xl space-y-4">
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-cyan-500/10 flex items-center justify-center shrink-0 border border-cyan-500/20">
+                                            <Target size={14} className="text-cyan-400" />
+                                        </div>
+                                        <p className="text-[11px] text-slate-300 leading-relaxed uppercase tracking-tight">
+                                            <span className="text-white font-bold">Lethal Threshold found at {stats.lethality.threshold} Kills.</span> Securing this count shift individual agency from passive to dominant.
+                                        </p>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="w-8 h-8 rounded-full bg-red-500/10 flex items-center justify-center shrink-0 border border-red-500/20">
+                                            <Shield size={14} className="text-red-400" />
+                                        </div>
+                                        <p className="text-[11px] text-slate-300 leading-relaxed uppercase tracking-tight">
+                                            Current sample shows <span className="text-white font-bold">{stats.lethality.high.games} matches</span> hitting the zone with a <span className="text-cyan-400 font-bold">{stats.lethality.high.wr}% Success Rate</span>.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Mechanical Forensics */}
+                    {stats.forensics && (
+                        <div className="bg-slate-900/50 border border-cyan-500/20 rounded-2xl p-8 backdrop-blur-sm">
+                            <div className="flex items-center gap-3 mb-8">
+                                <Zap className="w-6 h-6 text-cyan-400" />
+                                <h3 className="text-xl font-bold text-white">Mechanical Audit</h3>
+                                <TruthBadge source="MECHANICAL_AUDIT" />
+                            </div>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                {(stats.forensics.summary_stats || []).map((s, i) => (
+                                    <div key={i} className="p-5 rounded-xl border border-white/5 bg-white/5 group hover:border-cyan-500/30 transition-all">
+                                        <div className="text-[10px] text-cyan-500/70 uppercase tracking-widest mb-1 font-bold">{s.label}</div>
+                                        <div className="text-2xl font-black text-white">{s.value}</div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {stats.forensics.top_victims && stats.forensics.top_victims.length > 0 && (
+                                <div className="mt-8 pt-8 border-t border-white/5">
+                                    <div className="flex items-center gap-2 mb-4">
+                                        <Target className="w-4 h-4 text-cyan-400" />
+                                        <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">High Value Targets (Most Hooked)</h4>
+                                    </div>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        {stats.forensics.top_victims.map((v, i) => (
+                                            <div key={i} className="p-4 rounded-lg bg-cyan-500/5 border border-cyan-500/10 flex items-center justify-between">
+                                                <div className="text-white font-bold">{v.name}</div>
+                                                <div className="text-xs text-cyan-400 uppercase font-black tracking-widest">{v.count} Confirmed Hooks</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
                     <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-8 backdrop-blur-sm">
                         <div className="flex items-center gap-3 mb-8">
                             <MapIcon className={`w-6 h-6 text-${theme.primary}-400`} />
                             <h3 className="text-xl font-bold text-white">Sector Control</h3>
-                            <TruthBadge source={stats.statSources?.sectors} />
+                            <TruthBadge source={stats.statSources && stats.statSources.sectors} />
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             {(stats.sectors || []).map((s, i) => (
@@ -319,7 +425,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                         {stats.tacticalSummary && (
                             <div className={`bg-gradient-to-br from-${theme.primary}-900/40 to-${theme.secondary}-900/40 border border-${theme.primary}-500/20 rounded-2xl p-6 relative overflow-hidden`}>
                                 <div className="absolute -top-1 -right-1">
-                                    <TruthBadge source={stats.statSources?.tacticalSummary} />
+                                    <TruthBadge source={stats.statSources && stats.statSources.tacticalSummary} />
                                 </div>
                                 <div className="absolute -bottom-6 -right-6 opacity-10">
                                     <TrendingUp className={`w-32 h-32 text-${theme.primary}-400`} />
@@ -348,7 +454,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                         )}
                     </div>
 
-                    {/* Mission History (NEW Section) */}
+                    {/* Mission History */}
                     {stats.recentPerformance && stats.recentPerformance.length > 0 && (
                         <div className="bg-slate-900/50 border border-white/5 rounded-2xl p-8 backdrop-blur-sm">
                             <div className="flex items-center justify-between mb-8">

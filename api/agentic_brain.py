@@ -161,10 +161,51 @@ class AgenticBrain:
             # Best builds
             builds = self.db.get_top_builds(hero_name, limit=2)
             
+            # Lethality Correlation
+            lethality = self._audit_lethality(hero_name)
+            
             return {
                 "lifetime": dict(lifetime) if lifetime else None,
                 "map_stats": dict(map_stats) if map_stats else None,
-                "top_builds": builds
+                "top_builds": builds,
+                "lethality": lethality
+            }
+
+    def _audit_lethality(self, hero_name):
+        """Analyze win rate correlation with kill thresholds."""
+        with self.db._get_connection() as conn:
+            # Query all matches for this hero and process in Python for robustness
+            games = conn.execute('''
+                SELECT m.result, p.stats
+                FROM match_players p JOIN matches m ON p.match_id = m.id
+                WHERE p.hero = ?
+            ''', (hero_name,)).fetchall()
+            
+            high_wins = 0
+            high_games = 0
+            low_wins = 0
+            low_games = 0
+            
+            for g in games:
+                try:
+                    stats = json.loads(g['stats'])
+                    kills = stats.get('SoloKill', 0)
+                    is_win = 'WIN' in g['result'].upper() or 'VICTORY' in g['result'].upper()
+                    if kills >= 5:
+                        high_games += 1
+                        if is_win: high_wins += 1
+                    else:
+                        low_games += 1
+                        if is_win: low_wins += 1
+                except: continue
+                
+            high_wr = round((high_wins / high_games * 100), 1) if high_games > 0 else 0
+            low_wr = round((low_wins / low_games * 100), 1) if low_games > 0 else 0
+            
+            return {
+                "high": {"games": high_games, "wins": high_wins, "wr": high_wr},
+                "low": {"games": low_games, "wins": low_wins, "wr": low_wr},
+                "threshold": 5
             }
 
     def _build_tactical_dossier(self, audit, map_name, hero_name):
@@ -173,19 +214,25 @@ class AgenticBrain:
         dossier += "METADATA: All stats marked 'Verified' pull directly from SECURE_DATALINK (SQL Archive).\n"
         dossier += "METADATA: Strategic directives are generated via NEURAL_SYNTHESIS (Cross-referenced analysis).\n\n"
         
+        # Freshness Check: Load Rework Registry
+        rework_path = os.path.join(os.path.dirname(__file__), '..', '.agent', 'brain', 'REWORK_REGISTRY.md')
+        if os.path.exists(rework_path):
+            with open(rework_path, 'r') as f:
+                dossier += f"⚠️ REWORK REGISTRY (DO NOT RECOMMEND STALE SPECS FOR THESE HEROES):\n{f.read()}\n\n"
+
+        # Constraints and exclusions
+        constraints = audit.get("constraints", {})
+        excluded = set(constraints.get('global_bans', []))
+
         if map_name:
             dossier += f"MAP CONTEXT: {map_name.upper()}\n"
-            assets = audit.get("all_assets", [])
+            assets = audit.get("map_context", {}).get("all_assets", [])
             
             if not assets:
                 dossier += "⚠️ CRITICAL: NO USER DATA FOUND. REQUEST GLOBAL META FALLBACK.\n"
             
             # Roles for structured output
             roles = ["Bruiser", "Healer", "Tank", "Ranged Assassin"]
-            
-            # Constraints
-            constraints = audit.get("constraints", {})
-            excluded = set(constraints.get('global_bans', []))
 
             for role in roles:
                 # Filter by role and exclude dislikes
@@ -221,11 +268,21 @@ class AgenticBrain:
             if h_ctx.get("top_builds"):
                 b = h_ctx["top_builds"][0]
                 dossier += f"- Neural link (Draft Optima): {b['build_code']} ({b['win_rate']}% WR)\n"
+            if h_ctx.get("lethality"):
+                leth = h_ctx["lethality"]
+                if leth['high']['games'] > 0:
+                    dossier += f"\n[LETHALITY THRESHOLD ANALYSIS]\n"
+                    dossier += f"- {leth['threshold']}+ Kills: {leth['high']['wr']}% WR ({leth['high']['wins']}/{leth['high']['games']})\n"
+                    dossier += f"- Under {leth['threshold']} Kills: {leth['low']['wr']}% WR ({leth['low']['wins']}/{leth['low']['games']})\n"
+                    if leth['high']['wr'] > leth['low']['wr'] + 15:
+                        dossier += f"⚠️ STRATEGIC DISCOVERY: Crossing the {leth['threshold']} kill threshold is a primary Victory Condition (+{round(leth['high']['wr']-leth['low']['wr'])}% jump).\n"
         
         if constraints.get('global_bans'):
             dossier += f"\n⚠️ BLACKLISTED ASSETS (Manual Override): {', '.join(constraints['global_bans'])}\n"
             
         dossier += "\nTACTICAL DIRECTIVE: Prioritize 'Verified' assets for optimal mission success. Use 'Neural' insights for high-variance situational adaptations.\n"
+        if map_name and not hero_name:
+             dossier += "TACTICAL DIRECTIVE: User has NOT selected a hero yet. Suggest the best heroes from the list above for this map and explain WHY they are good picks (macro, objective control, etc). DO NOT give tips on how to fight with specific heroes unless asked.\n"
         dossier += "========================================================\n"
         return dossier
 

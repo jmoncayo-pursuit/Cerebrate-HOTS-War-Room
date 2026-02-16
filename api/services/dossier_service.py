@@ -3,6 +3,7 @@ import sqlite3
 import json
 import random
 import time
+import re
 from collections import defaultdict
 
 class DossierService:
@@ -72,6 +73,7 @@ class DossierService:
             Avoid Sectors: {json.dumps(avoid_sectors)}
             Nemeses: {json.dumps(nemesis)}
             Risks: {json.dumps(risks)}
+            Lethality Discovery: {json.dumps(self._get_lethality_analysis(hero_name))}
             """
             
             prompt = f"Perform a high-level tactical audit for {hero_name} based on these stats. Speak like a senior tactical advisor. Return JSON: {{\"verdict\": \"Subject is [STATUS]\", \"analysis\": \"Clinical overview\", \"status\": \"OPERATIONAL/GOLD STANDARD/NEEDS REVIEW\"}}"
@@ -98,9 +100,9 @@ class DossierService:
                     audit = auditor_result.get('audit')
             except Exception as e:
                 print(f"AI Verdict/Audit Failure: {e}")
-                verdict = self._generate_verdict(basic_stats['wr'], sectors)
+                verdict = self._generate_verdict(basic_stats['wr'], sectors, lethality=self._get_lethality_analysis(hero_name))
         else:
-            verdict = self._generate_verdict(basic_stats['wr'], sectors)
+            verdict = self._generate_verdict(basic_stats['wr'], sectors, lethality=self._get_lethality_analysis(hero_name))
         
         # 7. Theme
         theme = self._get_theme(hero_name)
@@ -124,12 +126,16 @@ class DossierService:
             "nemesis": nemesis,
             "recentPerformance": self._get_recent_performance(hero_name),
             "tacticalSummary": verdict,
+            "forensics": self._get_hero_forensics(hero_name),
+            "lethality": self._get_lethality_analysis(hero_name),
             "audit": audit, # PERSIST AUDIT
             "statSources": {
                 "overallWR": "SECURE_DATALINK",
                 "totalGames": "SECURE_DATALINK",
                 "sectors": "SECURE_DATALINK",
                 "medals": "SECURE_DATALINK",
+                "forensics": "MECHANICAL_AUDIT",
+                "lethality": "MECHANICAL_AUDIT",
                 "tacticalSummary": "NEURAL_SYNTHESIS"
             }
         }
@@ -313,13 +319,21 @@ class DossierService:
         codenames = ["Valkyrie", "Juggernaut", "Phantom", "Sovereign", "Eclipse", "Vanguard"]
         return f"{random.choice(codenames)} Protocol"
 
-    def _generate_verdict(self, wr, sectors):
+    def _generate_verdict(self, wr, sectors, lethality=None):
         status = "OPERATIONAL"
-        if wr > 60: status = "GOLD STANDARD"
-        elif wr < 45: status = "NEEDS REVIEW"
+        jump = lethality.get('jump', 0) if lethality else 0
+        
+        if jump > 15:
+            status = "LETHALITY DRIVEN"
+        elif wr > 60:
+            status = "GOLD STANDARD"
+        elif wr < 45:
+            status = "HIGH POTENTIAL" if jump > 5 else "NEEDS REFINEMENT"
         
         analysis = "Subject demonstrates standard combat efficiency."
-        if sectors:
+        if jump > 15:
+            analysis = f"Strategic Discovery: Win probability increases by {jump}% when securing {lethality.get('threshold', 5)}+ kills. This is your primary agency lever."
+        elif sectors:
             best_map = sectors[0]['name']
             analysis += f" Exceptional performance noted on {best_map}."
             
@@ -384,6 +398,116 @@ class DossierService:
                     "assists": stats.get('Assists', 0)
                 })
         return history
+
+    def _get_hero_forensics(self, hero):
+        """Aggregates mechanical forensics from past match analyses."""
+        query = "SELECT analysis FROM matches WHERE hero = ? AND analysis IS NOT NULL"
+        forensics_list = []
+        with self.db._get_connection() as conn:
+            rows = conn.execute(query, (hero,)).fetchall()
+            for r in rows:
+                try:
+                    analysis = json.loads(r[0])
+                    if 'forensics' in analysis:
+                        forensics_list.append(analysis['forensics'])
+                except:
+                    continue
+        
+        if not forensics_list:
+            return None
+            
+        # Example aggregation for Stitches
+        # Example aggregation for Stitches
+        if hero == 'Stitches':
+            total_hooks = 0
+            landed_hooks = 0
+            lethal_hooks = 0
+            total_globes = 0
+            
+            for f in forensics_list:
+                # Sum mechanics
+                for m in f.get('mechanics', []):
+                    if m['label'] == 'Hooks Thrown': total_hooks += m['value']
+                    if m['label'] == 'Hooks Landed': landed_hooks += m['value']
+                    if m['label'] == 'Lethal Hooks': lethal_hooks += m['value']
+                
+                # Sum quest progression
+                q = f.get('quest_progression', {})
+                if q:
+                    total_globes += q.get('value', 0)
+
+            game_count = len(forensics_list)
+            
+            return {
+                "summary_stats": [
+                    {"label": "Avg. Hook Accuracy", "value": f"{round((landed_hooks/total_hooks*100), 1)}%" if total_hooks > 0 else "0%"},
+                    {"label": "Total Lethal Hooks", "value": lethal_hooks},
+                    {"label": "Avg. Globes / Match", "value": round(total_globes/game_count, 1) if game_count > 0 else 0}
+                ],
+                "top_victims": self._get_to_victims_from_highlights(forensics_list)
+            }
+            
+    def _get_to_victims_from_highlights(self, forensics_list):
+        victim_counts = defaultdict(int)
+        for f in forensics_list:
+            # Check highlights for kills
+            for h in f.get('highlights', []):
+                if 'Killed' in h.get('event', ''): # Simple text match if structured data missing
+                    # This is fallback mostly, usually we have structured victim
+                    pass
+            
+            # Better: Check the new 'forensic_death_log' if available or existing highlights
+            # For now, let's look at the 'top_victims' list if it was pre-calculated in the match analysis
+            # Or parse from the 'highlights' if they have victim fields
+            for h in f.get('highlights', []):
+                # We need a standardized way to track victims in the forensic object
+                # If the forensic object has a 'kill_list', use that
+                if 'victim' in h:
+                    victim_counts[h['victim']] += 1
+        
+        sorted_victims = sorted(victim_counts.items(), key=lambda x: x[1], reverse=True)[:5]
+        return [{"name": name, "count": count} for name, count in sorted_victims]
+            
+        return None
+
+    def _get_lethality_analysis(self, hero_name):
+        """Analyze win rate correlation with kill thresholds."""
+        with self.db._get_connection() as conn:
+            # Query the high-threshold stats (>= 5 kills)
+            query = """
+                SELECT m.result, p.stats
+                FROM match_players p JOIN matches m ON p.match_id = m.id
+                WHERE p.hero = ?
+            """
+            rows = conn.execute(query, (hero_name,)).fetchall()
+            
+            high_wins = 0
+            high_games = 0
+            low_wins = 0
+            low_games = 0
+            
+            for r in rows:
+                try:
+                    stats = json.loads(r[1])
+                    kills = stats.get('SoloKill', 0)
+                    is_win = 'WIN' in r[0].upper() or 'VICTORY' in r[0].upper()
+                    if kills >= 5:
+                        high_games += 1
+                        if is_win: high_wins += 1
+                    else:
+                        low_games += 1
+                        if is_win: low_wins += 1
+                except: continue
+                
+            high_wr = round((high_wins / high_games * 100), 1) if high_games > 0 else 0
+            low_wr = round((low_wins / low_games * 100), 1) if low_games > 0 else 0
+            
+            return {
+                "high": {"games": high_games, "wins": high_wins, "wr": high_wr},
+                "low": {"games": low_games, "wins": low_wins, "wr": low_wr},
+                "threshold": 5,
+                "jump": round(high_wr - low_wr) if high_games > 0 and low_games > 0 else 0
+            }
 
     def _estimated_level(self, hero):
         return 15 # Placeholder
