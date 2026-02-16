@@ -19,7 +19,7 @@ const DispatchBriefing = lazy(() => import('./components/DispatchBriefing'))
 const UnifiedChat = lazy(() => import('./components/UnifiedChat'))
 
 function App() {
-  const { matches, heroes, profile, loading, error, refresh } = useReplayData()
+  const { matches, heroes, profile, loading, error, refresh, search } = useReplayData()
   const [selectedHeroes, setSelectedHeroes] = useState(() => {
     try {
       const saved = localStorage.getItem('selectedHeroes')
@@ -150,14 +150,15 @@ function App() {
           <div className="flex flex-wrap gap-1.5 bg-black/40 p-1.5 rounded-xl border border-white/5">
             {[
               { id: 'draft', label: 'Briefing', icon: '🌐', active: 'border-cyan-500/50 bg-cyan-500/10 text-cyan-400' },
-              { id: 'heroes', label: 'Mastery', icon: '⚔️', active: 'border-amber-500/50 bg-amber-500/10 text-amber-400' },
+              { id: 'arsenal', label: 'War Room', icon: '🎯', active: 'border-red-500/50 bg-red-500/10 text-red-400' },
               { id: 'replays', label: 'Archive', icon: '📂', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
               { id: 'players', label: 'Social', icon: '🤝', active: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
-              { id: 'arsenal', label: 'War Room', icon: '🎯', active: 'border-red-500/50 bg-red-500/10 text-red-400' },
               { id: 'dossier-hub', label: 'Protocols', icon: '📁', active: 'border-slate-500/50 bg-slate-500/10 text-slate-300' },
+              { id: 'provenance', label: 'Sources', icon: '📈', active: 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' },
+              { id: 'heroes', label: 'Mastery', icon: '⚔️', active: 'border-amber-500/50 bg-amber-500/10 text-amber-400' },
               { id: 'agents', label: 'Agents', icon: '🤖', active: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
               { id: 'vision', label: 'Vision', icon: '👁️', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
-              { id: 'provenance', label: 'Sources', icon: '📈', active: 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' },
+              { id: 'services', label: 'Services', icon: '⚡', active: 'border-orange-500/50 bg-orange-500/10 text-orange-400' },
             ].map((btn) => (
               <button
                 key={btn.id}
@@ -168,7 +169,12 @@ function App() {
                   }`}
               >
                 <span>{btn.icon}</span>
-                <span className="ml-2 hidden sm:inline">{btn.label}</span>
+                <span className="ml-2 hidden sm:inline">
+                  {btn.label}
+                  {(btn.id === 'agents' || btn.id === 'heroes' || btn.id === 'vision') && (
+                    <span className="text-[8px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded font-mono font-bold ml-1">DEV</span>
+                  )}
+                </span>
               </button>
             ))}
           </div>
@@ -188,13 +194,21 @@ function App() {
                 onExcludeHeroes={setExcludedHeroes}
               />
             )}
-            {viewMode === 'replays' && <ReplaySelector onSelectMatch={setActiveMatchStats} matches={matches} onProcessReplays={refresh} />}
+            {viewMode === 'replays' && (
+              <ReplaySelector
+                onSelectMatch={setActiveMatchStats}
+                matches={matches}
+                onProcessReplays={refresh}
+                onSearch={search}
+              />
+            )}
             {viewMode === 'players' && <PlayerNetwork />}
             {viewMode === 'arsenal' && <WarRoom selectedMap={selectedMap} setSelectedMap={setSelectedMap} />}
             {viewMode === 'dossier-hub' && <DossierHub />}
             {viewMode === 'provenance' && <DataProvenance />}
             {viewMode === 'agents' && <AgentDashboard />}
             {viewMode === 'vision' && <DraftSimulation />}
+            {viewMode === 'services' && <ServicesPanel />}
           </Suspense>
 
           {activeMatchStats && (

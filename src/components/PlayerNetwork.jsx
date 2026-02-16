@@ -488,6 +488,8 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                         <div className="search-input-wrapper">
                             <Search className="search-icon" />
                             <input
+                                id="player-network-search"
+                                name="player-network-search"
                                 type="text"
                                 placeholder="Identify DNA..."
                                 value={searchTerm}

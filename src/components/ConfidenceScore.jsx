@@ -32,7 +32,7 @@ const ConfidenceScore = ({ value, n, label, className = "" }) => {
 
                 <div className="flex items-center gap-2">
                     <span className="text-[10px] font-mono text-slate-500 uppercase tracking-tighter">
-                        Sample Size: <span className={isVolatile ? 'text-amber-500' : 'text-cyan-500'}>n={displayN}</span>
+                        <span className={isVolatile ? 'text-amber-500' : 'text-cyan-500'}>{displayN} Matches</span>
                     </span>
                     {isVolatile && (
                         <span className="text-[9px] font-black text-amber-500/80 bg-amber-500/5 px-1.5 rounded border border-amber-500/20 uppercase tracking-widest">

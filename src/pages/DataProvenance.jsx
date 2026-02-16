@@ -274,9 +274,13 @@ export default function DataProvenance() {
                 </p>
                 <div className="relative max-w-xl mb-8">
                     <input
+                        id="provenance-search"
+                        name="provenance-search"
                         type="text"
-                        placeholder="Search: 'Raynor' or 'Kharazim'..."
-                        className="lineage-search w-full bg-slate-900/50 border border-white/10 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-cyan-500/50 transition-all font-mono text-sm"
+                        placeholder="Search data sources..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="bg-black/40 border border-white/10 rounded-full pl-9 pr-4 py-1.5 text-xs w-[200px] focus:w-[300px] focus:outline-none focus:border-indigo-500/50 focus:bg-black/60 transition-all placeholder:text-slate-600 text-slate-200"
                         onKeyUp={async (e) => {
                             if (e.key === 'Enter') {
                                 const val = e.target.value;

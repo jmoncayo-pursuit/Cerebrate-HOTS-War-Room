@@ -290,15 +290,20 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
         </div>
       )}
 
-      <div className="flex items-start gap-2">
-        <span className={`${playerNameColor} ${playerNameGlow} font-semibold shrink-0 relative`}>
-          {/* Shimmer effect on name */}
-          <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 animate-[shimmer_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100 transition-opacity"></span>
-          <span className="relative">{playerName}:</span>
-        </span>
+      {/* Hide flex gap if no player name is shown (map-only messages) */}
+      <div className={`flex items-start ${(message.content || isUser) ? 'gap-2' : ''}`}>
+        {/* Hide player name for map-only messages */}
+        {(message.content || isUser) && (
+          <span className={`${playerNameColor} ${playerNameGlow} font-semibold shrink-0 relative`}>
+            <span className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent -skew-x-12 animate-[shimmer_2s_ease-in-out_infinite] opacity-0 group-hover:opacity-100 transition-opacity"></span>
+            <span className="relative">{playerName}:</span>
+          </span>
+        )}
         <div className="flex-1 text-gray-200 break-words relative">
           {/* Subtle text glow */}
-          <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10"></div>
+          {(message.content || isUser) && (
+            <div className="absolute inset-0 bg-gradient-to-r from-cyan-500/5 via-transparent to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm -z-10"></div>
+          )}
           {isUser && message.image && (
             <div className="mb-1">
               <img src={message.image} alt="User Attachment" className="max-h-48 rounded border border-blue-800/50 shadow-lg" />
@@ -307,8 +312,8 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
 
           {isUser ? (
             <div className="whitespace-pre-wrap">{message.content}</div>
-          ) : (
-            <div className="markdown-content prose prose-invert prose-cyan max-w-none font-mono text-sm bg-black/20 p-3 rounded-lg border-l-2 border-cyan-500/30">
+          ) : message.content ? (
+            <div className="markdown-content prose prose-invert prose-cyan max-w-none font-mono text-sm bg-black/20 py-2 px-3 rounded-lg border-l-2 border-cyan-500/30">
               <ReactMarkdown
                 remarkPlugins={[]}
                 rehypePlugins={[]}
@@ -325,8 +330,8 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
                     const text = extractText(children);
                     return <h3 className="text-md font-bold mb-2 text-purple-200"><HeroText text={text} /></h3>;
                   },
-                  ul: ({ node, ...props }) => <ul className="list-disc pl-4 mb-3 space-y-1" {...props} />,
-                  ol: ({ node, ...props }) => <ol className="list-decimal pl-4 mb-3 space-y-1" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc pl-3 mb-3 space-y-1" {...props} />,
+                  ol: ({ node, ...props }) => <ol className="list-decimal pl-3 mb-3 space-y-1" {...props} />,
                   li: ({ node, children, ...props }) => {
                     const text = extractText(children);
                     return <li className="mb-1 leading-relaxed">{renderTacticalContent(text, talentMapData)}</li>;
@@ -399,7 +404,8 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
                 {String(message.content || '').trim()}
               </ReactMarkdown>
             </div>
-          )}
+          ) : null}
+
 
           {!isUser && message.showExamples && (
             <div className="flex flex-wrap gap-1.5 mt-2">
@@ -571,24 +577,7 @@ export default function UnifiedChat({
 
   const SYSTEM_PROMPT = getSystemPrompt(profile);
 
-  const [messages, setMessages] = useState([
-    {
-      role: 'assistant',
-      content: "**Nexus Link Established.** Target confirmed. Awaiting tactical directives.",
-      showExamples: true,
-      onExampleClick: (query) => {
-        setInput(query)
-        setTimeout(() => {
-          textareaRef.current?.focus()
-          // Auto-send after a brief moment
-          setTimeout(() => {
-            const event = new KeyboardEvent('keydown', { key: 'Enter' })
-            textareaRef.current?.dispatchEvent(event)
-          }, 100)
-        }, 50)
-      }
-    }
-  ])
+  const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [loading, setLoading] = useState(false)
   const [analyzingImage, setAnalyzingImage] = useState(false)
@@ -718,6 +707,18 @@ export default function UnifiedChat({
   useEffect(() => {
     if (showHistory) fetchMatchHistory()
   }, [showHistory])
+
+  // Initialize chat with map buttons only
+  useEffect(() => {
+    if (messages.length === 0) {
+      setMessages([{
+        role: 'assistant',
+        content: '', // No welcome text, just map buttons
+        showExamples: true
+      }])
+    }
+  }, []) // Run only once on mount
+
 
   // --- Auto-resize ---
   useLayoutEffect(() => {
@@ -1381,7 +1382,8 @@ export default function UnifiedChat({
       recentMatches,
       query: queryContext,
       viewMode,
-      selectedMatch: activeMatch
+      selectedMatch: activeMatch,
+      map: matchContext.map // Add map from matchContext for map expert routing
     }
 
     // Enhance prompt for match analysis queries
@@ -1588,6 +1590,13 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
     }
   }
 
+  // Handler for map button clicks
+  const handleMapClick = (mapName) => {
+    setMatchContext(prev => ({ ...prev, map: mapName }))
+    setInput(`What should I pick for ${mapName}?`)
+    setTimeout(() => textareaRef.current?.focus(), 100)
+  }
+
   return (
     <div
       className="h-full bg-slate-950/50 backdrop-blur-sm flex flex-col relative overflow-hidden"
@@ -1639,15 +1648,9 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
           </div>
         </div>
         <div className="flex items-center gap-1">
-          {showMaximizeControl && (
-            <button
-              onClick={onToggleMaximize}
-              className="p-1.5 hover:bg-md-on-surface/10 rounded-md transition-colors text-md-on-surface-variant hover:text-md-primary"
-              title={isMaximized ? "Minimize" : "Maximize"}
-            >
-              {isMaximized ? <Minimize2 size={16} /> : <Maximize2 size={16} />}
-            </button>
-          )}
+          <div className="flex items-center gap-1">
+            {/* Maximize control removed per user request */}
+          </div>
         </div>
       </div>
 
@@ -1703,7 +1706,7 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
           {messages.map((msg, i) => (
             <MessageBubble
               key={i}
-              message={msg}
+              message={{ ...msg, onExampleClick: handleMapClick }}
               onSaveAdvice={saveAdvice}
               showSaveButton={i === messages.length - 1 && !savedAdviceId}
               matchContext={matchContext}
@@ -1858,6 +1861,8 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
         )}
 
         <input
+          id="chat-file-upload"
+          name="chat-file-upload"
           type="file"
           accept="image/*,.json,.StormReplay"
           ref={fileInputRef}

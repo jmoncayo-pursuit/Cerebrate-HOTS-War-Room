@@ -122,7 +122,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                 return {
                     build: metaBest.talent_code,
                     wr: metaBest.win_chance,
-                    source: 'Global Meta'
+                    source: 'HeroesProfile'
                 }
             }
         }
@@ -154,7 +154,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
             return {
                 build: metaBest.talent_code,
                 wr: metaBest.win_chance,
-                source: 'Try Meta Build',
+                source: 'Try HP Build',
                 games: metaBest.games
             }
         }
@@ -191,7 +191,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                     )}
                     {!isEmergencyBaseline && globalMeta?.length > 0 && (
                         <span className="text-green-400 bg-green-500/10 px-1.5 py-0.5 rounded border border-green-500/30">
-                            vs Real Meta
+                            vs HP Data
                         </span>
                     )}
                 </div>
@@ -222,7 +222,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                                                 className="scale-75 origin-left"
                                             />
                                             <span className="text-slate-400">
-                                                (+{delta.toFixed(1)}% vs Global)
+                                                (+{delta.toFixed(1)}% vs HP Avg)
                                             </span>
                                         </div>
 
@@ -306,7 +306,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                                                 className="scale-75 origin-left"
                                             />
                                             <span className="text-slate-400">
-                                                ({delta.toFixed(1)}% vs Global)
+                                                ({delta.toFixed(1)}% vs HP Avg)
                                             </span>
                                         </div>
 

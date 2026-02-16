@@ -306,6 +306,12 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
           aVal = aDuration;
           bVal = bDuration;
           break
+        case 'kills':
+          const aP = a.players?.find(p => p.name === PLAYER_NAME || p.hero === a.hero) || a.players?.[0] || {}
+          const bP = b.players?.find(p => p.name === PLAYER_NAME || p.hero === b.hero) || b.players?.[0] || {}
+          aVal = (aP.stats || aP.kv_stats || {}).SoloKill || 0
+          bVal = (bP.stats || bP.kv_stats || {}).SoloKill || 0
+          break
         case 'xp':
           const aPlayer = a.players?.find(p => p.name === PLAYER_NAME || p.hero === a.hero) || a.players?.[0] || {}
           const bPlayer = b.players?.find(p => p.name === PLAYER_NAME || p.hero === b.hero) || b.players?.[0] || {}
@@ -383,7 +389,7 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
 
         {/* Kills */}
         <div className="text-[10px] font-bold text-slate-300">
-          {stats.SoloKill ?? '-'}
+          {stats.SoloKill ?? 0}
         </div>
 
         {/* Talent Build & Insight */}
@@ -421,7 +427,7 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
               );
             })()}
           </div>
-          {match.analysis?.verdict && (
+          {match.analysis?.verdict && !['WIN', 'LOSS', 'VICTORY', 'DEFEAT'].includes(match.analysis.verdict.toUpperCase()) && (
             <div className="text-[9px] text-cyan-400/60 font-medium truncate italic max-w-full">
               {match.analysis.verdict}
             </div>
@@ -464,6 +470,8 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
               <Search size={14} />
             </div>
             <input
+              id="replay-search-input"
+              name="replay-search-input"
               type="text"
               placeholder="Search Hero, Map, or Player..."
               value={searchTerm}
@@ -578,6 +586,8 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
 
           <div className="relative group h-[90px] transition-all duration-300">
             <input
+              id="replay-file-upload"
+              name="replay-file-upload"
               type="file"
               multiple
               accept=".StormReplay,.stormreplay"

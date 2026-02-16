@@ -21,6 +21,8 @@ export default function HeroGrid({ heroes, matches, onSelectHero }) {
       <div className="mb-6">
         <div className="relative max-w-md w-full">
           <input
+            id="hero-grid-search"
+            name="hero-grid-search"
             type="text"
             placeholder="Search heroes..."
             value={searchTerm}
