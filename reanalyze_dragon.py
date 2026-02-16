@@ -1,0 +1,1 @@
+from api.services.replay_service import ReplayService; rs = ReplayService(); mid = '2ba9403cd33f83ff'; print(f'Analyzing {mid}...'); res = rs.analyze_match(mid, force=True); import json; print(json.dumps(res, indent=2))
