@@ -17,17 +17,33 @@ parent_dir = os.path.dirname(script_dir)
 if parent_dir not in sys.path:
     sys.path.insert(0, parent_dir)
 
-# HERO NAMES for filtering directives (to keep them general)
-HERO_LIST = ["Samuro", "Rexxar", "Misha", "Jaina", "Kael'thas", "Li-Ming", "Gazlowe", "Azmodan", "Nazeebo", "Sylvanas", "Raynor", "Falstad", "Kharazim", "Stitches", "Johanna"]
-LOCKED_KEYWORDS = ["image transmission", "misha", "animal husbandry", "vile infection", "dragon knight", "polymorph", "phase shift"]
+# HERO NAMES and MECHANICAL KEYWORDS for filtering directives (to keep them general)
+HERO_LIST = [
+    "Samuro", "Rexxar", "Misha", "Jaina", "Kael'thas", "Li-Ming", "Gazlowe", 
+    "Azmodan", "Nazeebo", "Sylvanas", "Raynor", "Falstad", "Kharazim", 
+    "Stitches", "Johanna", "Zagara", "Probius", "Abathur", "Murky", "Vikings"
+]
+LOCKED_KEYWORDS = [
+    "image transmission", "misha", "animal husbandry", "vile infection", 
+    "dragon knight", "polymorph", "phase shift", "turret", "sentinel", 
+    "talent", "stack", "quest", "globe", "hero level", "cooldown", "mana",
+    "hook", "devour", "gorge", "palm", "seven-sided", "insight", "iron fists"
+]
 
 def is_general(text):
-    """Check if text is general enough (no hero names or specific abilities)"""
+    """Check if text is general enough (no hero names or specific abilities/mechanics)"""
     text_lower = text.lower()
+    # Explicit Hero Names
     for hero in HERO_LIST:
         if hero.lower() in text_lower: return False
+    
+    # Mechanical Leakage
     for kw in LOCKED_KEYWORDS:
         if kw in text_lower: return False
+    
+    # No talent code patterns like [1211221]
+    if re.search(r'\[[0-9]{7}\]', text): return False
+    
     return True
 
 def generate_map_recommendations(verbose=False):
@@ -137,7 +153,7 @@ def generate_map_recommendations(verbose=False):
                         if "Towers of Doom" in filename or ("Towers of Doom" in content and "Ammunition" in content):
                             brain_directives["Towers of Doom"] = [
                                 "Prioritize Sapper camps (0:30, 2:00, 3:30) as 'Ammunition Generation'.",
-                                "Double-soak Top and Mid lanes during Altar windows if playing high waveclear (Jaina/Gazlowe).",
+                                "Double-soak Top and Mid lanes during Altar windows if playing high waveclear heroes.",
                                 "Secure Core Shots from mercenaries to bypass final Altar cycles."
                             ]
                         if "Cursed Hollow" in content and "Grave Golem" in content:
@@ -207,10 +223,9 @@ def generate_map_recommendations(verbose=False):
             if row:
                 data = json.loads(row[0])
                 primary = data.get('primary', {})
-                if primary and primary.get('insight'):
-                    # Split into sentences or lines (handle both ; and .)
-                    sentences = re.split(r'[;.]', primary['insight'])
-                    raw_dirs.extend([s.strip() for s in sentences if len(s.strip()) > 10])
+                # Skip primary insights as they are almost always hero-specific micro-advice
+                # They will be displayed alongside the hero rec anyway.
+                pass
                 
                 rules = data.get('rules', [])
                 if isinstance(rules, list):

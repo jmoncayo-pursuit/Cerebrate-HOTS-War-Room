@@ -5,7 +5,7 @@ import json
 import struct
 from pathlib import Path
 from api.logger import ColoredLogger
-from replay_parser import PARSER_VERSION
+from api.services.replay_parser.replay_parser import PARSER_VERSION
 import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from scripts.ingestion_logger import log_replay_parse

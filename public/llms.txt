@@ -1,0 +1,37 @@
+# Cerebrate – HOTS War Room
+
+> Tactical AI assistant for Heroes of the Storm: draft intelligence, replay forensics, map mastery, and multi-agent analysis. Headless API + React UI; agents should prefer the API.
+
+This site is agent-ready: use the **API** for data and actions. The UI is for humans. Base URL for API is the same origin (e.g. `/api`). For machine-readable endpoint list, GET `/api/discovery`. **WebMCP**: When this page is loaded in a browser, the app registers callable tools (e.g. cerebrate_match_history, cerebrate_ask, cerebrate_map_stats) via the Web Model Context API (Imperative API; [Chrome Early Preview](https://developer.chrome.com/blog/webmcp-epp), [W3C draft](https://webmachinelearning.github.io/webmcp)) so in-browser agents can invoke them without scraping the UI. Requires Secure Context (HTTPS or localhost). To test: enable "WebMCP for testing" in [chrome://flags](chrome://flags), or use the [MCP-B Extension](https://chromewebstore.google.com/detail/mcp-b-extension/daohopfhkdelnpemnhlekblhnikhdhfa). For full Chrome early-preview docs and demos: [Join the early preview program](https://developer.chrome.com/docs/ai/join-epp).
+
+- **Dual-interface**: Visual layer (React) and structured JSON API (Flask).
+- **Predictable APIs**: All agent actions map to REST endpoints; see ## API and `/api/discovery`.
+- **Prerendering**: When the site is served with prerender enabled (e.g. `npm run serve` after build), crawler User-Agents receive server-rendered HTML so the app is visible to AI search engines that do not execute JavaScript.
+
+## API
+
+- [GET /api/health](/api/health): Service health and version
+- [GET /api/discovery](/api/discovery): Machine-readable list of endpoints (for agents)
+- [GET /api/match_history](/api/match_history): Match history (replays)
+- [POST /api/upload_replay](/api/upload_replay): Upload a replay file
+- [POST /api/analyze_replay](/api/analyze_replay): Trigger replay analysis
+- [POST /api/chat](/api/chat): Consult Cerebrate (natural language)
+- [GET /api/advice/stats](/api/advice/stats): Advice/telemetry stats
+- [GET /api/telemetry/temporal](/api/telemetry/temporal): Temporal telemetry
+- [GET /api/cerebrate/agents](/api/cerebrate/agents): List AI agents
+- [POST /api/cerebrate/ask](/api/cerebrate/ask): Ask agents (structured)
+- [GET /api/player_interactions](/api/player_interactions): Player interaction data
+- [GET /api/player_network](/api/player_network): Player network graph
+- [POST /api/extract_stats_from_screenshot](/api/extract_stats_from_screenshot): Screenshot stats extraction
+- [POST /api/verify_stats](/api/verify_stats): Verify stats
+- [GET /api/roster-constraints](/api/roster-constraints): Roster/constraints
+- [GET /api/strategies](/api/strategies): Strategies
+- [GET /api/player_profile](/api/player_profile): Current player profile
+- [GET /api/system/health](/api/system/health): System health
+- [GET /api/watcher/status](/api/watcher/status): Replay watcher status
+- [GET /api/data_sources/status](/api/data_sources/status): Data source status
+
+## Optional
+
+- [Sitemap](/sitemap.xml): Machine-readable URL list for crawlers.
+- [README](https://github.com/jmoncayo-pursuit/Cerebrate-HOTS-War-Room/blob/main/README.md): Repo overview and setup. In-repo tactical protocols: `.agent/brain/` (MAP_RECOMMENDATIONS, BAN_RECOMMENDATIONS, etc.)

@@ -1264,7 +1264,10 @@ def parse_replay(replay_path, options=None):
                 "merc_captures": stats_data.get('merc_captures', []),
                 "boss_captures": stats_data.get('boss_captures', []),
                 "objective_events": stats_data.get('objective_events', [])
-            }
+            },
+            "game_mode": game_mode,
+            "is_ranked": is_ranked
+
         }
 
     except Exception as e:

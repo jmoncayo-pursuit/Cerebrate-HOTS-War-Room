@@ -5,15 +5,15 @@ import time
 import json
 import sys
 
-API_URL = "http://localhost:5001/api/reparse_match"
-USAGE_URL = "http://localhost:5001/api/usage"
-DB_PATH = "src/data/cerebrate.db"
+API_URL = "http://localhost:8000/api/analyze_replay"
+USAGE_URL = "http://localhost:8000/api/usage"
+DB_PATH = "war_room.db"
 
 def get_recent_matches(limit=5):
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
-    # Get recent matches, newest first
-    matches = conn.execute("SELECT id, map, result FROM matches ORDER BY timestamp_iso DESC LIMIT ?", (limit,)).fetchall()
+    # Get recent matches using 'date' column
+    matches = conn.execute("SELECT id, map, result FROM matches ORDER BY date DESC LIMIT ?", (limit,)).fetchall()
     conn.close()
     return matches
 
@@ -63,9 +63,9 @@ def main():
                 # Get pre-call usage
                 pre_usage = get_usage().get('total_tokens', 0)
                 
-                # Trigger Analysis
+                # Trigger Analysis with force=True
                 start_time = time.time()
-                res = requests.post(API_URL, json={"match_id": match_id}, timeout=120)
+                res = requests.post(API_URL, json={"match_id": match_id, "force": True}, timeout=120)
                 duration = time.time() - start_time
                 
                 # Get post-call usage
