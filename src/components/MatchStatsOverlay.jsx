@@ -1078,54 +1078,6 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                     </div>
                 </div>
 
-                {/* Critical Mistake — hide "None detected" placeholders and offer re-analyze */}
-                {(() => {
-                    const cm = analysis?.critical_mistake?.trim() || '';
-                    const cmLower = cm.toLowerCase();
-                    const isPlaceholder = [
-                        'none detected', 'no mistakes', 'no mistake', 'none found',
-                        'no critical mistake', 'no errors', 'no error', 'perfect game'
-                    ].some(p => cmLower.includes(p));
-                    if (!cm) return null;
-                    if (isPlaceholder) {
-                        return (
-                            <div className="bg-slate-800/50 border border-amber-500/30 p-6 rounded relative shadow-xl mb-8">
-                                <div className="flex items-center gap-3 mb-3 pb-2 border-b border-white/5">
-                                    <Activity className="text-amber-400" size={24} />
-                                    <h3 className="text-amber-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
-                                </div>
-                                <p className="text-gray-400 text-sm mb-4">
-                                    This summary was generated before we required opportunity-cost insights. Re-analyze to get a concrete critical mistake (what prevented carrying harder).
-                                </p>
-                                {handleForceRefresh && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleForceRefresh()}
-                                        disabled={isVerifying}
-                                        className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 font-bold text-sm uppercase tracking-wider disabled:opacity-50"
-                                    >
-                                        {isVerifying ? 'Re-analyzing…' : 'Re-analyze match'}
-                                    </button>
-                                )}
-                            </div>
-                        );
-                    }
-                    return (
-                        <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
-                            <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
-                                <div className="p-2 bg-orange-500/10 rounded">
-                                    <Activity className="text-orange-400" size={24} />
-                                </div>
-                                <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
-                            </div>
-                            <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
-                                <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
-                                    {renderMarkdown(analysis.critical_mistake)}
-                                </div>
-                            </Questionable>
-                        </div>
-                    );
-                })()}
 
                 {/* Win Condition */}
                 {(analysis?.win_condition || analysis?.win_condition_analysis) && (
@@ -1143,10 +1095,10 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                 )}
 
                 {/* Summary Stats Visualization */}
-                <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f172a] border border-purple-500/20 rounded-lg p-6 shadow-2xl">
-                    <div className="flex items-center gap-2 mb-6 pb-3 border-b border-purple-500/20">
-                        <Activity className="text-purple-400" size={24} />
-                        <h3 className="text-purple-300 font-bold uppercase tracking-wider text-base">Key Insights</h3>
+                <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f172a] border border-cyan-500/20 mb-8 rounded-lg p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-6 pb-3 border-b border-cyan-500/20">
+                        <Award className="text-cyan-400" size={24} />
+                        <h3 className="text-cyan-300 font-bold uppercase tracking-wider text-base">Tactical Achievements</h3>
                     </div>
 
                     <div className="space-y-4">
@@ -1204,21 +1156,6 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                         </div>
                                     </div>
                                 )}
-                                {(() => {
-                                    const deathsCount = analysis?.key_insights?.deaths ?? userStats?.Deaths ?? 0;
-                                    return (
-                                        <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
-                                            <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Attrition</div>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Skull size={20} className="text-red-400" />
-                                                    <span className="text-base text-gray-300">Deaths</span>
-                                                </div>
-                                                <span className="text-4xl font-black text-red-300">{deathsCount}</span>
-                                            </div>
-                                        </div>
-                                    );
-                                })()}
                                 {analysis.key_insights.mercenary_camps && parseInt(analysis.key_insights.mercenary_camps) > 0 && (
                                     <div className="bg-black/30 rounded-lg p-5 border border-purple-500/20">
                                         <div className="text-sm text-purple-400 uppercase tracking-wider mb-3 font-bold">Mercenary Camps</div>
@@ -1228,21 +1165,6 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                                 <span className="text-base text-gray-300">Camps captured</span>
                                             </div>
                                             <span className="text-4xl font-black text-purple-300">{analysis.key_insights.mercenary_camps}</span>
-                                        </div>
-                                    </div>
-                                )}
-                                {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
-                                    <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
-                                        <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
-                                        <div className="flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
-                                                <Skull size={20} className="text-red-400" />
-                                                <span className="text-base text-gray-300">Time spent dead</span>
-                                            </div>
-                                            <div className="text-right">
-                                                <div className="text-4xl font-black text-red-300">{analysis.key_insights.downtime}</div>
-                                                <div className="text-[10px] text-gray-500">respawn time</div>
-                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -1357,6 +1279,96 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                             return uniqueInsights;
                         })()}
+                    </div>
+                </div>
+
+                {/* Mortality & Errors */}
+                <div className="bg-gradient-to-br from-[#1c0808] to-[#0f0000] border border-red-500/20 rounded-lg p-6 shadow-2xl">
+                    <div className="flex items-center gap-2 mb-6 pb-3 border-b border-red-500/20">
+                        <AlertTriangle className="text-red-400" size={24} />
+                        <h3 className="text-red-300 font-bold uppercase tracking-wider text-base">Mortality & Errors</h3>
+                    </div>
+                    <div className="space-y-4">
+                {/* Critical Mistake — hide "None detected" placeholders and offer re-analyze */}
+                {(() => {
+                    const cm = analysis?.critical_mistake?.trim() || '';
+                    const cmLower = cm.toLowerCase();
+                    const isPlaceholder = [
+                        'none detected', 'no mistakes', 'no mistake', 'none found',
+                        'no critical mistake', 'no errors', 'no error', 'perfect game'
+                    ].some(p => cmLower.includes(p));
+                    if (!cm) return null;
+                    if (isPlaceholder) {
+                        return (
+                            <div className="bg-slate-800/50 border border-amber-500/30 p-6 rounded relative shadow-xl mb-8">
+                                <div className="flex items-center gap-3 mb-3 pb-2 border-b border-white/5">
+                                    <Activity className="text-amber-400" size={24} />
+                                    <h3 className="text-amber-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                                </div>
+                                <p className="text-gray-400 text-sm mb-4">
+                                    This summary was generated before we required opportunity-cost insights. Re-analyze to get a concrete critical mistake (what prevented carrying harder).
+                                </p>
+                                {handleForceRefresh && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleForceRefresh()}
+                                        disabled={isVerifying}
+                                        className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 font-bold text-sm uppercase tracking-wider disabled:opacity-50"
+                                    >
+                                        {isVerifying ? 'Re-analyzing…' : 'Re-analyze match'}
+                                    </button>
+                                )}
+                            </div>
+                        );
+                    }
+                    return (
+                        <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
+                            <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                                <div className="p-2 bg-orange-500/10 rounded">
+                                    <Activity className="text-orange-400" size={24} />
+                                </div>
+                                <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                            </div>
+                            <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
+                                <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
+                                    {renderMarkdown(analysis.critical_mistake)}
+                                </div>
+                            </Questionable>
+                        </div>
+                    );
+                })()}
+                        {analysis?.key_insights && (<>
+                                {(() => {
+                                    const deathsCount = analysis?.key_insights?.deaths ?? userStats?.Deaths ?? 0;
+                                    return (
+                                        <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
+                                            <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Attrition</div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Skull size={20} className="text-red-400" />
+                                                    <span className="text-base text-gray-300">Deaths</span>
+                                                </div>
+                                                <span className="text-4xl font-black text-red-300">{deathsCount}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
+                                {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
+                                    <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
+                                        <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
+                                        <div className="flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <Skull size={20} className="text-red-400" />
+                                                <span className="text-base text-gray-300">Time spent dead</span>
+                                            </div>
+                                            <div className="text-right">
+                                                <div className="text-4xl font-black text-red-300">{analysis.key_insights.downtime}</div>
+                                                <div className="text-[10px] text-gray-500">respawn time</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                        </>)}
 
                         {/* Parse killer stats with timestamps - "**Alarak** (4 deaths: 01:59, 08:20, 15:46, 16:56)" */}
                         {(() => {
