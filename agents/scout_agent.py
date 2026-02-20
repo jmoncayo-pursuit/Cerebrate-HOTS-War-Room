@@ -88,10 +88,12 @@ class ScoutAgent(BaseAgent):
 - Map: {map_name or 'Unknown'}
 - Requested Role: {role or 'Any'}
 
-**DATA SOURCES (VERIFIED TELEMETRY):**
+**DATA SOURCES (YOUR DATALINK—USE THIS DATA):**
 - Player Profile: {json.dumps(player_profile, indent=2)}
 - Recent Match History: {json.dumps(recent_matches, indent=2)}
 - Global Meta Stats: {json.dumps(global_meta, indent=2)}
+
+**CRITICAL:** You have been given Player Profile and Match History above. Do NOT output "USER DATALINK SEVERED", "Map context not provided", or similar disclaimers—use the data you have. For hero counter/ban questions without a map, use match history (who eliminated you) and profile.
 
 **MISSION OBJECTIVE:**
 Generate a draft recommendation that follows the MANDATORY RECOMMENDATION STRUCTURE in the protocol.

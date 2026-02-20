@@ -92,10 +92,12 @@ class AnalystAgent(BaseAgent):
 - Query: {query}
 - Target Mode: {mode}
 
-**DATA SOURCES:**
+**DATA SOURCES (YOUR DATALINK—USE THIS DATA):**
 - Player Profile: {json.dumps(player_profile, indent=2)}
 - Recent Match Data (Telemetry): {json.dumps(recent_matches, indent=2)}
 - LIVE APP TELEMETRY (Neural Link): {json.dumps(context.get('live_telemetry', 'Disconnected'), indent=2)}
+
+**CRITICAL:** You have been given Player Profile and Match Data above. Do NOT output "USER DATALINK SEVERED" or "Using Global Meta data only"—you have the data. Answer directly.
 
 **MISSION OBJECTIVE:**
 {'Analyze the specific match provided.' if target_match else 'Analyze the recent performance trends and patterns.'}

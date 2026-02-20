@@ -88,10 +88,12 @@ class TacticianAgent(BaseAgent):
 - Query: {query}
 - Combat Zone (Map): {map_name}
 
-**DATA SOURCES:**
+**DATA SOURCES (YOUR DATALINK—USE THIS DATA):**
 - Player Profile: {json.dumps(player_profile, indent=2)}
 - Recent Matches: {json.dumps(recent_matches, indent=2)}
 - Global Meta: {json.dumps(global_meta, indent=2)}
+
+**CRITICAL:** You have been given Player Profile and Match Data above. Do NOT output "USER DATALINK SEVERED" or similar disclaimers—use the data.
 
 **MISSION OBJECTIVE:**
 Activate Mode A: DEPLOYMENT.

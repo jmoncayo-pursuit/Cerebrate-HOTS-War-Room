@@ -9,7 +9,6 @@ from .coach_agent import CoachAgent
 from .tactician_agent import TacticianAgent
 from .social_agent import SocialAgent
 from .data_agent import DataAgent
-from .auditor_agent import AuditorAgent
 from .map_experts.blackhearts_bay_expert import BlackheartsBayExpert
 from .map_experts.cursed_hollow_expert import CursedHollowExpert
 from .map_experts.infernal_shrines_expert import InfernalShrinesExpert
@@ -30,44 +29,45 @@ class CerebrateOrchestrator:
     Main orchestrator that routes queries to specialized agents
     """
     
-    def __init__(self, call_gemini_api_fn=None, db_manager=None):
+    def __init__(self, call_gemini_api_fn=None, db_manager=None, call_gemini_fn=None):
         """
         Initialize orchestrator with available agents
         
         Args:
             call_gemini_api_fn: Gemini API function for agents to use
             db_manager: Database manager for data access
+            call_gemini_fn: Alias for call_gemini_api_fn (backwards compat)
         """
-        self.call_gemini_fn = call_gemini_api_fn
+        fn = call_gemini_api_fn or call_gemini_fn
+        self.call_gemini_fn = fn
         self.db = db_manager
         
         # Initialize map experts (prioritized for map-specific queries)
         self.map_experts = {
-            "Blackheart's Bay": BlackheartsBayExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Cursed Hollow": CursedHollowExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Infernal Shrines": InfernalShrinesExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Dragon Shire": DragonShireExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Warhead Junction": WarheadJunctionExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Towers of Doom": TowersOfDoomExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Sky Temple": SkyTempleExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Battlefield of Eternity": BattlefieldOfEternityExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Tomb of the Spider Queen": TombOfTheSpiderQueenExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Volskaya Foundry": VolskayaFoundryExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Alterac Pass": AlteracPassExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Braxis Holdout": BraxisHoldoutExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Hanamura Temple": HanamuraTempleExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager),
-            "Garden of Terror": GardenOfTerrorExpert(call_gemini_api_fn=call_gemini_api_fn, db_manager=db_manager)
+            "Blackheart's Bay": BlackheartsBayExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Cursed Hollow": CursedHollowExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Infernal Shrines": InfernalShrinesExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Dragon Shire": DragonShireExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Warhead Junction": WarheadJunctionExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Towers of Doom": TowersOfDoomExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Sky Temple": SkyTempleExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Battlefield of Eternity": BattlefieldOfEternityExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Tomb of the Spider Queen": TombOfTheSpiderQueenExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Volskaya Foundry": VolskayaFoundryExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Alterac Pass": AlteracPassExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Braxis Holdout": BraxisHoldoutExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Hanamura Temple": HanamuraTempleExpert(call_gemini_api_fn=fn, db_manager=db_manager),
+            "Garden of Terror": GardenOfTerrorExpert(call_gemini_api_fn=fn, db_manager=db_manager)
         }
         
         # Initialize all available agents
         self.agents = {
-            'analyst': AnalystAgent(call_gemini_fn=call_gemini_api_fn),
-            'scout': ScoutAgent(call_gemini_fn=call_gemini_api_fn, db_manager=db_manager),
-            'coach': CoachAgent(db=db_manager, call_gemini_fn=call_gemini_api_fn),
-            'tactician': TacticianAgent(db=db_manager, call_gemini_fn=call_gemini_api_fn),
-            'social': SocialAgent(db=db_manager, call_gemini_fn=call_gemini_api_fn),
-            'quartermaster': DataAgent(db_manager=db_manager, call_gemini_fn=call_gemini_api_fn),
-            'auditor': AuditorAgent(call_gemini_fn=call_gemini_api_fn)
+            'analyst': AnalystAgent(call_gemini_fn=fn),
+            'scout': ScoutAgent(call_gemini_fn=fn, db_manager=db_manager),
+            'coach': CoachAgent(db=db_manager, call_gemini_fn=fn),
+            'tactician': TacticianAgent(db=db_manager, call_gemini_fn=fn),
+            'social': SocialAgent(db=db_manager, call_gemini_fn=fn),
+            'quartermaster': DataAgent(db_manager=db_manager, call_gemini_fn=fn)
         }
     
     def route_query(self, query, context):

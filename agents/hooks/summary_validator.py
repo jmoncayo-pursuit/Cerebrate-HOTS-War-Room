@@ -33,16 +33,29 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
             "Summary generation failed - empty response"
         )
     
-    # Extract summary text and critical mistake
-    summary_text = summary.get('summary', '')
-    critical_mistake = summary.get('critical_mistake', '')
-    win_condition = summary.get('win_condition', '')
+    # Extract summary text and critical mistake (Safe-load to handle None values)
+    from api.logger import ColoredLogger
+    
+    summary_text = summary.get('summary') or ''
+    critical_mistake = summary.get('critical_mistake') or ''
+    win_condition = summary.get('win_condition') or ''
+    
+    ColoredLogger.info(f"DEBUG: Validating summary for {hero}. Length: {len(summary_text)}", "HOOKS")
     
     issues = []
     
-    # Check 1: Ensure critical mistake exists
+    # Check 1: Ensure critical mistake exists and is meaningful
     if not critical_mistake or len(critical_mistake.strip()) < 20:
         issues.append("Missing or too short critical_mistake field")
+    
+    # Check 1b: Reject "None detected" or "No mistakes" responses
+    critical_mistake_lower = critical_mistake.lower().strip()
+    none_patterns = [
+        "none detected", "no mistakes", "no mistake", "none found",
+        "no critical mistake", "no errors", "no error", "perfect game"
+    ]
+    if any(pattern in critical_mistake_lower for pattern in none_patterns):
+        issues.append("Critical mistake cannot be 'None detected'. Even in dominant wins, identify what prevented carrying harder (opportunity costs, missed rotations, suboptimal positioning windows).")
     
     # Check 2: Look for abstract distance units (bad)
     abstract_units_pattern = r'\b\d+\s*units?\b'
@@ -68,20 +81,35 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
     all_players = match_data.get('players', [])
     valid_heroes = [p.get('hero', '').lower() for p in all_players]
     
+    # Whitelist for legitimate non-hero kills/deaths
+    allowed_non_heroes = [
+        'stats', 'assisted', 'unknown', 'n/a', 'multiple unknown', 
+        'enemy hero', 'enemy', 'minions', 'minion', 'mercenary', 
+        'mercenaries', 'mercs', 'structure', 'structures', 
+        'environment', 'boss', 'objective', 'undetermined', 'various',
+        'unrecorded', 'unknown terminal', 'none'
+    ]
+
     # Check victims in kills
     for kill in summary.get('areas_for_improvement', []):
+        if not isinstance(kill, dict): continue
         if kill.get('title') == "Your Kills":
             for item in kill.get('items', []):
-                victim = item.get('victim', '').lower()
-                if victim not in valid_heroes and victim not in ['stats', 'assisted', 'unknown']:
+                if not isinstance(item, dict): continue
+                victim = (item.get('victim') or '').lower()
+                if not victim: continue
+                if victim not in valid_heroes and victim not in allowed_non_heroes:
                     issues.append(f"Hallucination detected: Hero '{victim}' was not in this match.")
     
     # Check killers in deaths
     for death in summary.get('areas_for_improvement', []):
+        if not isinstance(death, dict): continue
         if death.get('title') == "Deaths":
             for item in death.get('items', []):
-                killer = item.get('killer', '').lower()
-                if killer not in valid_heroes and killer not in ['unknown', 'environment', 'structure']:
+                if not isinstance(item, dict): continue
+                killer = (item.get('killer') or '').lower()
+                if not killer: continue
+                if killer not in valid_heroes and killer not in allowed_non_heroes:
                     issues.append(f"Hallucination detected: Hero '{killer}' was not in this match.")
 
     # Check 6: Map Hallucinations
@@ -96,6 +124,44 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
         analysis_text = (summary_text + critical_mistake).lower()
         if "0 hooks thrown" in analysis_text or "complete absence of tactical application" in analysis_text:
             issues.append("Invalid Data: Stitches analysis claims 0 Hooks. Check parser integrity.")
+
+    # Check 8: Ban vague, generic root-cause language
+    banned_phrases = [
+        "critical breakdown in positional awareness",
+        "critical breakdown in either positional awareness",
+        "in either positional awareness, target prioritization, or an inability to disengage",
+        "in positional awareness, target prioritization, or an inability to disengage",
+        "breakdown in positional awareness",
+        "inability to disengage from sustained damage",
+        "multiplicative failure",
+        "multiplicative effect on the loss",
+    ]
+    lowered = (summary_text + " " + critical_mistake).lower()
+    for phrase in banned_phrases:
+        if phrase in lowered:
+            issues.append(f"Vague root-cause language detected ('{phrase}'). Use concrete, data-backed patterns instead (e.g., 4/5 deaths outnumbered).")
+            break
+
+    # Check 9: Ban technical jargon — use plain language instead
+    jargon_terms = [
+        'theoretical value delta', 'unified throughput', 'pure soak',
+        'force multiplier', 'additive link', 'macro anchor', 'attrition scaling',
+        'resource supremacy', 'macroeconomic masterclass'
+    ]
+    found_jargon = [term for term in jargon_terms if term in lowered]
+    if found_jargon:
+        issues.append(f"Jargon detected ({found_jargon}). Use plain language: 'the main problem', 'healing/damage output', 'lane XP', 'your impact', etc.")
+
+    # Check 10: GOLD STANDARD - Specific Numbers in summary
+    numbers_pattern = r'\b\d{1,3}(?:,\d{3})*(?:\.\d+)?\b'
+    found_numbers = re.findall(numbers_pattern, summary_text)
+    if len(found_numbers) < 2:
+        issues.append("Summary lacks specific numerical data. Cite exact XP, Healing, or Siege numbers from the stats.")
+
+    # Check 11: GOLD STANDARD - Verbosity (Sentences)
+    sentences = [s for s in re.split(r'[.!?]+', summary_text) if len(s.strip()) > 10]
+    if len(sentences) < 3:
+        issues.append(f"Summary too brief ({len(sentences)} sentences). Must be a detail-heavy 3-5 sentence audit.")
     
     if issues:
         feedback = "Summary quality issues:\n" + "\n".join(f"- {issue}" for issue in issues)
