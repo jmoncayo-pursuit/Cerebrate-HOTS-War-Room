@@ -393,24 +393,48 @@ class DossierService:
         return history
 
     def _get_hero_forensics(self, hero):
-        """Aggregates mechanical forensics from past match analyses."""
-        query = "SELECT analysis FROM matches WHERE hero = ? AND analysis IS NOT NULL"
+        """Aggregates mechanical forensics from past match analyses and generic telemetry."""
+        query = """
+            SELECT m.analysis, mp.stats
+            FROM matches m
+            LEFT JOIN match_players mp ON m.id = mp.match_id AND m.hero = mp.hero
+            WHERE m.hero = ?
+        """
         forensics_list = []
+        stats_list = []
         with self.db._get_connection() as conn:
             rows = conn.execute(query, (hero,)).fetchall()
             for r in rows:
-                try:
-                    analysis = json.loads(r[0])
-                    if 'forensics' in analysis:
-                        forensics_list.append(analysis['forensics'])
-                except:
-                    continue
+                if r[0]:  # analysis
+                    try:
+                        analysis = json.loads(r[0])
+                        if 'forensics' in analysis:
+                            forensics_list.append(analysis['forensics'])
+                    except:
+                        pass
+                if r[1]:  # stats
+                    try:
+                        stats_list.append(json.loads(r[1]))
+                    except:
+                        pass
         
-        if not forensics_list:
+        if not stats_list and not forensics_list:
             return None
             
-        # Example aggregation for Stitches
-        # Example aggregation for Stitches
+        game_count = len(stats_list) if stats_list else 1
+        
+        # Calculate Generic "Good" Stats
+        total_gems = sum(s.get('GemsTurnedIn', 0) for s in stats_list)
+        total_camps = sum(s.get('MercCampCaptures', 0) for s in stats_list)
+        total_cc_time = sum(s.get('TimeCCdEnemyHeroes', 0) for s in stats_list)
+        total_kda_kills = sum(s.get('Takedowns', 0) for s in stats_list)
+        total_deaths = sum(s.get('Deaths', 0) for s in stats_list)
+        outnumbered_deaths = sum(s.get('OutnumberedDeaths', 0) for s in stats_list)
+        max_streak = max([s.get('HighestKillStreak', 0) for s in stats_list] + [0])
+        
+        summary_stats = []
+        top_victims = []
+        
         if hero == 'Stitches':
             total_hooks = 0
             landed_hooks = 0
@@ -418,27 +442,45 @@ class DossierService:
             total_globes = 0
             
             for f in forensics_list:
-                # Sum mechanics
                 for m in f.get('mechanics', []):
                     if m['label'] == 'Hooks Thrown': total_hooks += m['value']
                     if m['label'] == 'Hooks Landed': landed_hooks += m['value']
                     if m['label'] == 'Lethal Hooks': lethal_hooks += m['value']
-                
-                # Sum quest progression
                 q = f.get('quest_progression', {})
-                if q:
-                    total_globes += q.get('value', 0)
+                if q: total_globes += q.get('value', 0)
 
-            game_count = len(forensics_list)
+            f_count = len(forensics_list) or 1
+            summary_stats += [
+                {"label": "Avg. Hook Accuracy", "value": f"{round((landed_hooks/max(1, total_hooks)*100), 1)}%"},
+                {"label": "Total Lethal Hooks", "value": lethal_hooks},
+                {"label": "Avg. Globes / Match", "value": round(total_globes/f_count, 1)}
+            ]
+            top_victims = self._get_to_victims_from_highlights(forensics_list)
+        
+        # Add Generic Good Stats (Fill up to 3)
+        if total_gems > 0: summary_stats.append({"label": "Avg Gems Managed", "value": round(total_gems/game_count, 1)})
+        if total_camps > 0: summary_stats.append({"label": "Avg Merc Captures", "value": round(total_camps/game_count, 1)})
+        if total_cc_time > 0: summary_stats.append({"label": "Avg CC Time", "value": f"{round(total_cc_time/game_count, 1)}s"})
+        if max_streak > 0: summary_stats.append({"label": "Max Kill Streak", "value": max_streak})
+        
+        # Fallback if no specific stats trigger
+        if len(summary_stats) == 0:
+            summary_stats.append({"label": "Avg Enemy Takedowns", "value": round(total_kda_kills/game_count, 1)})
+            summary_stats.append({"label": "Matches Profiled", "value": game_count})
+        
+        # The Bad
+        mortality_stats = [
+            {"label": "Average Mortality", "value": round(total_deaths/game_count, 1)},
+            {"label": "Total Sector Deaths", "value": total_deaths}
+        ]
+        if outnumbered_deaths > 0:
+            mortality_stats.append({"label": "Outnumbered Executions", "value": outnumbered_deaths})
             
-            return {
-                "summary_stats": [
-                    {"label": "Avg. Hook Accuracy", "value": f"{round((landed_hooks/total_hooks*100), 1)}%" if total_hooks > 0 else "0%"},
-                    {"label": "Total Lethal Hooks", "value": lethal_hooks},
-                    {"label": "Avg. Globes / Match", "value": round(total_globes/game_count, 1) if game_count > 0 else 0}
-                ],
-                "top_victims": self._get_to_victims_from_highlights(forensics_list)
-            }
+        return {
+            "summary_stats": summary_stats[:3],
+            "mortality_stats": mortality_stats[:3],
+            "top_victims": top_victims
+        }
             
     def _get_to_victims_from_highlights(self, forensics_list):
         victim_counts = defaultdict(int)

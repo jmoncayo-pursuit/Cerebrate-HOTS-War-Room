@@ -315,39 +315,64 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                         </div>
                     )}
 
-                    {/* Mechanical Forensics */}
+                    {/* Tactical Forensics */}
                     {stats.forensics && (
                         <div className="bg-slate-900/50 border border-cyan-500/20 rounded-2xl p-8 backdrop-blur-sm">
-                            <div className="flex items-center gap-3 mb-8">
-                                <Zap className="w-6 h-6 text-cyan-400" />
-                                <h3 className="text-xl font-bold text-white">Mechanical Audit</h3>
-                                <TruthBadge source="MECHANICAL_AUDIT" />
-                            </div>
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                {(stats.forensics.summary_stats || []).map((s, i) => (
-                                    <div key={i} className="p-5 rounded-xl border border-white/5 bg-white/5 group hover:border-cyan-500/30 transition-all">
-                                        <div className="text-[10px] text-cyan-500/70 uppercase tracking-widest mb-1 font-bold">{s.label}</div>
-                                        <div className="text-2xl font-black text-white">{s.value}</div>
+                            <div className="flex flex-col gap-6">
+                                {/* The Good */}
+                                <div>
+                                    <div className="flex items-center gap-3 mb-6">
+                                        <Zap className="w-6 h-6 text-cyan-400" />
+                                        <h3 className="text-xl font-bold text-white">Tactical Forensics</h3>
+                                        <TruthBadge source="MECHANICAL_AUDIT" />
                                     </div>
-                                ))}
-                            </div>
-
-                            {stats.forensics.top_victims && stats.forensics.top_victims.length > 0 && (
-                                <div className="mt-8 pt-8 border-t border-white/5">
-                                    <div className="flex items-center gap-2 mb-4">
-                                        <Target className="w-4 h-4 text-cyan-400" />
-                                        <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">High Value Targets (Most Hooked)</h4>
-                                    </div>
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        {stats.forensics.top_victims.map((v, i) => (
-                                            <div key={i} className="p-4 rounded-lg bg-cyan-500/5 border border-cyan-500/10 flex items-center justify-between">
-                                                <div className="text-white font-bold">{v.name}</div>
-                                                <div className="text-xs text-cyan-400 uppercase font-black tracking-widest">{v.count} Confirmed Hooks</div>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        {(stats.forensics.summary_stats || []).map((s, i) => (
+                                            <div key={i} className="p-5 rounded-xl border border-white/5 bg-white/5 group hover:border-cyan-500/30 transition-all">
+                                                <div className="text-[10px] text-cyan-500/70 uppercase tracking-widest mb-1 font-bold">{s.label}</div>
+                                                <div className="text-2xl font-black text-white">{s.value}</div>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-                            )}
+
+                                {/* The Bad */}
+                                {stats.forensics.mortality_stats && stats.forensics.mortality_stats.length > 0 && (
+                                    <div className="pt-6 border-t border-white/5">
+                                        <div className="flex items-center gap-3 mb-6">
+                                            <AlertTriangle className="w-5 h-5 text-red-400" />
+                                            <h3 className="text-lg font-bold text-white">Mortality Audit</h3>
+                                            <TruthBadge source="SECURE_DATALINK" />
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                            {(stats.forensics.mortality_stats || []).map((s, i) => (
+                                                <div key={i} className="p-5 rounded-xl border border-red-500/10 bg-red-900/10 group hover:border-red-500/30 transition-all">
+                                                    <div className="text-[10px] text-red-400/70 uppercase tracking-widest mb-1 font-bold">{s.label}</div>
+                                                    <div className="text-2xl font-black text-red-100">{s.value}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Specific Targets */}
+                                {stats.forensics.top_victims && stats.forensics.top_victims.length > 0 && (
+                                    <div className="pt-6 border-t border-white/5">
+                                        <div className="flex items-center gap-2 mb-4">
+                                            <Target className="w-4 h-4 text-cyan-400" />
+                                            <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">High Value Targets (Most Hooked)</h4>
+                                        </div>
+                                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                            {stats.forensics.top_victims.map((v, i) => (
+                                                <div key={i} className="p-4 rounded-lg bg-cyan-500/5 border border-cyan-500/10 flex items-center justify-between">
+                                                    <div className="text-white font-bold">{v.name}</div>
+                                                    <div className="text-xs text-cyan-400 uppercase font-black tracking-widest">{v.count} Confirmed Hooks</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     )}
 
