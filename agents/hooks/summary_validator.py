@@ -112,17 +112,30 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
                 if killer not in valid_heroes and killer not in allowed_non_heroes:
                     issues.append(f"Hallucination detected: Hero '{killer}' was not in this match.")
 
-    # Check 6: Map Hallucinations
+    # Check 6: Map Hallucinations (Expanded)
     map_name = match_data.get('map', '').lower()
-    if 'dragon shire' in map_name and 'boss pit' in (summary_text + critical_mistake).lower():
-        issues.append("Hallucination detected: Dragon Shire has no 'Boss Pit'.")
-    if 'hanamura' in map_name and 'tribute' in (summary_text + critical_mistake).lower():
-        issues.append("Hallucination detected: Hanamura has no Tributes.")
+    analysis_lowered = (summary_text + " " + critical_mistake).lower()
     
+    map_hallucinations = {
+        'dragon shire': ['boss pit', 'payload', 'punisher', 'immortal'],
+        'hanamura': ['tribute', 'boss pit', 'punisher', 'immortal', 'cavalry'],
+        'tomb of the spider queen': ['tribute', 'payload', 'cavalry', 'immortal', 'punisher'],
+        'infernal shrines': ['tribute', 'payload', 'cavalry', 'boss pit'],
+        'battlefield of eternity': ['tribute', 'payload', 'cavalry', 'boss pit', 'punisher'],
+        'alterac pass': ['tribute', 'payload', 'punisher', 'immortal'],
+        'cursed hollow': ['payload', 'cavalry', 'punisher', 'immortal'],
+        'towers of doom': ['tribute', 'payload', 'cavalry', 'punisher', 'immortal']
+    }
+    
+    for check_map, terms in map_hallucinations.items():
+        if check_map in map_name:
+            for term in terms:
+                if term in analysis_lowered:
+                    issues.append(f"Hallucination detected: {map_name.title()} has no '{term}'.")
+
     # Check 7: Stitches Hook Integrity
     if 'stitches' in hero.lower():
-        analysis_text = (summary_text + critical_mistake).lower()
-        if "0 hooks thrown" in analysis_text or "complete absence of tactical application" in analysis_text:
+        if "0 hooks thrown" in analysis_lowered or "complete absence of tactical application" in analysis_lowered:
             issues.append("Invalid Data: Stitches analysis claims 0 Hooks. Check parser integrity.")
 
     # Check 8: Ban vague, generic root-cause language
@@ -135,20 +148,22 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
         "inability to disengage from sustained damage",
         "multiplicative failure",
         "multiplicative effect on the loss",
+        "room for improvement",
+        "failed to capitalize",
+        "needs to improve"
     ]
-    lowered = (summary_text + " " + critical_mistake).lower()
     for phrase in banned_phrases:
-        if phrase in lowered:
+        if phrase in analysis_lowered:
             issues.append(f"Vague root-cause language detected ('{phrase}'). Use concrete, data-backed patterns instead (e.g., 4/5 deaths outnumbered).")
-            break
 
     # Check 9: Ban technical jargon — use plain language instead
     jargon_terms = [
         'theoretical value delta', 'unified throughput', 'pure soak',
         'force multiplier', 'additive link', 'macro anchor', 'attrition scaling',
-        'resource supremacy', 'macroeconomic masterclass'
+        'resource supremacy', 'macroeconomic masterclass', 'synergistic value',
+        'tactical delta', 'value differential'
     ]
-    found_jargon = [term for term in jargon_terms if term in lowered]
+    found_jargon = [term for term in jargon_terms if term in analysis_lowered]
     if found_jargon:
         issues.append(f"Jargon detected ({found_jargon}). Use plain language: 'the main problem', 'healing/damage output', 'lane XP', 'your impact', etc.")
 
@@ -162,6 +177,22 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
     sentences = [s for s in re.split(r'[.!?]+', summary_text) if len(s.strip()) > 10]
     if len(sentences) < 3:
         issues.append(f"Summary too brief ({len(sentences)} sentences). Must be a detail-heavy 3-5 sentence audit.")
+        
+    # Check 12: Anti-AI Pleasantries
+    pleasantries = [
+        "here is the analysis",
+        "in conclusion",
+        "to summarize",
+        "overall,",
+        "as an ai",
+        "as a tactical analyst",
+        "let's break down",
+        "delving into the data",
+        "it is clear that"
+    ]
+    for p in pleasantries:
+        if p in analysis_lowered:
+            issues.append(f"AI filler detected ('{p}'). Start directly with the tactical audit, no intros or outros.")
     
     if issues:
         feedback = "Summary quality issues:\n" + "\n".join(f"- {issue}" for issue in issues)
