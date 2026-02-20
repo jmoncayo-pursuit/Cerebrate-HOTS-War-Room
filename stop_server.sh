@@ -48,7 +48,7 @@ if [ -f .replay_watcher.pid ]; then
 fi
 
 # Kill any remaining processes on ports
-for port in 5001 5173; do
+for port in 5001 8000 5173; do
     if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
         lsof -ti:$port | xargs kill -9 2>/dev/null || true
         echo -e "${YELLOW}⚠️  Killed process on port $port${NC}"

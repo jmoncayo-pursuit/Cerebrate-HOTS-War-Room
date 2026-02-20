@@ -74,26 +74,7 @@ def ask_agent():
         
     orchestrator = get_orchestrator()
     result = orchestrator.route_query(query, context)
-    
-    # Check if audit is requested or if it's a strategic agent that needs validation
-    should_audit = data.get('audit', False)
     responder = result.get('orchestrator', {}).get('selected_agent', 'UNKNOWN')
-    
-    # Auto-audit strategic agents (SCOUT, COACH, TACTICIAN, ANALYST, SOCIAL) if success
-    strategic_agents = ['SCOUT', 'COACH', 'TACTICIAN', 'ANALYST', 'SOCIAL']
-    if result.get('success') and (should_audit or responder in strategic_agents):
-        try:
-            # We need the original context and response for the auditor
-            audit_context = {
-                'target_query': query,
-                'target_context': str(context.get('matches', []))[:2000], # Truncated for token safety
-                'target_response': result.get('response', '')
-            }
-            auditor_result = orchestrator.agents['auditor'].analyze(query, audit_context)
-            if auditor_result.get('success'):
-                result['audit'] = auditor_result.get('audit')
-        except Exception as audit_err:
-             ColoredLogger.error(f"Post-Response Audit Failed: {audit_err}")
 
     # 🕵️ TELEMETRY: Identify which agent handled the query
     provenance = result.get('data_provenance', 'AI_GENERATED')
@@ -107,6 +88,14 @@ def ask_agent():
     
     # Add responder info to result for frontend transparency
     result['responder_id'] = responder
+
+    # Sanitize response: jargon → plain language, collapse duplicate hero names
+    if result.get('response') and isinstance(result['response'], str):
+        from api.services.replay_service import ReplayService
+        result['response'] = ReplayService().clean_text(result['response'])
+        # Collapse "Stitches\nStitches" → "Stitches"
+        import re
+        result['response'] = re.sub(r'\b([A-Z][a-z]+)(\s+\1)+\b', r'\1', result['response'])
         
     return jsonify(result)
 

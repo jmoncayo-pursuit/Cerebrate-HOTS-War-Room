@@ -7,6 +7,37 @@ import asyncio
 system_bp = Blueprint('system', __name__, url_prefix='/api')
 db = DatabaseManager()
 
+# Agent-ready: machine-readable endpoint list (see also /llms.txt)
+DISCOVERY = {
+    "llms_txt": "/llms.txt",
+    "endpoints": [
+        {"method": "GET", "path": "/api/health", "description": "Service health and version"},
+        {"method": "GET", "path": "/api/discovery", "description": "This manifest"},
+        {"method": "GET", "path": "/api/match_history", "description": "Match history"},
+        {"method": "POST", "path": "/api/upload_replay", "description": "Upload replay file"},
+        {"method": "POST", "path": "/api/analyze_replay", "description": "Trigger replay analysis"},
+        {"method": "POST", "path": "/api/chat", "description": "Consult Cerebrate (natural language)"},
+        {"method": "GET", "path": "/api/advice/stats", "description": "Advice stats"},
+        {"method": "GET", "path": "/api/telemetry/temporal", "description": "Temporal telemetry"},
+        {"method": "GET", "path": "/api/cerebrate/agents", "description": "List AI agents"},
+        {"method": "POST", "path": "/api/cerebrate/ask", "description": "Ask agents (structured)"},
+        {"method": "GET", "path": "/api/player_interactions", "description": "Player interactions"},
+        {"method": "GET", "path": "/api/player_network", "description": "Player network graph"},
+        {"method": "POST", "path": "/api/extract_stats_from_screenshot", "description": "Extract stats from screenshot"},
+        {"method": "POST", "path": "/api/verify_stats", "description": "Verify stats"},
+        {"method": "GET", "path": "/api/roster-constraints", "description": "Roster constraints"},
+        {"method": "GET", "path": "/api/strategies", "description": "Strategies"},
+        {"method": "GET", "path": "/api/player_profile", "description": "Current player profile"},
+        {"method": "GET", "path": "/api/system/health", "description": "System health"},
+        {"method": "GET", "path": "/api/watcher/status", "description": "Replay watcher status"},
+        {"method": "GET", "path": "/api/data_sources/status", "description": "Data source status"},
+    ],
+}
+
+@system_bp.route('/discovery', methods=['GET'])
+def discovery():
+    return jsonify(DISCOVERY)
+
 @system_bp.route('/data_sources/status', methods=['GET'])
 def source_status():
     log = db.get_kv('ingestion_log') or {"entries": []}
@@ -101,62 +132,24 @@ def get_browser_logs():
     logs = mcp_bridge.run_command(mcp_bridge.get_console_logs())
     return jsonify(logs)
 
-PID_FILE = ".healer.pid"
-
 def is_healer_running():
-    if os.path.exists(PID_FILE):
-        try:
-            with open(PID_FILE, 'r') as f:
-                pid = int(f.read().strip())
-            import os as native_os
-            native_os.kill(pid, 0)
-            return True
-        except:
-            return False
-    return False
+    return False  # Healer removed: token cost outweighed value
 
+# Healer removed: token cost outweighed value. Endpoints retained for backwards compatibility.
 @system_bp.route('/healer/status', methods=['GET'])
 def healer_status():
-    log_file = "healer.log"
-    last_pulse = None
-    if os.path.exists(log_file):
-        try:
-            with open(log_file, 'r') as f:
-                content = f.read()
-                if "HEALER_ACTIVE:" in content:
-                    last_pulse = content.split("HEALER_ACTIVE:")[1].strip()
-        except:
-            pass
-            
     return jsonify({
-        "running": is_healer_running(),
-        "last_pulse": last_pulse,
-        "mode": "AUTONOMOUS SELF-REPAIR"
+        "running": False,
+        "last_pulse": None,
+        "mode": "OFFLINE",
+        "summary_queue_count": 0,
+        "reaudit_stats": {"date": None, "count": 0, "max_daily": 0},
     })
 
 @system_bp.route('/healer/start', methods=['POST'])
 def start_healer():
-    if is_healer_running():
-        return jsonify({"success": True, "message": "Already active"})
-    
-    import subprocess
-    subprocess.Popen(["python3", "scripts/cerebrate_healer.py"], 
-                    stdout=subprocess.DEVNULL, 
-                    stderr=subprocess.DEVNULL,
-                    start_new_session=True)
-    return jsonify({"success": True})
+    return jsonify({"success": True, "message": "Healer disabled"})
 
 @system_bp.route('/healer/stop', methods=['POST'])
 def stop_healer():
-    if os.path.exists(PID_FILE):
-        try:
-            with open(PID_FILE, 'r') as f:
-                pid = int(f.read().strip())
-            import os as native_os
-            import signal
-            native_os.kill(pid, signal.SIGTERM)
-            native_os.remove(PID_FILE)
-            return jsonify({"success": True})
-        except:
-            pass
-    return jsonify({"success": True, "message": "Healer was not running or could not be stopped"})
+    return jsonify({"success": True, "message": "Healer disabled"})

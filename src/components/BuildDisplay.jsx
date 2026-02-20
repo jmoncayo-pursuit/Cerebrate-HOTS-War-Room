@@ -71,6 +71,11 @@ const BuildDisplay = ({ hero, buildStr, stats, source = 'META', talentMap = {}, 
         setTimeout(() => setCopied(false), 2000);
     };
 
+    const hasStats = stats && (Number.isFinite(stats.wr) || Number.isFinite(stats.games));
+    const statsStr = hasStats
+        ? `${Number.isFinite(stats.wr) ? stats.wr.toFixed(1) : '—'}% WR${Number.isFinite(stats.games) ? ` (${stats.games}g)` : ''}`
+        : null;
+
     return (
         <div className="space-y-1.5 w-fit">
             {!compact && (
@@ -78,10 +83,8 @@ const BuildDisplay = ({ hero, buildStr, stats, source = 'META', talentMap = {}, 
                     <div className={`text-[8px] font-black uppercase tracking-[0.15em] px-1.5 py-0.5 rounded border ${colorClass}`}>
                         {source} GUIDANCE {stats?.isComplete === false ? '(Partial)' : ''}
                     </div>
-                    {stats && (
-                        <span className="text-[9px] text-slate-500 font-mono">
-                            {Number.isFinite(stats.wr) ? stats.wr.toFixed(1) : 0}% WR ({stats.games}{typeof stats.games === 'number' ? 'g' : ''})
-                        </span>
+                    {statsStr && (
+                        <span className="text-[9px] text-slate-500 font-mono">{statsStr}</span>
                     )}
                 </div>
             )}
@@ -131,6 +134,9 @@ const BuildDisplay = ({ hero, buildStr, stats, source = 'META', talentMap = {}, 
                         );
                     })}
                 </div>
+                {compact && statsStr && (
+                    <span className="text-[9px] text-slate-500 font-mono flex-shrink-0">{statsStr}</span>
+                )}
                 <button
                     onClick={handleCopy}
                     className={`text-[9px] px-2 py-1.5 rounded border transition-all cursor-pointer whitespace-nowrap flex-shrink-0 font-bold uppercase tracking-wider ${copied
@@ -168,6 +174,8 @@ function TalentIcon({ index, tier, selection, icon, detail, isMissing = false })
                         src={`/images/talents/${icon}`}
                         className="w-full h-full object-cover transition-transform group-hover/icon:scale-110"
                         alt={`T${tier}`}
+                        loading="lazy"
+                        decoding="async"
                         onError={() => setImgError(true)}
                     />
                 ) : (

@@ -131,5 +131,11 @@ SCHEMA = [
         last_seen DATETIME,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
     )
-    """
+    """,
+]
+
+# Migrations: run after SCHEMA; safe to run repeatedly (ignore duplicate column)
+MIGRATIONS = [
+    "ALTER TABLE matches ADD COLUMN user_was_banner INTEGER DEFAULT 0",
+    "ALTER TABLE matches ADD COLUMN enemy_banner_name TEXT",
 ]

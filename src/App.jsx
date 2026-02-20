@@ -1,6 +1,7 @@
 import { useState, useEffect, lazy, Suspense } from 'react'
 import { useReplayData } from './hooks/useReplayData'
 import LoadingSpinner from './components/LoadingSpinner'
+import registerWarRoomTools from './webmcp/registerWarRoomTools'
 
 // Lazy load heavy components for code splitting
 const AllHeroesGrid = lazy(() => import('./components/AllHeroesGrid'))
@@ -17,6 +18,7 @@ const CompositionMatrix = lazy(() => import('./components/tactical/CompositionMa
 const DossierHub = lazy(() => import('./pages/DossierHub'))
 const DispatchBriefing = lazy(() => import('./components/DispatchBriefing'))
 const UnifiedChat = lazy(() => import('./components/UnifiedChat'))
+const HealerOpsPage = lazy(() => import('./pages/HealerOpsPage'))
 
 function App() {
   const { matches, heroes, profile, loading, error, refresh, search } = useReplayData()
@@ -43,6 +45,17 @@ function App() {
   const [serverAvailable, setServerAvailable] = useState(true)
   const [strategies, setStrategies] = useState({})
 
+  // WebMCP: expose War Room tools to browser agents (preview + production-ready)
+  useEffect(() => {
+    let regs = []
+    try {
+      regs = registerWarRoomTools().filter((r) => r && typeof r.unregister === 'function')
+    } catch (_) {
+      regs = []
+    }
+    return () => regs.forEach((r) => r.unregister())
+  }, [])
+
   useEffect(() => {
     const handleReplayParsed = () => refresh()
     window.addEventListener('replayParsed', handleReplayParsed)
@@ -62,13 +75,19 @@ function App() {
       // The DossierHub will listen for this event and load the hero
     };
 
+    const handleNavToHealerDev = () => setViewMode('healer-ops');
+    const handleNavToHealerOps = () => setViewMode('healer-ops');
     window.addEventListener('nav_to_replay', handleNavToReplay);
     window.addEventListener('nav_to_dossier', handleNavToDossier);
+    window.addEventListener('nav_to_healer_dev', handleNavToHealerDev);
+    window.addEventListener('nav_to_healer_ops', handleNavToHealerOps);
 
     return () => {
       window.removeEventListener('replayParsed', handleReplayParsed);
       window.removeEventListener('nav_to_replay', handleNavToReplay);
       window.removeEventListener('nav_to_dossier', handleNavToDossier);
+      window.removeEventListener('nav_to_healer_dev', handleNavToHealerDev);
+      window.removeEventListener('nav_to_healer_ops', handleNavToHealerOps);
     };
   }, [refresh, matches]);
 
@@ -100,7 +119,7 @@ function App() {
     loadStrategies()
     const interval = setInterval(() => {
       if (serverAvailable) loadStrategies()
-    }, 3000)
+    }, 30000)
     return () => clearInterval(interval)
   }, [serverAvailable])
 
@@ -159,6 +178,7 @@ function App() {
               { id: 'agents', label: 'Agents', icon: '🤖', active: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
               { id: 'vision', label: 'Vision', icon: '👁️', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
               { id: 'services', label: 'Services', icon: '⚡', active: 'border-orange-500/50 bg-orange-500/10 text-orange-400' },
+              { id: 'healer-ops', label: 'Healer & Ops', icon: '🩺', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
             ].map((btn) => (
               <button
                 key={btn.id}
@@ -209,6 +229,7 @@ function App() {
             {viewMode === 'agents' && <AgentDashboard />}
             {viewMode === 'vision' && <DraftSimulation />}
             {viewMode === 'services' && <ServicesPanel />}
+            {viewMode === 'healer-ops' && <HealerOpsPage />}
           </Suspense>
 
           {activeMatchStats && (

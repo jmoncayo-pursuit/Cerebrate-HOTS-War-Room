@@ -8,50 +8,64 @@ const getHeroPortrait = (heroName) => {
     return `/images/heroes/${normalizeHeroName(heroName)}.png`;
 };
 
+const EVENT_TYPES = ['level', 'structure', 'merc', 'talent'];
+
 const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
     const [timelineData, setTimelineData] = useState(null);
     const [loading, setLoading] = useState(!matchProp);
-    const [activeSection, setActiveSection] = useState('match'); // 'match' or 'draft'
+    const [activeSection, setActiveSection] = useState('match');
+    const [eventFilter, setEventFilter] = useState(new Set(EVENT_TYPES)); // show all by default
+    const [logMode, setLogMode] = useState('chrono'); // chrono | team
+    const [myEventsOnly, setMyEventsOnly] = useState(false);
+
+    const yourTeam = userPlayer?.team ?? (matchProp?.players?.find(p => p.hero === matchProp?.hero)?.team ?? 0);
 
     useEffect(() => {
-        if (matchProp) {
+        const fetchWithDetails = (mid) => {
+            if (!mid) return;
+            setLoading(true);
+            fetch(`/api/match_history?id=${encodeURIComponent(mid)}&limit=1&details=true`)
+                .then(res => res.json())
+                .then(data => {
+                    const m = Array.isArray(data) ? data[0] : data?.matches?.[0];
+                    if (m) setTimelineData(processTimeline(m));
+                    setLoading(false);
+                })
+                .catch(() => setLoading(false));
+        };
+
+        if (matchProp?.id) {
+            const hasDetails = !!(matchProp.raw_stats || matchProp.advanced_stats);
             setTimelineData(processTimeline(matchProp));
             setLoading(false);
+            if (!hasDetails) {
+                fetchWithDetails(matchProp.id);
+            }
             return;
         }
 
-        if (!matchId) return;
-
-        // Load match data
-        fetch(`/api/match_history?limit=50`)
-            .then(res => res.json())
-            .then(data => {
-                const match = data.find(m => m.id === matchId);
-                if (match) {
-                    setTimelineData(processTimeline(match));
-                }
-                setLoading(false);
-            })
-            .catch(err => {
-                console.error('Failed to load timeline:', err);
-                setLoading(false);
-            });
-    }, [matchId, matchProp]);
+        if (matchId) fetchWithDetails(matchId);
+    }, [matchId, matchProp?.id]);
 
     const processTimeline = (match) => {
         const events = [];
-        const advancedStats = match.advanced_stats || {};
+        const advancedStats = match.advanced_stats || match.raw_stats || {};
+        const yourTeamId = match.players?.find(p => p.hero === match.hero)?.team ?? 0;
+        const yourLabel = 'Your team';
+        const enemyLabel = 'Enemy team';
 
-        // Add Level Milestones
+        // Level Milestones: when each team hit Level 10 and Level 20 (from replay talent timestamps)
         const levelMilestones = advancedStats.level_milestones || {};
         Object.entries(levelMilestones).forEach(([team, levels]) => {
+            const teamId = parseInt(team);
+            const side = teamId === yourTeamId ? yourLabel : enemyLabel;
             Object.entries(levels).forEach(([level, timestamp]) => {
                 if (timestamp) {
                     events.push({
                         timestamp,
                         type: 'level',
-                        team: parseInt(team),
-                        description: `Team ${team} hit Level ${level}`,
+                        team: teamId,
+                        description: `${side} hit Level ${level}`,
                         icon: ArrowUpCircle,
                         level: parseInt(level)
                     });
@@ -59,7 +73,7 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
             });
         });
 
-        // Add Structure Destructions
+        // Add Structure Destructions (from advanced_stats or raw_stats)
         const structures = advancedStats.structure_destructions || [];
         structures.forEach(s => {
             const structureName = s.structure_type
@@ -75,11 +89,12 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                 type: 'structure',
                 team: s.destroyed_by_team,
                 description: `${structureName} destroyed`,
+                credit: s.destroyed_by_player ? `credit: ${s.destroyed_by_player}` : undefined,
                 icon: Shield
             });
         });
 
-        // Add Merc Captures
+        // Add Merc Captures (key from parser: merc_captures)
         const mercs = advancedStats.merc_captures || [];
         mercs.forEach(m => {
             events.push({
@@ -87,6 +102,7 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                 type: 'merc',
                 team: m.captured_by_team,
                 description: `Merc camp captured`,
+                credit: m.captured_by_player ? `credit: ${m.captured_by_player}` : undefined,
                 icon: Swords
             });
         });
@@ -125,14 +141,24 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
     };
 
     if (loading) {
-        return <div className="timeline-loading">Loading neural history...</div>;
+        return <div className="timeline-loading">Loading timeline...</div>;
     }
 
     if (!timelineData) {
-        return <div className="timeline-error">Neural history link severed.</div>;
+        return <div className="timeline-error">Timeline data unavailable.</div>;
     }
 
     const { events, gameLength, originalMatch } = timelineData;
+    const filteredEvents = events.filter(e => eventFilter.has(e.type));
+    const displayEvents = myEventsOnly ? filteredEvents.filter(e => e.team === yourTeam) : filteredEvents;
+    const toggleFilter = (type) => {
+        setEventFilter(prev => {
+            const next = new Set(prev);
+            if (next.has(type)) next.delete(type);
+            else next.add(type);
+            return next;
+        });
+    };
 
     return (
         <div className="match-timeline bg-[#0c0518]/60 backdrop-blur-md rounded-2xl border border-white/5 overflow-hidden animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -167,45 +193,75 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                 <Clock className="text-cyan-400" size={24} />
                                 <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Temporal Audit</h2>
                             </div>
-                            <div className="timeline-legend bg-black/20 p-4 rounded-lg border border-white/5 mb-8">
-                                <span><ArrowUpCircle size={14} className="inline mr-1 text-purple-400" /> Milestone</span>
-                                <span><Shield size={14} className="inline mr-1 text-blue-400" /> Structure</span>
-                                <span><Swords size={14} className="inline mr-1 text-red-400" /> Mercenary</span>
-                                <span><Target size={14} className="inline mr-1 text-yellow-400" /> Talent Pick</span>
+                            <div className="timeline-legend bg-black/20 p-4 rounded-lg border border-white/5 mb-4 flex flex-wrap items-center gap-4">
+                                {[
+                                    { type: 'level', label: 'Milestone (L10/L20)', Icon: ArrowUpCircle, color: 'text-purple-400', title: 'When each team hit Level 10 and Level 20' },
+                                    { type: 'structure', label: 'Structure', Icon: Shield, color: 'text-cyan-400' },
+                                    { type: 'merc', label: 'Mercenary', Icon: Swords, color: 'text-red-400' },
+                                    { type: 'talent', label: 'Talent', Icon: Target, color: 'text-yellow-400' }
+                                ].map(({ type, label, Icon, color, title }) => (
+                                    <button
+                                        key={type}
+                                        type="button"
+                                        onClick={() => toggleFilter(type)}
+                                        title={title}
+                                        className={`flex items-center gap-1.5 px-2 py-1 rounded text-xs font-bold transition-opacity ${eventFilter.has(type) ? 'opacity-100' : 'opacity-40 hover:opacity-70'}`}
+                                    >
+                                        <Icon size={14} className={color} />
+                                        {label}
+                                    </button>
+                                ))}
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider ml-2 flex items-center gap-2">
+                                    <span className="w-3 h-3 rounded-sm bg-cyan-500/80" /> Your team
+                                    <span className="w-3 h-3 rounded-sm bg-red-500/80" /> Enemy team
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={() => setMyEventsOnly(prev => !prev)}
+                                    className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border ${myEventsOnly ? 'text-cyan-300 border-cyan-500/40 bg-cyan-500/10' : 'text-slate-500 border-white/10 hover:text-slate-300 hover:bg-white/5'}`}
+                                    title="Show only your team's events"
+                                >
+                                    My events only
+                                </button>
+                                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider ml-auto">
+                                    Showing {displayEvents.length}/{events.length}{myEventsOnly ? ' (yours)' : ''}
+                                </span>
                             </div>
                         </div>
 
                         <div className="timeline-container">
-                            <div className="timeline-track bg-black/30 border border-white/5 relative">
+                            <div className="timeline-track bg-black/30 border border-white/5 relative overflow-hidden rounded-lg min-w-0 max-w-full">
                                 {/* Time markers */}
-                                <div className="time-markers border-b border-white/10">
-                                    {[0, 5, 10, 15, 20, 25].map(min => (
+                                <div className="time-markers border-b border-white/10 relative">
+                                    {[0, 5, 10, 15, 20, 25].filter(min => min * 60 <= gameLength).map(min => (
                                         <div
                                             key={min}
-                                            className="time-marker text-[10px] font-bold text-gray-600"
-                                            style={{ left: `${(min * 60 / gameLength) * 100}%` }}
+                                            className="time-marker text-[10px] font-bold text-gray-600 absolute"
+                                            style={{ left: `${(min * 60 / gameLength) * 100}%`, transform: 'translateX(-50%)' }}
                                         >
                                             {min}:00
                                         </div>
                                     ))}
                                 </div>
 
-                                {/* Events */}
-                                <div className="timeline-events h-48">
-                                    {events.map((event, idx) => {
-                                        const position = (event.timestamp / gameLength) * 100;
-                                        const teamClass = event.team === 0 ? 'team-enemy' : 'team-ally';
+                                {/* Events: stagger by type row to avoid overlap; position % clamped by track */}
+                                <div className="timeline-events relative h-40">
+                                    {displayEvents.map((event, idx) => {
+                                        const position = Math.min(98, Math.max(2, (event.timestamp / gameLength) * 100));
+                                        const isYourTeam = event.team === yourTeam;
+                                        const teamClass = isYourTeam ? 'team-ally' : 'team-enemy';
+                                        const rowY = { level: 8, structure: 48, merc: 88, talent: 128 }[event.type] ?? 8;
 
                                         return (
                                             <div
                                                 key={idx}
-                                                className={`timeline-event ${event.type} ${teamClass}`}
-                                                style={{ left: `${position}%` }}
+                                                className={`timeline-event ${event.type} ${teamClass} absolute`}
+                                                style={{ left: `${position}%`, top: rowY, transform: 'translate(-50%, 0)' }}
                                             >
                                                 <div className="event-icon p-1.5 bg-black/80 rounded-full border border-white/10 backdrop-blur-xl hover:border-cyan-500/50 transition-all cursor-crosshair">
                                                     <event.icon
                                                         size={18}
-                                                        className={event.team === 1 ? 'text-blue-400' : 'text-red-400'}
+                                                        className={isYourTeam ? 'text-cyan-400' : 'text-red-400'}
                                                     />
                                                 </div>
                                                 <div className="event-tooltip z-50">
@@ -218,101 +274,149 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                 </div>
                             </div>
 
-                            {/* Event List */}
-                            <div className="timeline-list bg-black/40 border border-white/5 h-[500px]">
-                                <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400 mb-6 flex items-center gap-2">
-                                    <Activity size={14} /> Chronological Log
-                                </h3>
-                                <div className="event-list-container space-y-2">
-                                    {events.map((event, idx) => {
-                                        const teamClass = event.team === 0 ? 'team-enemy' : 'team-ally';
-                                        return (
-                                            <div key={idx} className={`event-list-item bg-white/5 border-l-2 ${teamClass === 'team-ally' ? 'border-blue-500' : 'border-red-500'} p-3 rounded hover:bg-white/10 transition-colors`}>
-                                                <span className="event-time-badge font-mono text-[10px] text-gray-500">{formatTime(event.timestamp)}</span>
-                                                <span className="event-icon">
-                                                    <event.icon
-                                                        size={14}
-                                                        className={event.team === 1 ? 'text-blue-400' : 'text-red-400'}
-                                                    />
-                                                </span>
-                                                <span className="event-description text-sm text-gray-300 font-medium">{event.description}</span>
-                                            </div>
-                                        );
-                                    })}
+                            <div className="timeline-list bg-black/40 border border-white/5 rounded-lg flex flex-col min-h-[320px] max-h-[420px]">
+                                <div className="flex items-center justify-between gap-2 shrink-0 px-4 pt-4 pb-2 bg-[#0c0518]/95 border-b border-white/5">
+                                    <h3 className="text-xs font-black uppercase tracking-widest text-cyan-400 flex items-center gap-2 m-0">
+                                        <Activity size={14} /> Chronological Log
+                                    </h3>
+                                    <div className="flex items-center gap-2">
+                                        <button
+                                            type="button"
+                                            onClick={() => setLogMode('chrono')}
+                                            className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border ${logMode === 'chrono' ? 'text-cyan-300 border-cyan-500/40 bg-cyan-500/10' : 'text-slate-500 border-white/10 hover:text-slate-300 hover:bg-white/5'}`}
+                                        >
+                                            Time
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => setLogMode('team')}
+                                            className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded border ${logMode === 'team' ? 'text-cyan-300 border-cyan-500/40 bg-cyan-500/10' : 'text-slate-500 border-white/10 hover:text-slate-300 hover:bg-white/5'}`}
+                                        >
+                                            Team
+                                        </button>
+                                    </div>
+                                </div>
+                                <div className="event-list-container space-y-2 p-4 pb-4 overflow-y-auto flex-1">
+                                    {(() => {
+                                        const renderRow = (event, idx) => {
+                                            const isYourTeam = event.team === yourTeam;
+                                            const credit = event.credit ? ` · ${event.credit}` : '';
+                                            return (
+                                                <div key={idx} className={`event-list-item bg-white/5 border-l-2 ${isYourTeam ? 'border-cyan-500' : 'border-red-500'} p-3 rounded hover:bg-white/10 transition-colors`}>
+                                                    <span className="event-time-badge font-mono text-[10px] text-gray-500">{formatTime(event.timestamp)}</span>
+                                                    <span className="event-icon">
+                                                        <event.icon size={14} className={isYourTeam ? 'text-cyan-400' : 'text-red-400'} />
+                                                    </span>
+                                                    <span className="event-description text-sm text-gray-300 font-medium">{event.description}{credit}</span>
+                                                </div>
+                                            );
+                                        };
+                                        if (logMode === 'team') {
+                                            const yourEvents = displayEvents.filter(e => e.team === yourTeam);
+                                            const enemyEvents = displayEvents.filter(e => e.team !== yourTeam);
+                                            return (
+                                                <div className="space-y-4">
+                                                    <div>
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-cyan-400 mb-2">Your team</div>
+                                                        <div className="space-y-2">{yourEvents.map(renderRow)}</div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[10px] font-black uppercase tracking-widest text-red-400 mb-2">Enemy team</div>
+                                                        <div className="space-y-2">{enemyEvents.map(renderRow)}</div>
+                                                    </div>
+                                                </div>
+                                            );
+                                        }
+                                        return displayEvents.map(renderRow);
+                                    })()}
                                 </div>
                             </div>
                         </div>
                     </>
                 ) : (
                     <div className="draft-sequence-tab animate-in fade-in zoom-in-95 duration-300">
-                        <div className="flex items-center gap-3 mb-8">
+                        <div className="flex items-center gap-3 mb-6">
                             <Swords className="text-purple-400" size={24} />
-                            <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Draft Composition</h2>
+                            <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Draft sequence</h2>
                         </div>
 
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {/* Bans Section */}
-                            {originalMatch.advanced_stats?.bans?.length > 0 && (
-                                <div className="col-span-full bg-black/20 p-6 rounded-xl border border-white/5">
-                                    <div className="text-[10px] text-gray-500 uppercase font-black mb-4 tracking-[0.2em]">Banned Protocols (Sequential)</div>
-                                    <div className="flex flex-wrap gap-4">
-                                        {originalMatch.advanced_stats?.bans?.map((ban, i) => (
-                                            <div key={i} className="relative group">
-                                                <div className="w-14 h-14 bg-black/40 rounded-lg border border-red-500/20 grayscale group-hover:grayscale-0 transition-all overflow-hidden shadow-2xl">
-                                                    <img
-                                                        src={getHeroPortrait(ban.hero)}
-                                                        alt={ban.hero}
-                                                        className="w-full h-full object-cover opacity-60 group-hover:opacity-100"
-                                                        onError={(e) => { e.target.style.display = 'none'; }}
-                                                    />
-                                                    <div className="absolute inset-0 border-2 border-red-500/50 rotate-45 scale-150 pointer-events-none" />
+                        {/* Bans in draft order (1–6); banner = who placed ban, typically highest MMR on team */}
+                        {(originalMatch.advanced_stats?.bans?.length > 0 || originalMatch.raw_stats?.bans?.length > 0) && (
+                            <div className="mb-8">
+                                <div className="text-[10px] text-gray-400 uppercase font-black mb-3 tracking-widest">Bans (draft order) · by team banner (highest MMR)</div>
+                                <div className="flex flex-wrap gap-3 items-center">
+                                    {(originalMatch.advanced_stats?.bans || originalMatch.raw_stats?.bans || []).map((ban, i) => (
+                                        <div key={i} className="flex flex-col gap-0.5">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-[10px] text-gray-500 font-mono w-5">{i + 1}.</span>
+                                                <div className="w-12 h-12 rounded-lg border border-red-500/30 overflow-hidden bg-black/40 flex-shrink-0">
+                                                    <img src={getHeroPortrait(ban.hero)} alt={ban.hero} className="w-full h-full object-cover grayscale opacity-80" onError={(e) => { e.target.style.display = 'none'; }} />
                                                 </div>
-                                                <div className="absolute -top-2 -left-2 bg-gray-900/90 text-[8px] font-black w-5 h-5 flex items-center justify-center rounded-full border border-white/10 text-gray-400">
-                                                    {i + 1}
-                                                </div>
-                                                <div className="absolute -bottom-2 -right-2 bg-red-600 text-[9px] font-black px-1.5 py-0.5 rounded border border-white/20 shadow-lg">BAN</div>
+                                                <span className="text-sm font-bold text-white">{ban.hero}</span>
                                             </div>
-                                        ))}
+                                            {ban.banned_by && (
+                                                <span className="text-[10px] text-gray-500 pl-7">by {ban.banned_by}</span>
+                                            )}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Picks: draft order from replay initData when available */}
+                        {(() => {
+                            let picks = originalMatch.advanced_stats?.picks || originalMatch.raw_stats?.picks || [];
+                            if (!picks.length && originalMatch.players?.length) {
+                                picks = originalMatch.players.map((pl, i) => ({ order: i + 1, hero: pl.hero, team: pl.team, name: pl.name }));
+                            }
+                            const myTeam = userPlayer?.team;
+                            const picksMy = picks.filter(p => p.team === myTeam);
+                            const picksEnemy = picks.filter(p => p.team !== myTeam);
+                            const hasOrder = picks.length > 0;
+                            const isDerivedFromRoster = hasOrder && !(originalMatch.advanced_stats?.picks?.length || originalMatch.raw_stats?.picks?.length);
+                            return (
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <div className="bg-cyan-500/5 p-5 rounded-xl border border-cyan-500/20">
+                                        <div className="text-[10px] text-cyan-400 font-black mb-1 uppercase tracking-widest">Your team</div>
+                                        {hasOrder ? (
+                                            <div className="text-[10px] text-gray-400 mb-3">{isDerivedFromRoster ? 'Roster (draft order not in replay)' : 'Pick order (draft)'}</div>
+                                        ) : (
+                                            <div className="text-[10px] text-gray-500 mb-3">No roster data</div>
+                                        )}
+                                        <div className="flex flex-wrap gap-2">
+                                            {(hasOrder ? picksMy : originalMatch.players?.filter(p => p.team === myTeam) || []).map((p, i) => (
+                                                <div key={i} className="flex flex-col items-center gap-1">
+                                                    {hasOrder && <span className="text-[9px] text-gray-500 font-mono">{p.order}</span>}
+                                                    <div className="w-12 h-12 rounded-lg border-2 border-cyan-500/30 overflow-hidden bg-black/40">
+                                                        <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                                                    </div>
+                                                    <span className="text-[9px] font-bold text-cyan-200 truncate max-w-[60px] text-center">{p.hero}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                    <div className="bg-red-500/5 p-5 rounded-xl border border-red-500/20">
+                                        <div className="text-[10px] text-red-400 font-black mb-1 uppercase tracking-widest">Enemy team</div>
+                                        {hasOrder ? (
+                                            <div className="text-[10px] text-gray-400 mb-3">{isDerivedFromRoster ? 'Roster (draft order not in replay)' : 'Pick order (draft)'}</div>
+                                        ) : (
+                                            <div className="text-[10px] text-gray-500 mb-3">No roster data</div>
+                                        )}
+                                        <div className="flex flex-wrap gap-2">
+                                            {(hasOrder ? picksEnemy : originalMatch.players?.filter(p => p.team !== myTeam) || []).map((p, i) => (
+                                                <div key={i} className="flex flex-col items-center gap-1">
+                                                    {hasOrder && <span className="text-[9px] text-gray-500 font-mono">{p.order}</span>}
+                                                    <div className="w-12 h-12 rounded-lg border-2 border-red-500/30 overflow-hidden bg-black/40">
+                                                        <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                                                    </div>
+                                                    <span className="text-[9px] font-bold text-red-200 truncate max-w-[60px] text-center">{p.hero}</span>
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            )}
-
-                            {/* Allied Picks */}
-                            <div className="bg-cyan-500/5 p-6 rounded-xl border border-cyan-500/20">
-                                <div className="text-[10px] text-cyan-400 font-black mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <Users size={12} /> Allied Deployment
-                                </div>
-                                <div className="grid grid-cols-5 gap-3">
-                                    {originalMatch.players?.filter(p => p.team === userPlayer?.team).map((p, i) => (
-                                        <div key={i} className="flex flex-col items-center gap-2">
-                                            <div className="w-full aspect-square rounded-lg border-2 border-cyan-500/30 overflow-hidden shadow-lg group relative bg-black/40" title={p.hero}>
-                                                <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                <div className="absolute inset-x-0 bottom-0 h-1 bg-cyan-500 shadow-[0_0_10px_#22d3ee]" />
-                                            </div>
-                                            <div className="text-[9px] font-bold text-cyan-200 truncate w-full text-center">{p.hero}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Hostile Picks */}
-                            <div className="bg-red-500/5 p-6 rounded-xl border border-red-500/20">
-                                <div className="text-[10px] text-red-400 font-black mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
-                                    <Swords size={12} /> Hostile Manifest
-                                </div>
-                                <div className="grid grid-cols-5 gap-3">
-                                    {originalMatch.players?.filter(p => p.team !== userPlayer?.team).map((p, i) => (
-                                        <div key={i} className="flex flex-col items-center gap-2">
-                                            <div className="w-full aspect-square rounded-lg border-2 border-red-500/30 overflow-hidden shadow-lg group relative bg-black/40" title={p.hero}>
-                                                <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover group-hover:scale-110 transition-transform" />
-                                                <div className="absolute inset-x-0 bottom-0 h-1 bg-red-500 shadow-[0_0_10px_#ef4444]" />
-                                            </div>
-                                            <div className="text-[9px] font-bold text-red-200 truncate w-full text-center">{p.hero}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                            );
+                        })()}
                     </div>
                 )}
             </div>

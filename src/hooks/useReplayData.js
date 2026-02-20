@@ -21,31 +21,27 @@ export function useReplayData() {
     cachedAt: null
   })
 
+  const DEFAULT_SEASON_START = '2026-01-01'
+
   const loadData = async (isInitial = false, query = '') => {
     if (isInitial) setLoading(true)
     try {
-      // 1. Fetch Core Data (With search support)
       const searchParam = query ? `&search=${encodeURIComponent(query)}` : ''
-      const [historyResponse, profileResponse] = await Promise.all([
-        fetch(`/api/match_history?limit=500&pagination=true${searchParam}&t=` + Date.now()).catch(() => null),
-        fetch('/api/player_profile?t=' + Date.now()).catch(() => null)
-      ])
-
-      if (profileResponse && profileResponse.ok) {
-        const profileData = await profileResponse.json()
+      const profileResponse = await fetch('/api/player_profile?t=' + Date.now()).catch(() => null)
+      let profileData = null
+      if (profileResponse?.ok) {
+        profileData = await profileResponse.json()
         setProfile(profileData)
       }
+      const seasonStart = profileData?.active_season?.start_date || DEFAULT_SEASON_START
 
+      const historyResponse = await fetch(
+        `/api/match_history?limit=200&since=${encodeURIComponent(seasonStart)}${searchParam}&t=` + Date.now()
+      ).catch(() => null)
       let historyData = []
-      if (historyResponse && historyResponse.ok) {
+      if (historyResponse?.ok) {
         const responseData = await historyResponse.json()
-        // Handle paginated response
-        if (responseData.matches) {
-          historyData = responseData.matches
-        } else if (Array.isArray(responseData)) {
-          // Backward compatibility: direct array response
-          historyData = responseData
-        }
+        historyData = responseData.matches ?? (Array.isArray(responseData) ? responseData : [])
       }
 
       // 2. Fetch Metadata (cached to avoid re-fetching)
@@ -133,6 +129,12 @@ export function useReplayData() {
       setLoading(false)
     }
   }
+
+  useEffect(() => {
+    const onProfileRefreshed = () => loadData(true)
+    window.addEventListener('profileRefreshed', onProfileRefreshed)
+    return () => window.removeEventListener('profileRefreshed', onProfileRefreshed)
+  }, [])
 
   useEffect(() => {
     loadData(true)

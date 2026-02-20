@@ -239,10 +239,13 @@ export default function ReplaySelector({ onSelectReplay, onProcessReplays, onSel
   }
 
   const handleSort = (column) => {
-    if (sortBy === column) {
-      setSortDir(sortDir === 'desc' ? 'asc' : 'desc')
-    } else {
+    if (sortBy !== column) {
       setSortBy(column)
+      setSortDir('desc')
+    } else if (sortDir === 'desc') {
+      setSortDir('asc')
+    } else {
+      setSortBy('date')
       setSortDir('desc')
     }
   }

@@ -7,7 +7,7 @@ export const calculateYourStats = (matches, profileData = null) => {
         // Check hero_stats first (primary location for verified stats)
         const heroStats = profileData.hero_stats?.[heroName]
         if (heroStats) {
-            const sSlug = profileData.active_season?.slug || 'season_2025_3'
+            const sSlug = profileData.active_season?.slug || 'season_2026_1'
             const sVerified = heroStats[`verified_${sSlug}`]
             const lifetimeVerified = heroStats.verified_lifetime || heroStats.verified
 
@@ -27,7 +27,7 @@ export const calculateYourStats = (matches, profileData = null) => {
                         wins: lifetimeVerified.wins || Math.round((lifetimeVerified.games || 0) * ((lifetimeVerified.wr || lifetimeVerified.win_rate || 0) / 100)),
                         losses: lifetimeVerified.losses || ((lifetimeVerified.games || 0) - Math.round((lifetimeVerified.games || 0) * ((lifetimeVerified.wr || lifetimeVerified.win_rate || 0) / 100)))
                     } : null,
-                    source: s3Verified.source || "Verified In-Game"
+                    source: sVerified.source || "Verified In-Game"
                 }
             }
 
@@ -51,7 +51,7 @@ export const calculateYourStats = (matches, profileData = null) => {
         const heroData = profileData.hero_map_stats?.[heroName]
         if (!heroData) return null
 
-        const sSlug = profileData.active_season?.slug || 'season_2025_3'
+        const sSlug = profileData.active_season?.slug || 'season_2026_1'
         const sData = heroData[`verified_${sSlug}`]
         if (sData) {
             const wr = sData.win_rate || sData.wr || 0
@@ -69,7 +69,7 @@ export const calculateYourStats = (matches, profileData = null) => {
                     wins: heroData.verified_ingame.wins || Math.round((heroData.verified_ingame.games || 0) * ((heroData.verified_ingame.win_rate || heroData.verified_ingame.wr || 0) / 100)),
                     losses: heroData.verified_ingame.losses || ((heroData.verified_ingame.games || 0) - Math.round((heroData.verified_ingame.games || 0) * ((heroData.verified_ingame.win_rate || heroData.verified_ingame.wr || 0) / 100)))
                 } : null,
-                source: s3.source || "Verified In-Game"
+                source: sData.source || "Verified In-Game"
             }
         }
 
@@ -92,7 +92,7 @@ export const calculateYourStats = (matches, profileData = null) => {
     }
 
     const heroStats = {}
-    const SEASON_START = new Date(profileData?.active_season?.start_date || '2026-01-06')
+    const SEASON_START = new Date(profileData?.active_season?.start_date || '2026-01-01')
 
     // 1. Initialize from Profile Data
     // A. Verified Stats (hero_map_stats)

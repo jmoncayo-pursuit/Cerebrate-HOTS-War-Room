@@ -41,16 +41,35 @@ def analyze_replay():
     
     return jsonify({'error': 'Expected JSON or File'}), 415
 
+@replay_bp.route('/api/reparse_match', methods=['POST'])
+def reparse_match():
+    """Re-parse a match's replay file to refresh draft picks, banner, and DC data. Preserves analysis."""
+    if not request.is_json:
+        return jsonify({"success": False, "error": "JSON body required"}), 400
+    data = request.get_json() or {}
+    match_id = data.get("match_id")
+    if not match_id:
+        return jsonify({"success": False, "error": "match_id required"}), 400
+    result = replay_service.reparse_match(match_id)
+    if result.get("success"):
+        return jsonify(result), 200
+    return jsonify(result), 404 if result.get("error") == "Match not found" else 400
+
 @replay_bp.route('/api/match_history', methods=['GET'])
 def match_history():
-    """Serve match history for frontend"""
+    """Serve match history for frontend. Optional: id (single match), hero, since (YYYY-MM-DD) for this-season coverage."""
     limit = request.args.get('limit', 500)
     include_details = request.args.get('details', 'false').lower() == 'true'
+    match_id = request.args.get('id') or request.args.get('match_id')
     search = request.args.get('search')
+    hero = request.args.get('hero') or None
+    since = request.args.get('since') or None
     try:
         limit = int(limit)
-    except:
-        limit = 500
-        
-    matches = replay_service.get_match_history(limit=limit, include_details=include_details, search=search)
+    except ValueError:
+        limit = 200
+    limit = min(limit, 200)  # cap list size for memory
+    matches = replay_service.get_match_history(
+        limit=limit, include_details=include_details, search=search, hero=hero, since=since, match_id=match_id
+    )
     return jsonify(matches)

@@ -4,6 +4,7 @@ import json
 import signal
 import subprocess
 import time
+from api.services.database import DatabaseManager
 
 watcher_bp = Blueprint('watcher', __name__, url_prefix='/api')
 
@@ -47,12 +48,16 @@ def get_status():
                 activities = json.load(f)
         except:
             pass
+    
+    # Get total matches in database (more useful than scan cycle count)
+    db = DatabaseManager()
+    total_matches = len(db.get_matches(limit=10000))  # Get all matches
             
     return jsonify({
         "running": is_watcher_running(),
         "processing": status,
         "activities": activities[:50],
-        "replay_count": status.get('total', 0)
+        "replay_count": total_matches  # Total matches in database, not just current scan
     })
 
 @watcher_bp.route('/watcher/start', methods=['POST'])

@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Activity } from 'lucide-react'
 import FileProgressBar from './FileProgressBar'
 import MCPStatus from './MCPStatus'
 import './ServicesPanel.css'
@@ -11,10 +10,6 @@ export default function ServicesPanel() {
     const [loading, setLoading] = useState(false)
     const [processingDetails, setProcessingDetails] = useState(null)
     const [activities, setActivities] = useState([])
-    const [usage, setUsage] = useState(null)
-    const [modelHealth, setModelHealth] = useState(null)
-    const [selectedHistoryItem, setSelectedHistoryItem] = useState(null)
-    const [healerStatus, setHealerStatus] = useState({ running: false, last_pulse: null, mode: 'OFFLINE' })
     const [mcpStatus, setMcpStatus] = useState('DISCONNECTED')
 
     useEffect(() => {
@@ -46,40 +41,17 @@ export default function ServicesPanel() {
                 const usageRes = await fetch(`/api/usage?t=${timestamp}`)
                 if (usageRes.ok) {
                     const usageData = await usageRes.json()
-                    setUsage(usageData.quota)
-                    setModelHealth({
-                        quality: usageData.link_quality,
-                        last_model: usageData.current_model
-                    })
                     if (usageData.services && usageData.services.mcp_bridge) {
                         setMcpStatus(usageData.services.mcp_bridge)
                     }
                 }
 
-                const healerRes = await fetch(`/api/healer/status?t=${timestamp}`)
-                if (healerRes.ok) {
-                    const healerData = await healerRes.ok ? await healerRes.json() : null
-                    if (healerData) setHealerStatus(healerData)
-                }
             } else {
                 setWatcherStatus('stopped')
             }
         } catch (error) {
             setApiStatus('stopped')
             setWatcherStatus('stopped')
-        }
-    }
-
-    const toggleHealer = async () => {
-        setLoading(true)
-        try {
-            const endpoint = healerStatus.running ? '/api/healer/stop' : '/api/healer/start'
-            await fetch(endpoint, { method: 'POST' })
-            await checkStatus() // Immediate update
-        } catch (err) {
-            console.error('Healer toggle failed:', err)
-        } finally {
-            setLoading(false)
         }
     }
 
@@ -168,137 +140,13 @@ export default function ServicesPanel() {
                 </div>
             </div>
 
-            <div className="service-grid">
-                {/* Neural Link Telemetry */}
-                <div className="service-card group">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className={`service-status-dot ${usage ? 'running' : 'stopped'}`} />
-                            <div>
-                                <h3 className="text-white font-bold text-lg tracking-tight">Intelligence Nexus</h3>
-                                <p className={`text-[10px] font-mono uppercase tracking-[0.2em] ${modelHealth?.quality?.includes('Nexus') ? 'text-cyan-400' :
-                                    modelHealth?.quality?.includes('Neural') ? 'text-blue-400' :
-                                        'text-green-400'
-                                    }`}>
-                                    {modelHealth ? `${modelHealth.quality} // ${modelHealth.last_model}` : 'Syncing Link...'}
-                                </p>
-                            </div>
-                        </div>
-                        {usage && (
-                            <div className="text-right">
-                                <div className="text-[10px] text-cyan-400 font-mono font-bold uppercase tracking-widest">
-                                    {usage.total_tokens?.toLocaleString()} Tokens
-                                </div>
-                                <div className="text-[8px] text-slate-600 font-mono uppercase">Total Consumption</div>
-                            </div>
-                        )}
-                    </div>
-
-                    {usage && (
-                        <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-white/5">
-                            <div className="p-2 bg-black/30 rounded border border-white/5 text-center">
-                                <div className="text-[10px] text-slate-500 font-mono uppercase mb-1">Prompt</div>
-                                <div className="text-xs text-blue-400 font-bold font-mono">{usage.prompt_tokens?.toLocaleString()}</div>
-                            </div>
-                            <div className="p-2 bg-black/30 rounded border border-white/5 text-center">
-                                <div className="text-[10px] text-slate-500 font-mono uppercase mb-1">Response</div>
-                                <div className="text-xs text-green-400 font-bold font-mono">{usage.response_tokens?.toLocaleString()}</div>
-                            </div>
-                            <div className="p-2 bg-black/30 rounded border border-white/5 text-center">
-                                <div className="text-[10px] text-slate-500 font-mono uppercase mb-1">Requests</div>
-                                <div className="text-xs text-cyan-400 font-bold font-mono">{usage.total_calls}</div>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Neural Pulse History (Clickable) */}
-                    {usage?.history && usage.history.length > 0 && (
-                        <div className="mt-4 pt-4 border-t border-white/5">
-                            <div className="text-[8px] text-slate-600 font-mono uppercase mb-2 tracking-widest">Neural Pulse History</div>
-                            <div className="flex gap-1 h-8 items-end">
-                                {usage.history.map((item, i) => (
-                                    <button
-                                        key={i}
-                                        onClick={() => setSelectedHistoryItem(item)}
-                                        className={`flex-1 min-w-[3px] rounded-t-sm transition-all hover:scale-110 hover:-translate-y-1 ${item.model?.includes('pro') ? 'bg-blue-500/40 hover:bg-blue-400' :
-                                            item.model?.includes('2.0') ? 'bg-cyan-500/40 hover:bg-cyan-400' :
-                                                'bg-slate-500/40 hover:bg-slate-400'
-                                            }`}
-                                        style={{ height: `${Math.max(15, Math.min(100, (item.total_t / 3000) * 100))}%` }}
-                                        title={`${item.total_t} tokens - ${item.model}`}
-                                    />
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-            </div>
-
-            {/* Diagnostic Modal */}
-            {selectedHistoryItem && (
-                <div className="fixed inset-0 z-[50] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md">
-                    <div className="bg-slate-900 border border-white/10 rounded-2xl p-6 max-w-sm w-full shadow-2xl relative">
-                        <button
-                            onClick={() => setSelectedHistoryItem(null)}
-                            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors"
-                        >
-                            ✕
-                        </button>
-
-                        <div className="mb-6">
-                            <h3 className="text-xl font-bold text-white tracking-tight">Neural Transaction</h3>
-                            <p className="text-[10px] text-slate-500 font-mono uppercase mt-1">
-                                {new Date(selectedHistoryItem.timestamp * 1000).toLocaleString()}
-                            </p>
-                        </div>
-
-                        <div className="space-y-4">
-                            <div className="p-4 bg-black/40 rounded-xl border border-white/5">
-                                <div className="text-[10px] text-slate-500 font-mono uppercase mb-1">Active Model</div>
-                                <div className="text-base font-bold text-cyan-400 font-mono tracking-tight">{selectedHistoryItem.model}</div>
-                            </div>
-
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="p-3 bg-black/40 rounded-xl border border-white/5">
-                                    <div className="text-[8px] text-slate-500 font-mono uppercase mb-1">Prompt</div>
-                                    <div className="text-lg font-bold text-blue-400 font-mono">{selectedHistoryItem.prompt_t?.toLocaleString()}</div>
-                                </div>
-                                <div className="p-3 bg-black/40 rounded-xl border border-white/5">
-                                    <div className="text-[8px] text-slate-500 font-mono uppercase mb-1">Response</div>
-                                    <div className="text-lg font-bold text-green-400 font-mono">{selectedHistoryItem.resp_t?.toLocaleString()}</div>
-                                </div>
-                            </div>
-
-
-                            <div className="p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20 text-center">
-                                <div className="text-[10px] text-cyan-300 font-mono uppercase mb-1">Total Payload</div>
-                                <div className="text-2xl font-bold text-white font-mono">{selectedHistoryItem.total_t?.toLocaleString()}</div>
-                                <div className="text-[8px] text-cyan-500/50 uppercase mt-1">Compute Tokens</div>
-                            </div>
-
-                            {selectedHistoryItem.prompt_text && (
-                                <details className="group">
-                                    <summary className="cursor-pointer text-[10px] text-slate-500 font-mono uppercase hover:text-cyan-400 transition-colors list-none text-center p-2 border border-white/5 rounded bg-black/20">
-                                        <span className="group-open:hidden">▶ Inspect Prompt Data</span>
-                                        <span className="hidden group-open:inline">▼ Hide Prompt Data</span>
-                                    </summary>
-                                    <div className="mt-2 p-3 bg-black/50 rounded border border-white/5 max-h-40 overflow-y-auto text-[10px] text-slate-400 font-mono whitespace-pre-wrap">
-                                        {selectedHistoryItem.prompt_text}
-                                    </div>
-                                </details>
-                            )}
-                        </div>
-
-                        <button
-                            onClick={() => setSelectedHistoryItem(null)}
-                            className="w-full mt-6 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl transition-all font-bold uppercase tracking-widest text-[10px] border border-white/5"
-                        >
-                            Close Core Interface
-                        </button>
-                    </div>
-                </div>
-            )}
-
+            {/* Ops / Token Usage link */}
+            <button
+                onClick={() => window.dispatchEvent(new CustomEvent('nav_to_healer_ops'))}
+                className="w-full py-2 px-3 rounded-lg border border-cyan-500/20 bg-cyan-500/5 hover:bg-cyan-500/10 text-cyan-400 text-xs font-bold uppercase tracking-widest transition-colors mb-4"
+            >
+                Ops / Token Usage →
+            </button>
 
             {/* Replay Watcher Card */}
             <div className="service-card group">
@@ -437,35 +285,6 @@ export default function ServicesPanel() {
                                 <span>Replay Watcher Active</span>
                             </div>
                         )}
-                    </div>
-                )}
-            </div>
-
-
-            {/* Healer Service */}
-            <div className="service-card group mt-4">
-                <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                        <div className={`service-status-dot ${healerStatus.running ? 'running' : 'stopped'}`} />
-                        <div>
-                            <h3 className="text-white font-bold text-lg tracking-tight">Cerebrate Healer</h3>
-                            <p className="text-xs text-slate-500 font-mono uppercase">
-                                {healerStatus.running ? healerStatus.mode : 'Integrity Guard Offline'}
-                            </p>
-                        </div>
-                    </div>
-                    <button
-                        onClick={toggleHealer}
-                        disabled={loading || apiStatus !== 'running'}
-                        className={`service-action-btn ${healerStatus.running ? 'btn-stop' : 'btn-start'} disabled:opacity-30`}
-                    >
-                        {healerStatus.running ? 'Halt Guard' : 'Deploy Healer'}
-                    </button>
-                </div>
-                {healerStatus.running && healerStatus.last_pulse && (
-                    <div className="text-[9px] font-mono text-emerald-500/80 mt-2 flex items-center gap-1.5 p-2 bg-emerald-500/5 rounded border border-emerald-500/10">
-                        <Activity size={10} className="animate-pulse" />
-                        Last Pulse: {new Date(healerStatus.last_pulse).toLocaleTimeString()} // Success
                     </div>
                 )}
             </div>

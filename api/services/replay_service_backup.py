@@ -8,7 +8,6 @@ from api.services.replay_parser import parse_replay
 from api.services.replay_parser.header import get_match_id
 from api.services.database import DatabaseManager
 from api.services.quota_manager import QuotaManager
-from api.summary_schema import SUMMARY_SCHEMA_VERSION
 from agents.hooks_manager import HooksManager, HookResponse
 from agents.hooks import context_injector_hook, summary_validator_hook, cache_manager_hook, store_in_cache
 from api.services.mechanical_analysis_service import MechanicalAnalysisService
@@ -65,24 +64,6 @@ class ReplayService:
             return text
         
         import re
-        
-        # 0. Replace jargon with plain language (model sometimes ignores prompt)
-        for pattern, repl in [
-            (r'\bTheoretical Value Deltas?\b', 'the main problem'),
-            (r'\bUnified Throughput\b', 'healing and damage output'),
-            (r'\bPure Soak\b', 'lane XP'),
-            (r'\bForce Multiplier\b', 'your impact'),
-            (r'\bAdditive Link\b', 'combo potential'),
-            (r'\bMacro Anchor(age|ing)?\b', 'macro pressure'),
-            (r'\bAttrition Scaling\b', 'sustained presence'),
-            (r'\bPositional Forensics\b', 'positioning awareness'),
-            (r'\bAdditive Failure\b', 'mistakes that added up'),
-            (r'\bMultiplicative Failure\b', 'teammate dependency'),
-        ]:
-            text = re.sub(pattern, repl, text, flags=re.IGNORECASE)
-        # 0b. Fix bold spacing: word**Bold** -> word **Bold**; **Bold**word -> **Bold** word
-        text = re.sub(r'(\w)\*\*', r'\1 **', text)
-        text = re.sub(r'\*\*([^*]+)\*\*([A-Za-z])', r'**\1** \2', text)
         
         # 1. Flow period into previous word: "match ." -> "match."
         text = re.sub(r'\s+([.;])(?!\w)', r'\1', text)
@@ -185,26 +166,6 @@ class ReplayService:
                  os.remove(temp_path)
                  return {'error': result.get('message')}, 400
 
-            # Banner context (who was banner = highest MMR; carry vs carry)
-            adv = result.get('advanced_stats', {})
-            bans = adv.get('bans', [])
-            user_name = result.get('user_name') or ''
-            players = result.get('players', [])
-            user_player = next((p for p in players if (p.get('name') or '').lower() == user_name.lower()), players[0] if players else None)
-            user_team = user_player.get('team') if user_player else None
-            user_was_banner = False
-            enemy_banner_name = None
-            if user_team is not None and bans:
-                user_was_banner = any(
-                    b.get('team') == user_team and (b.get('banned_by') or '').strip() == user_name.strip()
-                    for b in bans
-                )
-                enemy_banner = next((b.get('banned_by') for b in bans if b.get('team') != user_team and b.get('banned_by')), None)
-                if enemy_banner:
-                    enemy_banner_name = enemy_banner.strip() or None
-            adv['user_was_banner'] = user_was_banner
-            adv['enemy_banner_name'] = enemy_banner_name
-
             # 4. Database Ingestion
             db_data = {
                 'id': result['match_id'],
@@ -214,16 +175,9 @@ class ReplayService:
                 'date': result['timestamp_iso'],
                 'duration': result['game_length'],
                 'players': result['players'],
-                'advanced_stats': adv,
-                'user_was_banner': 1 if user_was_banner else 0,
-                'enemy_banner_name': enemy_banner_name,
-                'pipeline_version': 'GOLD_2026_V1',
-                'raw_stats': {
-                    'game_mode': result.get('game_mode'),
-                    'is_ranked': result.get('is_ranked')
-                }
+                'advanced_stats': result.get('advanced_stats', {}),
+                'pipeline_version': 'GOLD_2026_V1'
             }
-
             
             # Upsert
             success = self.db.upsert_match(db_data)
@@ -251,76 +205,6 @@ class ReplayService:
             if os.path.exists(temp_path): os.remove(temp_path)
             ColoredLogger.error(f"Replay Service Error: {e}", "REPLAY")
             return {'error': str(e)}, 500
-
-    def reparse_match(self, match_id):
-        """
-        Re-parse a match's replay file to refresh advanced_stats (picks), players (disconnected),
-        and banner fields. Preserves existing analysis. Returns dict with success and optional error.
-        """
-        rows = self.db.get_matches(match_id=match_id, include_players=True, include_details=True)
-        if not rows:
-            return {"success": False, "error": "Match not found"}
-        existing = rows[0]
-        path = self._find_replay_file(match_id)
-        if not path:
-            return {"success": False, "error": "Replay file not found"}
-        try:
-            result = parse_replay(path)
-        except Exception as e:
-            ColoredLogger.error(f"Reparse parse error: {e}", "REPLAY")
-            return {"success": False, "error": str(e)}
-        if not result or result.get("status") == "error":
-            return {"success": False, "error": result.get("message", "Parse failed")}
-        adv = result.get("advanced_stats", {})
-        bans = adv.get("bans", [])
-        user_name = result.get("user_name") or ""
-        players = result.get("players", [])
-        user_player = next((p for p in players if (p.get("name") or "").lower() == user_name.lower()), players[0] if players else None)
-        user_team = user_player.get("team") if user_player else None
-        user_was_banner = False
-        enemy_banner_name = None
-        if user_team is not None and bans:
-            user_was_banner = any(
-                b.get("team") == user_team and (b.get("banned_by") or "").strip() == user_name.strip()
-                for b in bans
-            )
-            enemy_banner = next((b.get("banned_by") for b in bans if b.get("team") != user_team and b.get("banned_by")), None)
-            if enemy_banner:
-                enemy_banner_name = enemy_banner.strip() or None
-        adv["user_was_banner"] = user_was_banner
-        adv["enemy_banner_name"] = enemy_banner_name
-        existing_analysis = existing.get("analysis") or {}
-        if isinstance(existing_analysis, str):
-            try:
-                existing_analysis = json.loads(existing_analysis)
-            except Exception:
-                existing_analysis = {}
-        winning_team = next((p["team"] for p in result.get("players", []) if p.get("win")), None)
-        if winning_team is None:
-            winning_team = existing.get("winning_team")
-        db_data = {
-            "id": result["match_id"],
-            "map": result["map"],
-            "hero": result["hero"],
-            "result": result["result"].upper(),
-            "date": result.get("timestamp_iso") or existing.get("date"),
-            "duration": result.get("game_length") or existing.get("duration"),
-            "winning_team": winning_team,
-            "players": result["players"],
-            "advanced_stats": adv,
-            "user_was_banner": 1 if user_was_banner else 0,
-            "enemy_banner_name": enemy_banner_name,
-            "pipeline_version": getattr(self, "PIPELINE_VERSION", "GOLD_2026_V1"),
-            "raw_stats": {"game_mode": result.get("game_mode"), "is_ranked": result.get("is_ranked")},
-            "analysis": existing_analysis,
-        }
-        try:
-            self.db.upsert_match(db_data)
-        except Exception as e:
-            ColoredLogger.error(f"Reparse upsert error: {e}", "REPLAY")
-            return {"success": False, "error": str(e)}
-        ColoredLogger.success(f"Reparse complete: {match_id}", "REPLAY")
-        return {"success": True, "match_id": match_id}
 
     def fmt_ms(self, s): 
         """Format seconds to MM:SS."""
@@ -519,30 +403,7 @@ class ReplayService:
         team_merc_count = len([m for m in merc_events if m.get('captured_by_team') == user_player['team']])
         enemy_merc_count = len([m for m in merc_events if m.get('captured_by_team') != user_player['team']])
 
-        # 6. Level Lead Analysis (for macro pressure attribution)
-        level_milestones = advanced.get('level_milestones', {})
-        level_context = ""
-        if level_milestones:
-            user_team_id = user_player['team']
-            enemy_team_id = 1 - user_team_id
-            user_l10 = level_milestones.get(user_team_id, {}).get(10)
-            enemy_l10 = level_milestones.get(enemy_team_id, {}).get(10)
-            if user_l10 and enemy_l10:
-                lead_sec = enemy_l10 - user_l10
-                if lead_sec > 0:
-                    level_context = f"- Level 10 Lead: Your team hit Level 10 {lead_sec:.1f}s BEFORE enemy ({self.fmt_ms(user_l10)} vs {self.fmt_ms(enemy_l10)}). This early advantage was driven by macro pressure (XP generation)."
-                elif lead_sec < 0:
-                    level_context = f"- Level 10 Gap: Enemy team hit Level 10 {abs(lead_sec):.1f}s BEFORE your team ({self.fmt_ms(enemy_l10)} vs {self.fmt_ms(user_l10)})."
-            user_l20 = level_milestones.get(user_team_id, {}).get(20)
-            enemy_l20 = level_milestones.get(enemy_team_id, {}).get(20)
-            if user_l20 and enemy_l20:
-                lead20_sec = enemy_l20 - user_l20
-                if lead20_sec > 0:
-                    level_context += f" Level 20 Lead: Your team hit Level 20 {lead20_sec:.1f}s BEFORE enemy ({self.fmt_ms(user_l20)} vs {self.fmt_ms(enemy_l20)})."
-                elif lead20_sec < 0:
-                    level_context += f" Level 20 Gap: Enemy team hit Level 20 {abs(lead20_sec):.1f}s BEFORE your team ({self.fmt_ms(enemy_l20)} vs {self.fmt_ms(user_l20)})."
-
-        # 7. Kill Verification Alert
+        # 6. Kill Verification Alert
         # (Same logic as before, just kept for context)
         logs_found = len(user_kills_timeline)
         forensic_alert = ""
@@ -553,23 +414,16 @@ class ReplayService:
 - INSTRUCTION: Trust the Scoreboard ({solo_kills}) for total count, but mention the timeline gaps if relevant.
 """
 
-        # 7. Strategic Audit Prompt (Forensic Persona - GOLD STANDARD)
+        # 7. Strategic Audit Prompt (Forensic Persona)
         ColoredLogger.info(f"Generating audit with {len(players)} players, {len(user_kills_timeline)} kills found.", "REPLAY")
-        prompt = f"""## Mode B: STRATEGIC FORENSIC AUDIT (GOLD STANDARD)
-You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tactical energy.
+        prompt = f"""## Mode B: STRATEGIC FORENSIC AUDIT
+You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tactical energy. 
+Focus on **FORCE MULTIPLIERS** and **STRATEGIC GAPS**.
 
-**STRICT GOLD STANDARD REQUIREMENTS:**
-1. **PLAIN LANGUAGE**: Use clear, direct terms only. NEVER use: "Theoretical Value Delta", "Unified Throughput", "Pure Soak", "Force Multiplier", "Additive Link", "Macro Anchor", "Attrition Scaling". Instead say: "the main problem", "healing/damage output", "lane XP", "your impact", "combo potential", "macro pressure", "sustained presence". Explain cause and effect in plain English.
-2. **CAUSAL ANALYSIS**: Do not just say WHAT happened. Explain WHY it happened and the COST. (e.g., "This choice traded ~5,200 Healing Per Minute for siege damage—equivalent to removing 1.5x of a Valla's health pool from team sustain.")
-3. **SPECIFIC NUMBERS**: You MUST cite specific stats from the data below (XP, Healing, Siege, Timestamps). When mentioning level leads (e.g. "1-level lead by minute 7"), infer from Level 10 timing: if your team hit Level 10 significantly before enemy, you had an early lead. Do NOT fabricate specific minute timestamps unless Level 10 data supports it.
-4. **ATTRIBUTION**: When the user contributed {contribution['ExperienceContribution']}% of team XP and {minion_xp:,} minion XP, attribute macro pressure to the user (not "the team").
-5. **VERBOSE & FORENSIC**: Your summary MUST be 3-5 detail-heavy sentences. No 1-sentence summaries.
-6. **STRICT HERO VALIDATION**: You may ONLY mention these heroes: {", ".join(valid_hero_names)}.
-7. **ALWAYS IDENTIFY CRITICAL MISTAKE**: Even in dominant wins, you MUST identify what prevented carrying harder. Look for opportunity costs: missed rotations, suboptimal positioning windows, untapped macro potential, or failure to capitalize on enemy mistakes. NEVER output "None detected" or "No mistakes" for critical_mistake.
-8. **FORMATTING**: If using bold (e.g. **Stitches**), put a space before the opening ** and after the closing **. Never concatenate bold with adjacent words (e.g. wrong: "**Macro Anchor**performance" — correct: "**Macro Anchor** performance"). Do not output unpaired asterisks.
-
-**GOLD STANDARD EXAMPLE:**
-"Despite the loss, your performance was strong. Your {user_core_stats.get('ExperienceContribution', 0):,} Experience Contribution included {minion_xp:,} minion XP, proving you drove level progression. However, during the {map_name} objective, positioning too far from the focus target cost you ~35% of your healing output, and that teamfight attrition cost the game."
+**STRICT VALIDATION PROTOCOL (DO NOT HALLUCINATE):**
+- **VALID HEROES ONLY**: You may ONLY mention these heroes: {", ".join(valid_hero_names)}. If a name is not in this list, do NOT use it.
+- **FACTUAL TALENTS**: Use the provided 'Talent Tree' to verify builds. Do not guess meta talents.
+- **NO GENERIC ADVICE**: Advice must be specific to the {hero} mechanics and the enemies present.
 
 **COMMANDER PERFORMANCE DATA (TRUTH SCALE):**
 - Map: {map_name}
@@ -578,11 +432,9 @@ You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tact
 - Game Duration: {duration}
 - Solo Kills: {solo_kills} (Truth Scale)
 - Kill Streak: {kill_streak}
-- Experience Contribution: {user_core_stats.get('ExperienceContribution', 0):,} ({contribution['ExperienceContribution']}% of team total)
-- Minion XP: {minion_xp:,} — Your isolated lane XP, proving your macro pressure (not team's)
 - Mercenary Captures: {personal_mercs} personal / {team_merc_count} team
+- Minion XP Contribution: {minion_xp} (Lane Presence)
 - Downtime: {downtime} (Time Dead)
-{level_context if level_context else ""}
 {f"- MECHANICS (STITCHES): {mech_stats}" if mech_stats else ""}
 {stitches_context if stitches_context else ""}
 {f"- SOCIAL FOCUS: {social_stats}" if social_stats else ""}
@@ -590,8 +442,8 @@ You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tact
 
 **REQUIRED TACTICAL LOG (EXTRACTED FROM REPLAY):**
 You MUST process every single event in this log into the 'areas_for_improvement' JSON section. 
-- For 'Deaths', you MUST include all {user_core_stats.get('Deaths', 0)} deaths. Mention the Killer Hero and context.
-- For 'Your Kills', you MUST include all {solo_kills} solo kills with timestamps.
+- For 'Deaths', you MUST include all {user_core_stats.get('Deaths', 0)} deaths. Mention the Killer Hero.
+- For 'Your Kills', you MUST include all {solo_kills} solo kills.
 
 **User Death Log:**
 {chr(10).join(user_deaths_timeline) if user_deaths_timeline else "None recorded."}
@@ -610,19 +462,18 @@ You MUST process every single event in this log into the 'areas_for_improvement'
 - Your Team: {team_stats['own']['kills']} K/ {team_stats['own']['deaths']} D
 - Enemy Team: {team_stats['enemy']['kills']} K/ {team_stats['enemy']['deaths']} D
 - User Participation: {contribution['HeroDamage']}% Hero Dmg / {contribution['ExperienceContribution']}% XP
-- When you contributed {contribution['ExperienceContribution']}% of team XP and {minion_xp:,} minion XP, that is your macro pressure (not the team's).
 
 **OUTPUT SCHEMA (STRICT JSON ONLY):**
 ```json
 {{
     "verdict": "{result}",
-    "summary": "3-5 sentences explaining WHY you won/lost, using concrete data and plain language. No jargon.",
+    "summary": "3-5 sentences analyzing WHY you lost. Use specific killer names in context.",
     "key_insights": {{
         "deaths": {user_core_stats.get('Deaths', 0)},
         "kill_streak": "{kill_streak}",
         "mercenary_camps": {personal_mercs},
-        "pure_soak": "{minion_xp:,}",
         "downtime": "{downtime}",
+        "minion_xp": "{minion_xp}",
         "contribution_index": "{contribution['HeroDamage']}% Dmg / {contribution['ExperienceContribution']}% XP"
     }},
     "areas_for_improvement": [
@@ -635,12 +486,13 @@ You MUST process every single event in this log into the 'areas_for_improvement'
         {{ 
             "title": "Your Kills", 
             "items": [
-                {{ "time": "MM:SS", "victim": "HeroName", "context": "Forensic proof" }}
+                {{ "time": "MM:SS", "victim": "HeroName", "context": "Forensic proof (e.g., Lethal Hook or Direct Kill)" }},
+                {{ "time": "SUMMARY", "victim": "Stats", "context": "{solo_kills} Solo Kills / {user_core_stats.get('Assists', 0)} Assists" }}
             ] 
         }}
     ],
-    "critical_mistake": "REQUIRED: Even in dominant wins, identify the ONE action/decision that prevented carrying harder. Examples: 'Positioning at X:XX cost 2 potential kills', 'Missing macro rotation at Y:YY denied 500 XP', 'Not capitalizing on enemy cooldowns at Z:ZZ extended game by 2 minutes'. If no clear mistake exists, identify the highest-opportunity-cost decision (e.g., 'Could have rotated earlier to secure objective 30s faster'). NEVER say 'None detected' or 'No mistakes'.",
-    "win_condition": "Actionable advice to maximize your impact next time."
+    "critical_mistake": "The ONE mistake that led to the most attrition.",
+    "win_condition": "How to handle these enemies next time."
 }}
 ```
 Do not include any text before or after the JSON block.
@@ -675,13 +527,11 @@ Do not include any text before or after the JSON block.
                 except Exception as gen_e:
                     print(f"DEBUG: generate_content FAILED: {gen_e}")
                     raise gen_e
+                res_text = response.text.strip()
+                ColoredLogger.info(f"FORENSIC AUDIT GENERATED for {hero} on {map_name} (attempt {attempt + 1}/{max_retries})", "REPLAY")
+                
                 try:
-                    res_text = response.text.strip()
-                    ColoredLogger.info(f"FORENSIC AUDIT GENERATED for {hero} on {map_name} (attempt {attempt + 1}/{max_retries})", "REPLAY")
-                    
                     analysis = self._parse_json_response(res_text)
-
-
                     if not analysis:
                         raise ValueError("Failed to parse analysis JSON")
                     
@@ -779,12 +629,11 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
 {", ".join(dcs) if dcs else "None"}
 {mech_context}
 **REQUIREMENTS:**
-1. **Team labels**: NEVER use "Team 0" or "Team 1". Always use "Your team" for the commander's side and "Enemy team" for the opposite side. The commander (user) is on the team with hero: {user_player.get('hero', '')}.
-2. **Highlight Rivalries**: Identify if a specific enemy neutralized the user multiple times.
-3. **Teammate Synergy**: Note if an ally performance was notably high or low.
-4. **Neural Briefing Correlation**: Did players in your notes live up to their reputation?
-5. **Tone**: Forensic but 'notable' (highlight interesting human patterns).
-6. **Instruction**: If you are commenting on a teammate performance as a 'failure' or 'asset', be specific about their stats relative to the user.
+1. **Highlight Rivalries**: Identify if a specific enemy neutralized the user multiple times.
+2. **Teammate Synergy**: Note if an ally performance was notably high or low.
+3. **Neural Briefing Correlation**: Did players in your notes live up to their reputation?
+4. **Tone**: Forensic but 'notable' (highlight interesting human patterns).
+5. **Instruction**: If you are commenting on a teammate performance as a 'failure' or 'asset', be specific about their stats relative to the user.
 
 **OUTPUT SCHEMA (JSON ONLY):**
 {{
@@ -819,8 +668,8 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
         except:
             return None
 
-    def get_match_history(self, limit=50, include_details=False, search=None, hero=None, since=None, match_id=None):
-        return self.db.get_matches(limit=limit, include_details=include_details, search=search, hero=hero, since=since, match_id=match_id)
+    def get_match_history(self, limit=50, include_details=False, search=None):
+        return self.db.get_matches(limit=limit, include_details=include_details, search=search)
 
     def analyze_match(self, match_data, force=False, replay_path=None):
         """Forces or performs AI analysis on a match."""
@@ -862,14 +711,76 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
         # 5. RUN FORENSIC AUDIT (Main Verdict) using Forensics Data
         summary = self._generate_match_summary(match_data, forensics=forensics, force=force)
         
-        # 6. No AI-generated social insights (overview/rivalry) — Personnel tab uses match data: DCs, banner
+        # 6. RUN SOCIAL INSIGHTS (Deep Social Network)
+        players = match_data.get('players', [])
+        game_length = match_data.get('game_length', 0)
+        DC_GRACE_PERIOD = 60
+        
+        teammate_enemy_dcs = []
+        for p in players:
+            if p.get('disconnected'):
+                ts = p.get('dc_timestamp', 0)
+                if ts < game_length - DC_GRACE_PERIOD:
+                    # Ignore the user in social tab (already in summary)
+                    if not ('Discerning' in p.get('name', '') or p.get('hero') == match_data.get('hero')):
+                        teammate_enemy_dcs.append(f"{p.get('name')} ({p.get('hero')}) at {self.fmt_ms(ts)}")
+        
+        social = self._generate_social_insights(match_data, dcs=teammate_enemy_dcs, social_mechanics=social_mechanics)
+        
         if summary and summary.get('success'):
             results = summary['analysis']
-            # Attach schema version so Healer can detect when summaries need re-audit
-            results['summary_version'] = SUMMARY_SCHEMA_VERSION
             if forensics:
                 results['forensics'] = forensics
             
+            # --- 🕵️ NEURAL AUDIT: Match Summary ---
+            try:
+                from agents.cerebrate_orchestrator import CerebrateOrchestrator
+                intel = self._get_intel_service()
+                orchestrator = CerebrateOrchestrator(call_gemini_api_fn=intel.generate_chat_response)
+                
+                # Context for audit includes core stats
+                audit_context = {
+                    'target_query': f"Analyze match on {match_data.get('map')}",
+                    'target_context': f"Result: {match_data.get('result')}, Hero: {match_data.get('hero')}. Stats: {json.dumps(results.get('key_insights', {}))}",
+                    'target_response': results.get('summary', ''),
+                    'audit_type': 'CHAT'
+                }
+                summary_audit = orchestrator.agents['auditor'].analyze(match_id, audit_context)
+                if summary_audit.get('success'):
+                    results['audit'] = summary_audit.get('audit')
+            except Exception as audit_err:
+                ColoredLogger.warn(f"Match Summary Audit Failed: {audit_err}", "REPLAY")
+
+            if social:
+                results['social_insights'] = social
+                
+                # --- 🕵️ NEURAL AUDIT: Social Insights ---
+                try:
+                    social_audit_context = {
+                        'target_query': "Social Intelligence Extraction",
+                        'target_context': json.dumps([{ 'name': p['name'], 'hero': p['hero'], 'team': p['team'] } for p in players]),
+                        'target_response': social.get('social_summary', ''),
+                        'audit_type': 'SOCIAL'
+                    }
+                    social_audit = orchestrator.agents['auditor'].analyze(match_id, social_audit_context)
+                    if social_audit.get('success'):
+                        results['social_insights']['audit'] = social_audit.get('audit')
+                except Exception as s_audit_err:
+                    ColoredLogger.warn(f"Social Audit Failed: {s_audit_err}", "REPLAY")
+
+                # PERSIST SOCIAL NOTES to Database
+                try:
+                    for node in social.get('notable_nodes', []):
+                        p_name = node.get('name')
+                        p_note = node.get('note')
+                        if p_name and p_note:
+                            # Update notes in social_profiles if exists
+                            conn = self.db._get_connection()
+                            conn.execute("UPDATE social_profiles SET notes = ? WHERE player_name = ?", (p_note, p_name))
+                            conn.commit()
+                except Exception as db_e:
+                    ColoredLogger.warn(f"Social Persistence error: {db_e}", "REPLAY")
+
             self.db.update_match_analysis(match_id, results)
             self.quota.record_request()
             return {"status": "complete", "match_id": match_id, "analysis": results}

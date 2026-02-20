@@ -12,6 +12,7 @@ export default function DataProvenance() {
     const [lineageResults, setLineageResults] = useState([]);
     const [isSearching, setIsSearching] = useState(false);
     const [conflicts, setConflicts] = useState([]);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         loadIngestionData();
@@ -118,6 +119,7 @@ export default function DataProvenance() {
                 isOpen={showVerificationModal}
                 onClose={() => setShowVerificationModal(false)}
                 onSuccess={() => {
+                    window.dispatchEvent(new CustomEvent('profileRefreshed'));
                     loadIngestionData();
                     setShowVerificationModal(false);
                 }}

@@ -6,7 +6,7 @@ import unicodedata
 from datetime import datetime, timezone
 from api.logger import ColoredLogger
 
-from .utils import setup_imp_shim, get_hero_display_name
+from .utils import setup_imp_shim, get_hero_display_name, clean_text
 # CRITICAL: Setup shim before importing heroprotocol on Python 3.12+
 setup_imp_shim()
 from heroprotocol.versions import latest
@@ -90,21 +90,61 @@ def parse_replay(replay_path, options=None):
                 'team': p['m_teamId'],
                 'win': (result == 1),
                 'hero_level': p.get('m_heroLevel', 0),
-                'account_level': p.get('m_playerLevel', 0)
+                'account_level': p.get('m_playerLevel', 0),
+                '_working_set_slot_id': p.get('m_workingSetSlotId'),
             })
 
-        # 3. Tracker Events
+        # 2.5 Tracker Events (includes picks from SHeroPickedEvent)
         tracker_events = protocol.decode_replay_tracker_events(archive.read_file('replay.tracker.events'))
-        stats_containers = {i: {'stats': {}, 'talents': []} for i in range(1, 11)} 
-        stats_data, bans = process_tracker_events(tracker_events, players, stats_containers)
-        
-        # 3.5 Game Events (Backup for talents & Stitches Hooks)
+        stats_containers = {i: {'stats': {}, 'talents': []} for i in range(1, 11)}
+        stats_data, bans, tracker_picks = process_tracker_events(tracker_events, players, stats_containers, game_loops)
+
+        # 2.6 Pick order: prefer SHeroPickedEvent (true draft order), then initData, then roster
+        picks = []
+        if len(tracker_picks) >= 10:
+            picks = tracker_picks
+        else:
+            try:
+                init_data = protocol.decode_replay_initdata(archive.read_file('replay.initData'))
+                sync = init_data.get('m_syncLobbyState') or {}
+                lobby_state = sync.get('m_lobbyState') if isinstance(sync, dict) else {}
+                slots = (lobby_state.get('m_slots') if isinstance(lobby_state, dict) else []) or []
+                if not slots and isinstance(sync, dict):
+                    slots = sync.get('m_slots') or []
+                gd = sync.get('m_gameDescription') if isinstance(sync, dict) else {}
+                if not slots and isinstance(gd, dict):
+                    slots = (gd.get('m_lobbyState') or {}).get('m_slots') or gd.get('m_slots') or []
+                slots = (slots or [])[:10]
+                hero_to_players = {}
+                for p in players:
+                    h = clean_text(p.get('hero') or '')
+                    if h:
+                        hero_to_players.setdefault(h, []).append(p)
+                for slot_index, slot in enumerate(slots):
+                    if not isinstance(slot, dict):
+                        continue
+                    h_raw = slot.get('m_hero') or b''
+                    hero_raw = h_raw.decode('utf-8') if isinstance(h_raw, bytes) else str(h_raw)
+                    hero_display = get_hero_display_name(hero_raw)
+                    key = clean_text(hero_display or '')
+                    cands = hero_to_players.get(key, [])
+                    if not cands and key:
+                        cands = hero_to_players.get(hero_raw.lower().replace(' ', '').replace('-', '').replace("'", ''), [])
+                    pl = next((c for c in cands if clean_text(c.get('hero') or '') == key), cands[0] if cands else None)
+                    if pl:
+                        picks.append({'order': slot_index + 1, 'hero': pl['hero'], 'team': pl['team'], 'name': pl['name']})
+            except Exception as e:
+                ColoredLogger.warn(f"initData picks extraction failed: {e}", "PARSER")
+        if not picks and players:
+            for order, pl in enumerate(players, 1):
+                picks.append({'order': order, 'hero': pl['hero'], 'team': pl['team'], 'name': pl['name']})
+
+        # 3. Game Events (Backup for talents, Stitches Hooks, DC detection)
         try:
             game_events_list = list(protocol.decode_replay_game_events(archive.read_file('replay.game.events')))
-            stats_data = process_game_events(game_events_list, players, stats_data)
+            stats_data = process_game_events(game_events_list, players, stats_data, game_loops)
         except Exception as e:
-            # Game events are optional for basic stats, but needed for Stitches hook count
-            pass
+            ColoredLogger.warn(f"Game events decode/process failed: {e}", "PARSER")
         
         # 4. Normalization & User Detection
         for i, p in enumerate(players):
@@ -134,6 +174,35 @@ def parse_replay(replay_path, options=None):
                  hooks_val = src['specific_stats']['HooksThrown']
                  p['stats']['HooksThrown'] = hooks_val
                  p['kv_stats']['HooksThrown'] = hooks_val
+
+        # Mass-leave safeguard: if 4+ players marked DC, treat as end-of-game (everyone leaves)
+        dc_count = sum(1 for p in players if p.get('disconnected'))
+        if dc_count >= 4:
+            for p in players:
+                p['disconnected'] = False
+                p.pop('dc_gameloop', None)
+                p.pop('dc_timestamp', None)
+
+        # 4.5 Team Level Milestones (L10/L20) derived from talent timestamps
+        # Uses the 4th and 7th picked talents (after sorting by timestamp).
+        team_level_milestones = {0: {10: None, 20: None}, 1: {10: None, 20: None}}
+        for p in players:
+            team_id = p.get('team')
+            if team_id not in team_level_milestones:
+                continue
+            t = sorted((p.get('talents') or []), key=lambda x: x.get('timestamp') or 0)
+            if len(t) >= 4:
+                ts10 = t[3].get('timestamp')
+                if ts10 and ts10 > 60:
+                    cur = team_level_milestones[team_id][10]
+                    if cur is None or ts10 < cur:
+                        team_level_milestones[team_id][10] = ts10
+            if len(t) >= 7:
+                ts20 = t[6].get('timestamp')
+                if ts20 and ts20 > 120:
+                    cur = team_level_milestones[team_id][20]
+                    if cur is None or ts20 < cur:
+                        team_level_milestones[team_id][20] = ts20
 
         # User detection (More robust: prioritize specific IDs over generic 'Player')
         known_identifiers = ['discerning', 'cerebrate', 'ozyroth'] 
@@ -173,6 +242,8 @@ def parse_replay(replay_path, options=None):
             "parser_version": PARSER_VERSION,
             "advanced_stats": {
                 "bans": bans,
+                "picks": picks,
+                "level_milestones": team_level_milestones,
                 "structure_destructions": stats_data.get('structure_destructions', []),
                 "merc_captures": stats_data.get('merc_captures', []),
                 "boss_captures": stats_data.get('boss_captures', []),

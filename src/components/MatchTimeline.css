@@ -114,9 +114,9 @@
   color: #fff;
 }
 
-/* Team colors */
+/* Team colors: Your team = cyan, Enemy team = red */
 .team-ally .event-icon {
-  filter: drop-shadow(0 0 8px rgba(102, 126, 234, 0.6));
+  filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.6));
 }
 
 .team-enemy .event-icon {
@@ -178,7 +178,7 @@
 }
 
 .event-list-item.team-ally {
-  border-left-color: #667eea;
+  border-left-color: rgb(34, 211, 238);
 }
 
 .event-list-item.team-enemy {

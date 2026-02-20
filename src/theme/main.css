@@ -62,7 +62,8 @@
     /* --- Typography --- */
     --font-display: 'Outfit', sans-serif;
     --font-body: 'Roboto', sans-serif;
-    font-size: 15px;
+    /* Global base font size (site-wide). Increased for readability. */
+    font-size: 17px;
 }
 
 /* Base Semantic Classes */

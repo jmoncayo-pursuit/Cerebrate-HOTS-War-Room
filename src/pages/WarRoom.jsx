@@ -6,11 +6,12 @@ import { getMapImagePath, getMapColor } from '../utils/mapUtils';
 import { normalizeHeroName } from '../utils/heroUtils';
 import BuildDisplay from '../components/BuildDisplay';
 import ConfidenceScore from '../components/ConfidenceScore';
+import VerificationModal from '../components/VerificationModal';
 import { calculateYourStats } from '../utils/statsUtils';
 import { useReplayData } from '../hooks/useReplayData';
 
-// Default season config (will be overridden by API)
-const DEFAULT_SEASON = { slug: 'season_2026_1', name: 'Season 1 2026', start_date: '2026-01-06' };
+import ACTIVE_SEASON from '../config/season';
+const DEFAULT_SEASON = ACTIVE_SEASON;
 
 const MatchList = ({ hero, mapName, filter, matches, seasonStartDate }) => {
   const [expanded, setExpanded] = useState(false);
@@ -20,7 +21,7 @@ const MatchList = ({ hero, mapName, filter, matches, seasonStartDate }) => {
   const relevantMatches = matches.filter(m =>
     m.hero === hero &&
     m.map === mapName &&
-    (filter === 's3' && seasonStartDate ? new Date(m.date || m.timestamp_iso) > new Date(seasonStartDate) : true)
+    (filter === 'seasonal' && seasonStartDate ? new Date(m.date || m.timestamp_iso) > new Date(seasonStartDate) : true)
   ).sort((a, b) => new Date(b.date || b.timestamp_iso) - new Date(a.date || a.timestamp_iso));
 
   if (relevantMatches.length === 0) return null;
@@ -77,8 +78,9 @@ function MapButton({ map, isActive, onClick }) {
 }
 
 export default function WarRoom({ selectedMap, setSelectedMap }) {
-  const { profile, matches: matchHistory, heroData, talentMap, talentData, loading: replayLoading } = useReplayData();
+  const { profile, matches: matchHistory, heroData, talentMap, talentData, loading: replayLoading, refresh } = useReplayData();
   const [cerebrateConfig, setCerebrateConfig] = useState(null);
+  const [showVerificationModal, setShowVerificationModal] = useState(false);
   const [calculatedStats, setCalculatedStats] = useState(null);
   const [configLoading, setConfigLoading] = useState(true);
 
@@ -487,6 +489,12 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
         </div>
 
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => setShowVerificationModal(true)}
+            className="px-4 py-1.5 bg-amber-500/10 border border-amber-500/30 rounded-full text-[10px] font-bold uppercase tracking-widest text-amber-400 hover:bg-amber-500/20 transition-all flex items-center gap-2"
+          >
+            📸 Verify Stats
+          </button>
           {selectedMap && (
             <button
               onClick={() => setSelectedMap(null)}
@@ -501,6 +509,55 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
           </div>
         </div>
       </div>
+
+      <VerificationModal
+        isOpen={showVerificationModal}
+        onClose={() => setShowVerificationModal(false)}
+        onSuccess={() => {
+          refresh();
+          setShowVerificationModal(false);
+        }}
+      />
+
+      {/* Banner performance: carry vs carry (you and enemy banner = highest MMR) */}
+      {(() => {
+        const seasonMatches = (matchHistory || []).filter(m => new Date(m.date || m.timestamp_iso) > new Date(SEASON_START_DATE));
+        const whenBanner = seasonMatches.filter(m => m.user_was_banner === 1 || m.user_was_banner === true);
+        const whenNotBanner = seasonMatches.filter(m => !m.user_was_banner);
+        const bannerVsBanner = seasonMatches.filter(m => (m.user_was_banner === 1 || m.user_was_banner === true) && m.enemy_banner_name);
+        const w = (arr) => arr.filter(m => m.result?.toUpperCase() === 'WIN').length;
+        const wr = (arr) => (arr.length ? ((w(arr) / arr.length) * 100).toFixed(1) : '—');
+        if (whenBanner.length === 0 && bannerVsBanner.length === 0) return null;
+        return (
+          <div className="mb-6 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
+            <div className="text-[10px] text-amber-400/90 font-black uppercase tracking-widest mb-3">Banner performance (carry vs carry)</div>
+            <p className="text-[11px] text-slate-400 mb-3">When you were team banner (highest MMR), you face the enemy banner. Understanding these games explains losses to their carry.</p>
+            <div className="flex flex-wrap gap-6">
+              {whenBanner.length > 0 && (
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase">When you were banner</span>
+                  <div className="text-lg font-black text-white">{w(whenBanner)}–{whenBanner.length - w(whenBanner)}</div>
+                  <div className="text-[11px] text-slate-400">{wr(whenBanner)}% WR · {whenBanner.length} games</div>
+                </div>
+              )}
+              {bannerVsBanner.length > 0 && (
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase">Banner vs banner</span>
+                  <div className="text-lg font-black text-white">{w(bannerVsBanner)}–{bannerVsBanner.length - w(bannerVsBanner)}</div>
+                  <div className="text-[11px] text-slate-400">{wr(bannerVsBanner)}% WR · {bannerVsBanner.length} games</div>
+                </div>
+              )}
+              {whenNotBanner.length > 0 && (
+                <div>
+                  <span className="text-[10px] text-slate-500 uppercase">When you weren’t banner</span>
+                  <div className="text-lg font-black text-white">{w(whenNotBanner)}–{whenNotBanner.length - w(whenNotBanner)}</div>
+                  <div className="text-[11px] text-slate-400">{wr(whenNotBanner)}% WR · {whenNotBanner.length} games</div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Map Directives Grid */}
       {!selectedMap ? (
@@ -550,7 +607,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                           {h.isVerified && <span className="verified-badge">VERIFIED</span>}
                           <ConfidenceScore value={h.wr.toFixed(1)} n={h.games} className="scale-75 origin-right" />
                         </div>
-                        <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
+                        <MatchList hero={h.hero} mapName={map.name} filter="seasonal" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
                           {renderBuild(h.hero, h.bestBuild)}
                         </div>
@@ -569,7 +626,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
                           <ConfidenceScore value={h.wr.toFixed(1)} n={h.games} className="scale-75 origin-right" />
                         </div>
-                        <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
+                        <MatchList hero={h.hero} mapName={map.name} filter="seasonal" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
                           {renderBuild(h.hero, h.bestBuild)}
                         </div>
@@ -588,7 +645,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
                           <ConfidenceScore value={h.s3WR.toFixed(1)} n={h.s3Games} className="scale-75 origin-right" />
                         </div>
-                        <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
+                        <MatchList hero={h.hero} mapName={map.name} filter="seasonal" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
                           {renderBuild(h.hero, h.bestBuild)}
                         </div>
@@ -607,7 +664,7 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
                           <><img src={getHeroPortrait(h.hero)} alt={h.hero} className="hero-portrait" onError={(e) => e.target.style.display = 'none'} /><span className="hero-name">{h.hero}</span></>
                           <ConfidenceScore value={h.overallWR.toFixed(1)} n={h.totalGames} className="scale-75 origin-right" />
                         </div>
-                        <MatchList hero={h.hero} mapName={map.name} filter="s3" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
+                        <MatchList hero={h.hero} mapName={map.name} filter="seasonal" matches={matchHistory} seasonStartDate={SEASON_START_DATE} />
                         <div className="build-container">
                           {renderBuild(h.hero, h.bestBuild)}
                         </div>

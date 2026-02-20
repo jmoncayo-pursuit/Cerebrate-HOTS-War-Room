@@ -16,6 +16,10 @@ class MechanicalAnalysisService:
             from api.services.azmodan_analyzer import AzmodanAnalyzer
             return AzmodanAnalyzer.analyze_replay(replay_path)
             
+        elif hero_name == 'kharazim':
+            from api.services.kharazim_analyzer import KharazimAnalyzer
+            return KharazimAnalyzer.analyze_replay(replay_path)
+            
         else:
             # Check for generic quest tracking if not specialized
             return None

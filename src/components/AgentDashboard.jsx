@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { BarChart3 } from 'lucide-react'
 
 const getAgentIcon = (agentName) => {
   const icons = {
@@ -269,10 +270,33 @@ const AgentDashboard = () => {
           )}
         </div>
 
-        {/* Agent Grid */}
+        {/* Agent Grid (Ops link + swarm) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {/* Ops — Token usage and transaction history */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="bg-black/30 border border-cyan-500/30 rounded-xl p-6 transition-all duration-300 hover:border-cyan-500/50 hover:shadow-[0_0_20px_rgba(6,182,212,0.2)]"
+          >
+            <div className="flex items-start gap-3 mb-4">
+              <div className="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center flex-shrink-0">
+                <BarChart3 className="w-7 h-7 text-cyan-400" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-lg font-bold text-white break-words leading-tight mb-1">Ops</h3>
+                <p className="text-xs text-gray-400 break-words">Token usage and transaction history</p>
+              </div>
+            </div>
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('nav_to_healer_ops'))}
+              className="w-full mt-2 text-xs font-bold uppercase tracking-wider text-cyan-400 hover:text-cyan-300 border border-cyan-500/40 hover:border-cyan-400/60 rounded-lg px-3 py-2 transition-colors"
+            >
+              View Ops
+            </button>
+          </motion.div>
+
           <AnimatePresence>
-            {agents.map((agent, idx) => (
+            {agents.map((agent) => (
               <AgentCard
                 key={agent.name}
                 agent={agent}

@@ -2,7 +2,24 @@ import sqlite3
 import json
 import os
 from datetime import datetime
-from .schema import SCHEMA
+from .schema import SCHEMA, MIGRATIONS
+
+
+def _trim_analysis_for_list(a):
+    """Limit forensics arrays for list view to cut memory; overlay shows without re-fetch."""
+    if not a:
+        return {}
+    out = {k: v for k, v in a.items() if k != 'forensics'}
+    f = (a.get('forensics') or {})
+    if f:
+        # Keep capped arrays so overlay renders; avoid full 50+ item lists
+        out['forensics'] = {
+            **{k: v for k, v in f.items() if k not in ('tactical_highlights', 'death_highlights')},
+            'tactical_highlights': (f.get('tactical_highlights') or [])[:12],
+            'death_highlights': (f.get('death_highlights') or [])[:8],
+        }
+    return out
+
 
 class DatabaseManager:
     def __init__(self, db_path=None):
@@ -23,6 +40,11 @@ class DatabaseManager:
         with self._get_connection() as conn:
             for sql in SCHEMA:
                 conn.execute(sql)
+            for sql in MIGRATIONS:
+                try:
+                    conn.execute(sql)
+                except sqlite3.OperationalError:
+                    pass  # e.g. duplicate column
             conn.commit()
 
     def set_kv(self, key, value):
@@ -49,7 +71,7 @@ class DatabaseManager:
         with self._get_connection() as conn:
             return conn.execute(query, params).fetchone()[0]
 
-    def get_matches(self, limit=100, offset=0, hero=None, map_name=None, include_players=True, match_id=None, include_details=False, search=None):
+    def get_matches(self, limit=100, offset=0, hero=None, map_name=None, since=None, include_players=True, match_id=None, include_details=False, search=None):
         query = "SELECT DISTINCT m.* FROM matches m"
         params = []
         where_clauses = []
@@ -60,17 +82,18 @@ class DatabaseManager:
             where_clauses.append("(m.id LIKE ? OR m.hero LIKE ? OR m.map LIKE ? OR p.player_name LIKE ?)")
             params.extend([search_param, search_param, search_param, search_param])
         elif hero:
-            query += " JOIN match_players p ON m.id = p.match_id"
-            where_clauses.append("p.hero = ?")
+            where_clauses.append("m.hero = ?")
             params.append(hero)
 
         if match_id:
             where_clauses.append("m.id = ?")
             params.append(match_id)
-        
         if map_name:
             where_clauses.append("m.map = ?")
             params.append(map_name)
+        if since:
+            where_clauses.append("m.date >= ?")
+            params.append(since)
 
         if where_clauses:
             query += " WHERE " + " AND ".join(where_clauses)
@@ -126,11 +149,17 @@ class DatabaseManager:
                     match['has_raw_stats'] = bool(match.get('raw_stats'))
 
                     # Always parse analysis (needed for UI summaries)
-                    match['analysis'] = json.loads(match['analysis']) if match['analysis'] else {}
+                    a = json.loads(match['analysis']) if match['analysis'] else {}
+                    if include_details or match_id:
+                        match['analysis'] = a
+                    else:
+                        # List view: strip heavy forensics (tactical/death highlights) to cut memory ~80%
+                        match['analysis'] = _trim_analysis_for_list(a)
                     
                     # Only include heavy raw_stats if explicitly requested
                     if include_details or match_id:
                         match['raw_stats'] = json.loads(match['raw_stats']) if match['raw_stats'] else {}
+                        match['advanced_stats'] = match['raw_stats']  # Alias for components expecting advanced_stats
                     else:
                         match['raw_stats'] = None
             return matches
@@ -161,6 +190,15 @@ class DatabaseManager:
             conn.commit()
             return True
 
+    def update_match_banner_columns(self, match_id, user_was_banner, enemy_banner_name):
+        """Update banner context columns (for backfill). Columns must exist (migrations)."""
+        with self._get_connection() as conn:
+            conn.execute(
+                "UPDATE matches SET user_was_banner = ?, enemy_banner_name = ? WHERE id = ?",
+                (1 if user_was_banner else 0, enemy_banner_name or None, match_id)
+            )
+            conn.commit()
+            return True
 
     def get_hero_map_stats(self, hero):
         query = """

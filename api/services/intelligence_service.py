@@ -78,34 +78,33 @@ class IntelligenceService:
             chat = active_model.start_chat(history=history or [])
             response = chat.send_message(full_prompt)
             
-            # 4. Record Telemetry & Quota
+            # 4. Record Telemetry & Quota (always record prompt/response text; token counts best-effort)
+            response_text = response.text or ""
             try:
-                # Extract tokens
                 usage = getattr(response, 'usage_metadata', None)
-                p_tokens = usage.prompt_token_count if usage else 0
-                r_tokens = usage.candidates_token_count if usage else 0
-                t_tokens = usage.total_token_count if usage else 0
-                
-                # Update KV Telemetry
+                p_tokens = getattr(usage, 'prompt_token_count', 0) if usage else 0
+                r_tokens = getattr(usage, 'candidates_token_count', 0) if usage else 0
+                t_tokens = getattr(usage, 'total_token_count', 0) if usage else (p_tokens + r_tokens or 0)
+            except Exception:
+                p_tokens = r_tokens = t_tokens = 0
+            try:
                 telemetry = self.db.get_kv('token_telemetry') or {
                     "total_tokens": 0, "prompt_tokens": 0, "response_tokens": 0, "total_calls": 0, "history": []
                 }
-                
                 telemetry["total_tokens"] += t_tokens
                 telemetry["prompt_tokens"] += p_tokens
                 telemetry["response_tokens"] += r_tokens
                 telemetry["total_calls"] += 1
-                
-                # Add to history (limit to 20)
                 telemetry["history"].insert(0, {
-                    "timestamp": time.time() if 'time' in globals() else datetime.now().timestamp(),
+                    "timestamp": time.time(),
                     "prompt_t": p_tokens,
                     "resp_t": r_tokens,
                     "total_t": t_tokens,
-                    "model": active_model.model_name
+                    "model": getattr(active_model, 'model_name', ''),
+                    "prompt_text": (full_prompt[:2000] + "…") if len(full_prompt) > 2000 else full_prompt,
+                    "response_text": (response_text[:1500] + "…") if len(response_text) > 1500 else response_text,
                 })
                 telemetry["history"] = telemetry["history"][:20]
-                
                 self.db.set_kv('token_telemetry', telemetry)
             except Exception as tel_e:
                 ColoredLogger.error(f"Telemetry Recording Error: {tel_e}")

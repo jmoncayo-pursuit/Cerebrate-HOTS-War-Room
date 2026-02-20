@@ -369,15 +369,15 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                             ))}
                         </div>
 
-                        {stats.avoidSectors && stats.avoidSectors.length > 0 && (
+                        {stats.trainingSectors && stats.trainingSectors.length > 0 && (
                             <div className="mt-8 pt-8 border-t border-white/5">
                                 <div className="flex items-center gap-2 mb-4">
-                                    <AlertTriangle className="w-4 h-4 text-red-400" />
-                                    <h4 className="text-sm font-bold text-red-400 uppercase tracking-widest">Restricted Sectors</h4>
+                                    <Swords className="w-4 h-4 text-cyan-400" />
+                                    <h4 className="text-sm font-bold text-cyan-400 uppercase tracking-widest">Targeted Training Sectors</h4>
                                 </div>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    {(stats.avoidSectors || []).map((s, i) => (
-                                        <div key={i} className="p-4 rounded-lg bg-red-900/10 border border-red-500/10 flex items-center justify-between opacity-80">
+                                    {(stats.trainingSectors || []).map((s, i) => (
+                                        <div key={i} className="p-4 rounded-lg bg-cyan-900/10 border border-cyan-500/20 flex items-center justify-between opacity-80">
                                             <div className="text-white font-medium">{s.name}</div>
                                             <ConfidenceScore value={s.wr} n={s.games_played || 0} className="scale-75 origin-right" />
                                         </div>

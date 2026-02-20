@@ -22,11 +22,15 @@ def execute_upsert(db, match_data):
         final_analysis = json.dumps(new_analysis) if (new_analysis and new_analysis.get('verdict') != "ANALYSIS FAILED") else existing_analysis
 
         # 3. Insert/Replace Match
+        user_was_banner = 1 if m.get('user_was_banner') else 0
+        enemy_banner_name = m.get('enemy_banner_name') or None
         conn.execute(
-            "INSERT OR REPLACE INTO matches (id, map, hero, result, date, duration, winning_team, analysis, raw_stats) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            """INSERT OR REPLACE INTO matches (id, map, hero, result, date, duration, winning_team, analysis, raw_stats, pipeline_version, user_was_banner, enemy_banner_name)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
             (
                 mid, m.get('map'), m.get('hero'), m.get('result'), date, duration, m.get('winning_team'),
-                final_analysis, json.dumps(m.get('advanced_stats', {}))
+                final_analysis, json.dumps(m.get('advanced_stats', {})), m.get('pipeline_version'),
+                user_was_banner, enemy_banner_name
             )
         )
         

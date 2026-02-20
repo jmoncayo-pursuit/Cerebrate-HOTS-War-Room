@@ -1,0 +1,224 @@
+.healer-dev-page {
+  position: relative;
+  padding: 1rem;
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.healer-dev-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 50% 50%, transparent 0%, rgba(5, 5, 17, 0.35) 100%);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.healer-dev-header {
+  margin-bottom: 1.5rem;
+}
+
+.healer-dev-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  margin-bottom: 1rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #94a3b8;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s, border-color 0.2s;
+}
+
+.healer-dev-back:hover {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.healer-dev-title-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.healer-dev-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+  border-radius: 1rem;
+  border: 1px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.healer-dev-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: white;
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.healer-dev-subtitle {
+  font-size: 0.7rem;
+  color: #64748b;
+  margin: 0.25rem 0 0;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.healer-dev-card {
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.6) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+  padding: 1.25rem 1.5rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(12px);
+}
+
+.healer-dev-status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.healer-dev-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.healer-dev-dot.running {
+  background: #10b981;
+  box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+  animation: healer-pulse 1.5s ease-in-out infinite;
+}
+
+.healer-dev-dot.stopped {
+  background: #475569;
+}
+
+@keyframes healer-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.healer-dev-mode {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #e2e8f0;
+}
+
+.healer-dev-pulse {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  color: #10b981;
+  margin-top: 0.25rem;
+}
+
+.healer-dev-btn {
+  padding: 0.6rem 1.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 0.5rem;
+  border: 1px solid;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+
+.healer-dev-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.healer-dev-btn.start {
+  background: rgba(16, 185, 129, 0.2);
+  border-color: rgba(16, 185, 129, 0.4);
+  color: #34d399;
+}
+
+.healer-dev-btn.start:hover:not(:disabled) {
+  background: rgba(16, 185, 129, 0.3);
+}
+
+.healer-dev-btn.stop {
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.35);
+  color: #f87171;
+}
+
+.healer-dev-btn.stop:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.25);
+}
+
+.healer-dev-spinner {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid currentColor;
+  border-top-color: transparent;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.healer-dev-warn {
+  margin: 1rem 0 0;
+  font-size: 0.8rem;
+  color: #f59e0b;
+}
+
+.healer-dev-loop .healer-dev-loop-title {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #94a3b8;
+  margin: 0 0 0.75rem;
+}
+
+.healer-dev-loop-list {
+  margin: 0;
+  padding-left: 1.25rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  line-height: 1.6;
+}
+
+.healer-dev-loop-list li {
+  margin-bottom: 0.35rem;
+}
+
+.healer-dev-loop-list code {
+  font-size: 0.7rem;
+  background: rgba(0, 0, 0, 0.3);
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  color: #94a3b8;
+}
+
+.healer-dev-loop-footer {
+  margin: 0.75rem 0 0;
+  font-size: 0.7rem;
+  color: #64748b;
+}

@@ -1,4 +1,5 @@
 from flask import Blueprint, request, jsonify
+import json
 from api.services.database import DatabaseManager
 import uuid
 from datetime import datetime
@@ -15,7 +16,7 @@ def get_interactions():
 def save_brief(player_id):
     data = request.json or {}
     brief = data.get('brief')
-    audit = data.get('audit') # Frontend might pass audit if it triggered it, but we'll re-audit or store it
+    audit = None  # Auditor removed to reduce token usage
     
     interactions = db.get_kv('player_interactions') or {}
     
@@ -35,28 +36,6 @@ def save_brief(player_id):
                 
     if not player_data:
         return jsonify({"success": False, "error": "Player not found"}), 404
-        
-    # INTEGRATE NEURAL AUDIT if not provided
-    if not audit:
-        try:
-            from agents.cerebrate_orchestrator import CerebrateOrchestrator
-            from api.services.intelligence_service import IntelligenceService
-            import os
-            api_key = os.environ.get('GEMINI_API_KEY')
-            intel = IntelligenceService(db, api_key)
-            orchestrator = CerebrateOrchestrator(call_gemini_api_fn=intel.generate_chat_response, db_manager=db)
-            
-            audit_context = {
-                'target_query': player_data.get('name', 'Unknown Player'),
-                'target_context': f"Player Data: {json.dumps(player_data)}",
-                'target_response': brief,
-                'audit_type': 'SOCIAL'
-            }
-            auditor_result = orchestrator.agents['auditor'].analyze(player_data.get('name'), audit_context)
-            if auditor_result.get('success'):
-                audit = auditor_result.get('audit')
-        except Exception as e:
-            print(f"Social Audit Error: {e}")
 
     player_data['aiStrategy'] = brief
     player_data['audit'] = audit

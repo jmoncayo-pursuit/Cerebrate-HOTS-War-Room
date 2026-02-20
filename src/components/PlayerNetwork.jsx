@@ -4,6 +4,7 @@ import { ChevronRight, Activity, Users, Target, Sword, Swords, AlertTriangle, Se
 import { motion, AnimatePresence } from 'framer-motion';
 import HeroText from './HeroText';
 import SelfHealingErrorBoundary from './SelfHealingErrorBoundary';
+import VerificationModal from './VerificationModal';
 import './PlayerNetwork.css';
 
 // StrategyContent now uses HeroText component
@@ -96,13 +97,14 @@ const PlayerNetworkContent = () => {
     const [players, setPlayers] = useState([]);
     const [heroData, setHeroData] = useState(null);
     const [filter, setFilter] = useState('all');
+    const [showVerificationModal, setShowVerificationModal] = useState(false);
     const [sortConfig, setSortConfig] = useState({ key: 'total', direction: 'desc' });
     const [searchTerm, setSearchTerm] = useState('');
     const [loading, setLoading] = useState(true);
     const [expandedPlayer, setExpandedPlayer] = useState(null);
     const [generatingStrategy, setGeneratingStrategy] = useState(null);
 
-    useEffect(() => {
+    const loadData = () => {
         setLoading(true);
         Promise.all([
             fetch('/api/player_interactions').then(res => res.json()),
@@ -166,6 +168,14 @@ const PlayerNetworkContent = () => {
                 console.error('Failed to load player interactions:', err);
                 setLoading(false);
             });
+    };
+
+    useEffect(() => { loadData(); }, []);
+
+    useEffect(() => {
+        const onProfileRefreshed = () => loadData();
+        window.addEventListener('profileRefreshed', onProfileRefreshed);
+        return () => window.removeEventListener('profileRefreshed', onProfileRefreshed);
     }, []);
 
     // Load saved strategies from database (already loaded via API, but check localStorage as fallback)
@@ -305,10 +315,15 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
     };
 
     const handleSort = (key) => {
-        setSortConfig(prev => ({
-            key,
-            direction: prev.key === key && prev.direction === 'desc' ? 'asc' : 'desc'
-        }));
+        setSortConfig(prev => {
+            if (prev.key !== key) {
+                return { key, direction: 'desc' };
+            }
+            if (prev.direction === 'desc') {
+                return { key, direction: 'asc' };
+            }
+            return { key: 'total', direction: 'desc' }; // Default sort
+        });
     };
 
     const sortedPlayers = useMemo(() => {
@@ -484,6 +499,12 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                 </div>
 
                 <div className="flex items-center gap-4">
+                    <button
+                        onClick={() => setShowVerificationModal(true)}
+                        className="px-4 py-1.5 bg-purple-500/10 border border-purple-500/30 rounded-full text-[10px] font-bold uppercase tracking-widest text-purple-400 hover:bg-purple-500/20 transition-all flex items-center gap-2"
+                    >
+                        📸 Verify Stats
+                    </button>
                     <div className="network-search-container !max-w-[300px]">
                         <div className="search-input-wrapper">
                             <Search className="search-icon" />
@@ -500,6 +521,16 @@ Keep it under 200 words. Be specific with hero names and tactical details.`;
                     </div>
                 </div>
             </div>
+
+            <VerificationModal
+                isOpen={showVerificationModal}
+                onClose={() => setShowVerificationModal(false)}
+                onSuccess={() => {
+                    window.dispatchEvent(new CustomEvent('profileRefreshed'));
+                    loadData();
+                    setShowVerificationModal(false);
+                }}
+            />
 
             {/* Top Intelligence Section - Unified "Perfect Rectangle" Grid */}
             <div className="intelligence-summary-wrapper">

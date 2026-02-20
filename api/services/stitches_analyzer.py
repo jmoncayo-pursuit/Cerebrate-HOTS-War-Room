@@ -115,9 +115,9 @@ class StitchesAnalyzer:
                         if abil:
                             link = abil.get('m_abilLink')
                             # Hook IDs vary by patch: 185, 186 (Classic/Tomb), 575, 579 (Modern)
-                            if link in [181, 185, 186, 575, 579]:
-                                if 'TargetPoint' in data:
-                                    if gameloop - last_hook_loop > 80:
+                            if link in [181, 185, 186, 575, 579, 580]:
+                                if 'TargetPoint' in data or 'TargetUnit' in data:
+                                    if gameloop - last_hook_loop > 20: # Cooldown is ~16s, but allowing for rapid misfire/reset logic
                                         hooks.append({'ts': ts, 'gameloop': gameloop})
                                         last_hook_loop = gameloop
                         
@@ -164,7 +164,7 @@ class StitchesAnalyzer:
                 window_start, window_end = h_ts, h_ts + 1.5
 
                 for cmd in attack_cmds:
-                    if window_start < cmd['ts'] <= window_end:
+                    if (h_ts - 0.1) <= cmd['ts'] <= (h_ts + 2.0):
                         possible_victim = link_to_hero.get(cmd['link'])
                         if possible_victim and possible_victim['team'] != stitches_team and possible_victim['hero'] != 'Stitches':
                             victim_info = possible_victim

@@ -59,7 +59,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
         const hasVerifiedStats = Object.keys(verifiedHeroes).length > 0;
 
         if (hasVerifiedStats) {
-            const sSlug = profile.active_season?.slug || 'season_2025_3';
+            const sSlug = profile.active_season?.slug || 'season_2026_1';
             Object.entries(verifiedHeroes).forEach(([heroName, data]) => {
                 const seasonData = data[`verified_${sSlug}`];
                 if (seasonData && parseInt(seasonData.games) > 0) {
@@ -92,7 +92,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                 heroStats[hero] = { wins: 0, total: 0, hero, role: null }
             }
             // Only count matches if hero doesn't have verified stats (already counted above)
-            const sSlug = profile.active_season?.slug || 'season_2025_3';
+            const sSlug = profile.active_season?.slug || 'season_2026_1';
             if (!hasVerifiedStats || !verifiedHeroes[hero] || !verifiedHeroes[hero][`verified_${sSlug}`]) {
                 heroStats[hero].total++
                 if (match.result === 'WIN') heroStats[hero].wins++
@@ -134,8 +134,9 @@ export default function QuickStatsPanel({ onSelectMatch }) {
         const hasVerifiedStats = Object.keys(verifiedHeroes).length > 0;
 
         if (hasVerifiedStats) {
+            const sSlug = profile.active_season?.slug || 'season_2026_1';
             Object.entries(verifiedHeroes).forEach(([heroName, data]) => {
-                const s3 = data.verified_season_2025_3;
+                const s3 = data[`verified_${sSlug}`];
                 if (s3 && parseInt(s3.games) > 0) {
                     let wins = parseInt(s3.wins);
                     let total = parseInt(s3.games);
@@ -156,7 +157,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
             if (!heroStats[hero]) {
                 heroStats[hero] = { wins: 0, total: 0, hero, role: null }
             }
-            const sSlug = profile.active_season?.slug || 'season_2025_3';
+            const sSlug = profile.active_season?.slug || 'season_2026_1';
             if (!hasVerifiedStats || !verifiedHeroes[hero] || !verifiedHeroes[hero][`verified_${sSlug}`]) {
                 heroStats[hero].total++
                 if (match.result === 'WIN') heroStats[hero].wins++
@@ -197,7 +198,8 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                 <h3 className="section-title">Performance Dashboard</h3>
                 <div className="section-stat flex items-center gap-3">
                     {(() => {
-                        const s3Stats = profile?.rank_data?.storm_league?.verified_season_2025_3 || {};
+                        const sSlugRank = profile?.active_season?.slug || 'season_2026_1';
+                        const s3Stats = profile?.rank_data?.storm_league?.[`verified_${sSlugRank}`] || profile?.rank_data?.storm_league?.verified_season_2025_3 || {};
                         const displayGames = s3Stats.total_games || s3Matches.length;
                         const displayWR = s3Stats.win_rate || (s3Matches.length > 0 ? ((s3Matches.filter(m => m.result === 'WIN').length / s3Matches.length) * 100).toFixed(1) : 0);
                         const peakRank = profile?.rank_data?.peak_rank;

@@ -8,6 +8,7 @@ import MapIcon from './MapIcon'
 import BuildDisplay from './BuildDisplay'
 import HeroText, { processHeroIcons } from './HeroText'
 import { normalizeHeroName } from '../utils/heroUtils'
+import { sanitizeChatResponse } from '../utils/sanitizeChatResponse'
 import talentMapData from '../data/talent_id_map.json'
 
 // Helper to extract text from ReactMarkdown children
@@ -311,30 +312,30 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
           )}
 
           {isUser ? (
-            <div className="whitespace-pre-wrap">{message.content}</div>
+            <div className="whitespace-pre-wrap select-text">{message.content}</div>
           ) : message.content ? (
-            <div className="markdown-content prose prose-invert prose-cyan max-w-none font-mono text-sm bg-black/20 py-2 px-3 rounded-lg border-l-2 border-cyan-500/30">
+            <div className="markdown-content prose prose-sm prose-invert prose-cyan max-w-none font-mono text-sm bg-black/20 py-1.5 px-2.5 rounded-lg border-l-2 border-cyan-500/30 space-y-0.5 select-text">
               <ReactMarkdown
                 remarkPlugins={[]}
                 rehypePlugins={[]}
                 components={{
                   h1: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    return <h1 className="text-xl font-bold mb-3 text-cyan-400"><HeroText text={text} /></h1>;
+                    return <div className="text-sm font-semibold mt-2 first:mt-0 mb-1 text-cyan-400"><HeroText text={text} /></div>;
                   },
                   h2: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    return <h2 className="text-lg font-bold mb-2 text-purple-300"><HeroText text={text} /></h2>;
+                    return <div className="text-sm font-semibold mt-1.5 mb-0.5 text-purple-300"><HeroText text={text} /></div>;
                   },
                   h3: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    return <h3 className="text-md font-bold mb-2 text-purple-200"><HeroText text={text} /></h3>;
+                    return <div className="text-sm font-medium mt-1 mb-0.5 text-purple-200"><HeroText text={text} /></div>;
                   },
-                  ul: ({ node, ...props }) => <ul className="list-disc pl-3 mb-3 space-y-1" {...props} />,
-                  ol: ({ node, ...props }) => <ol className="list-decimal pl-3 mb-3 space-y-1" {...props} />,
+                  ul: ({ node, ...props }) => <ul className="list-disc pl-4 my-1 space-y-0.5" {...props} />,
+                  ol: ({ node, ...props }) => <ol className="list-decimal pl-4 my-1 space-y-0.5" {...props} />,
                   li: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    return <li className="mb-1 leading-relaxed">{renderTacticalContent(text, talentMapData)}</li>;
+                    return <li className="leading-snug">{renderTacticalContent(text, talentMapData)}</li>;
                   },
                   code: ({ node, inline, className, children, ...props }) => {
                     // Extract text content from ReactMarkdown children
@@ -369,7 +370,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
                       const cleanBuildStr = buildStr.trim();
 
                       return (
-                        <div className={`${inline ? 'inline-block' : 'my-2 inline-block'} align-middle transform scale-90 origin-left`}>
+                        <div className={`${inline ? 'inline-block' : 'my-1 inline-block'} align-middle transform scale-90 origin-left`}>
                           <BuildDisplay
                             hero={cleanHeroName}
                             buildStr={cleanBuildStr}
@@ -383,11 +384,11 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
 
                     return inline
                       ? <code className="bg-black/30 px-1 py-0.5 rounded text-cyan-300 font-mono text-sm" {...props}><HeroText text={content} compact={true} iconSize="w-4 h-4" /></code>
-                      : <div className="bg-black/40 rounded-lg p-3 my-3 border border-white/10 overflow-x-auto"><code className="text-sm font-mono text-gray-300 block whitespace-pre-wrap break-words" {...props}>{children}</code></div>
+                      : <div className="bg-black/40 rounded-lg p-2 my-1.5 border border-white/10 overflow-x-auto"><code className="text-sm font-mono text-gray-300 block whitespace-pre-wrap break-words" {...props}>{children}</code></div>
                   },
                   p: ({ node, children, ...props }) => {
                     const text = extractText(children);
-                    return <div className="mb-3 last:mb-0 leading-relaxed whitespace-pre-wrap">{renderTacticalContent(text, talentMapData)}</div>;
+                    return <div className="mb-1.5 last:mb-0 leading-snug whitespace-pre-wrap">{renderTacticalContent(text, talentMapData)}</div>;
                   },
                   strong: ({ node, children, ...props }) => {
                     const text = extractText(children);
@@ -664,6 +665,7 @@ export default function UnifiedChat({
   }
 
   useEffect(() => {
+    if (typeof document !== 'undefined' && document.getSelection?.()?.toString?.()) return
     scrollToBottom()
   }, [messages, pendingUpdate, loading])
 
@@ -756,10 +758,16 @@ export default function UnifiedChat({
     const urlMatch = message.match(/https?:\/\/[^\s]+/i)
     if (urlMatch) return 'SCRAPE_URL'
 
-    // Simplified: Use keyword matching only (no API call)
-    // TODO: Re-enable intent detection after fixing rate limiting
-    const commandKeywords = ['add', 'set', 'remove', 'update', 'change', 'create', 'rule', 'validation', 'condition', 'ban', 'prioritize']
-    return commandKeywords.some(k => message.toLowerCase().includes(k)) ? 'COMMAND' : 'QUESTION'
+    const lower = message.toLowerCase().trim()
+    const questionPatterns = /\b(what|who|which|how|when|should i|can i|could you|recommend|suggest|advice|tips|best|strategy for|playing as|when playing)\b/i
+    const isQuestion = questionPatterns.test(lower)
+    if (isQuestion) return 'QUESTION'
+
+    const commandKeywords = ['add', 'set', 'remove', 'update', 'change', 'create', 'rule', 'validation', 'condition', 'prioritize', 'unban', 'stop playing']
+    const hasCommandKeyword = commandKeywords.some(k => lower.includes(k))
+    const imperativeBan = /^ban\s+\w+|^\s*ban\s+[\w\s]+$/i.test(lower) || /\b(ban|add to ban|put on ban)\s+(me\s+)?[\w\s]+/i.test(lower)
+    if (hasCommandKeyword || imperativeBan) return 'COMMAND'
+    return 'QUESTION'
   }
 
   const handleKeyDown = (e) => {
@@ -1112,10 +1120,11 @@ export default function UnifiedChat({
         content = JSON.stringify(data, null, 2);
       }
 
-      // Add agent metadata to message
+      // Sanitize: jargon → plain language, collapse duplicate hero names
+      const sanitized = typeof content === 'string' ? sanitizeChatResponse(content) : content
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: content,
+        content: sanitized,
         agent: data.agent,
         orchestrator: data.orchestrator,
         model: data.agent?.name || 'Cerebrate',
@@ -1467,9 +1476,10 @@ ${queryContext ? `\n[Additional Context: ${JSON.stringify(queryContext)}]` : ''}
       if (!data.response || !data.response.trim()) {
         setMessages(prev => [...prev, { role: 'assistant', content: "⚠️ **Telemetry Interrupted.** Signal loss detected. Please restate directive." }])
       } else {
+        const sanitized = sanitizeChatResponse(data.response)
         setMessages(prev => [...prev, {
           role: 'assistant',
-          content: data.response,
+          content: sanitized,
           model: data.link_quality || 'Cerebrate'
         }])
       }

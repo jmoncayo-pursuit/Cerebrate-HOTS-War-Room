@@ -222,7 +222,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                                                 className="scale-75 origin-left"
                                             />
                                             <span className="text-slate-400">
-                                                (+{delta.toFixed(1)}% vs HP Avg)
+                                                {Math.abs(delta) < 0.1 ? 'same as meta' : delta >= 0 ? `${delta.toFixed(1)}% above meta` : `${Math.abs(delta).toFixed(1)}% below meta`}
                                             </span>
                                         </div>
 
@@ -306,7 +306,7 @@ export default function QuickSummaryTile({ matches, profile, talentMap }) {
                                                 className="scale-75 origin-left"
                                             />
                                             <span className="text-slate-400">
-                                                ({delta.toFixed(1)}% vs HP Avg)
+                                                {Math.abs(delta) < 0.1 ? 'same as meta' : delta >= 0 ? `${delta.toFixed(1)}% above meta` : `${Math.abs(delta).toFixed(1)}% below meta`}
                                             </span>
                                         </div>
 

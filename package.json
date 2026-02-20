@@ -6,10 +6,12 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
+    "serve": "node scripts/serve-with-prerender.js",
     "prestart": "lsof -i :5001,5173 -t | xargs kill -9 2>/dev/null || pkill -9 -f replay_watcher.py || true",
     "start": "./start_server.sh"
   },
   "dependencies": {
+    "@mcp-b/global": "^1.5.0",
     "cors": "^2.8.5",
     "express": "^4.22.1",
     "framer-motion": "^12.23.26",

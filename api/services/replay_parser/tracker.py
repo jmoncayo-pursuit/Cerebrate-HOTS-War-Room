@@ -3,7 +3,13 @@ from . import talents
 from .talents import get_talent_from_index
 from .utils import get_hero_display_name, clean_text
 
-def process_tracker_events(events, players, stats_data):
+# Ignore leave events in last 90s (end-of-game; everyone "leaves" or game-end signals)
+DC_GRACE_GAMELOOPS = 90 * 16  # 90 sec * 16 loops/sec
+# Ignore leaves in first 30s (loading/lobby)
+DC_EARLY_GAMELOOPS = 30 * 16
+
+
+def process_tracker_events(events, players, stats_data, game_loops=0):
     """
     Process all tracker events to extract KDA, Hero Stats, Talents, and map-specific metrics.
     """
@@ -105,20 +111,48 @@ def process_tracker_events(events, players, stats_data):
                                     'source': 'fallback_unit_died'
                                 })
 
+        # --- PICKS (true draft order from SHeroPickedEvent) ---
+        elif etype == 'SHeroPickedEvent':
+            slot_id = event.get('m_controllingPlayer')
+            h_raw = event.get('m_hero') or b''
+            hero_raw = h_raw.decode('utf-8') if isinstance(h_raw, bytes) else str(h_raw)
+            hero_display = get_hero_display_name(hero_raw)
+            pl = None
+            for p in players:
+                if p.get('_working_set_slot_id') == slot_id:
+                    pl = p
+                    break
+            if not pl and hero_display:
+                picked = {x['hero'] for x in stats_data.get('tracker_picks', [])}
+                for p in players:
+                    if clean_text(p.get('hero') or '') == clean_text(hero_display) and (p.get('hero') or '') not in picked:
+                        pl = p
+                        break
+            if pl and hero_display:
+                if 'tracker_picks' not in stats_data:
+                    stats_data['tracker_picks'] = []
+                stats_data['tracker_picks'].append({
+                    'order': len(stats_data['tracker_picks']) + 1,
+                    'hero': hero_display,
+                    'team': pl['team'],
+                    'name': pl['name'],
+                })
+
         # --- BANS ---
         elif etype == 'SHeroBannedEvent':
             team_id = event.get('m_controllingTeam')
-            if team_id is None:
-                user_wrapper = event.get('_userid', {})
-                if isinstance(user_wrapper, dict):
-                    uid = user_wrapper.get('m_userId')
-                    if uid is not None and 0 <= uid < len(players):
-                        team_id = players[uid]['team']
-            
+            user_wrapper = event.get('_userid', {})
+            uid = user_wrapper.get('m_userId') if isinstance(user_wrapper, dict) else None
+            if team_id is None and uid is not None and 0 <= uid < len(players):
+                team_id = players[uid]['team']
+            banned_by = None
+            if uid is not None and 0 <= uid < len(players):
+                banned_by = players[uid]['name']
             bans.append({
                 'hero': event.get('m_hero', b'').decode('utf-8'),
                 'gameloop': gameloop,
-                'team': team_id
+                'team': team_id,
+                'banned_by': banned_by
             })
 
         # --- TALENTS ---
@@ -162,9 +196,14 @@ def process_tracker_events(events, players, stats_data):
                 camp_type = str_map.get('CampType', 'Merc Camp')
                 
                 is_boss = any(kw in camp_type for kw in ['Boss', 'GraveyardBoss', 'Archangel', 'Webweaver', 'SlimeBoss'])
+                capt_pid = data_map.get('PlayerID') or data_map.get('Player') or data_map.get('CapturingPlayer')
+                capt_name = None
+                if capt_pid and isinstance(capt_pid, int) and 0 < capt_pid <= len(players):
+                    capt_name = players[capt_pid - 1].get('name')
                 event_entry = {
                     'timestamp': round(gameloop / 16.0, 1),
                     'captured_by_team': team_id,
+                    'captured_by_player': capt_name,
                     'unit_name': camp_type,
                     'gameloop': gameloop
                 }
@@ -177,11 +216,13 @@ def process_tracker_events(events, players, stats_data):
                 k_pid = data_map.get('KillingPlayer')
                 if k_pid and 0 < k_pid <= len(players):
                     destroying_team = players[k_pid-1]['team']
+                destroying_player = players[k_pid-1].get('name') if (k_pid and 0 < k_pid <= len(players)) else None
                 
                 stats_data['structure_destructions'].append({
                     'timestamp': round(gameloop / 16.0, 1),
                     'structure_type': str_map.get('UnitType', 'Structure'),
                     'destroyed_by_team': destroying_team,
+                    'destroyed_by_player': destroying_player,
                     'gameloop': gameloop
                 })
 
@@ -192,12 +233,23 @@ def process_tracker_events(events, players, stats_data):
                         stats_data[pid]['stats'][k] = round(data_map.get(k, 0) / 4096.0)
 
             elif ename == 'GameUserLeave':
-                # Forensic detection of a player disconnecting
+                # Forensic detection of a player disconnecting (ignore end-of-game leaves)
+                if not game_loops or gameloop <= 0:
+                    continue
+                if gameloop < DC_EARLY_GAMELOOPS:
+                    continue  # Loading/lobby noise
+                cutoff = game_loops - DC_GRACE_GAMELOOPS
+                if gameloop > cutoff:
+                    continue  # End-of-game leave, not a real DC
                 pid = data_map.get('PlayerID')
-                if pid and pid in stats_data:
-                    stats_data[pid]['disconnected'] = True
-                    stats_data[pid]['dc_gameloop'] = gameloop
-                    stats_data[pid]['dc_timestamp'] = round(gameloop / 16.0, 1)
+                if pid is not None:
+                    # Handle 0-based (0-9) vs 1-based (1-10) PlayerID
+                    if 0 <= pid <= 9 and (pid + 1) in stats_data and pid not in stats_data:
+                        pid = pid + 1
+                    if pid and 1 <= pid <= 10 and pid in stats_data:
+                        stats_data[pid]['disconnected'] = True
+                        stats_data[pid]['dc_gameloop'] = gameloop
+                        stats_data[pid]['dc_timestamp'] = round(gameloop / 16.0, 1)
 
             elif ename == 'PlayerDeath':
                 victim_pid = data_map.get('PlayerID')
@@ -220,10 +272,11 @@ def process_tracker_events(events, players, stats_data):
                             'gameloop': gameloop
                         })
 
-    return stats_data, bans
+    tracker_picks = stats_data.pop('tracker_picks', None) or []
+    return stats_data, bans, tracker_picks
 
 
-def process_game_events(events, players, stats_data):
+def process_game_events(events, players, stats_data, game_loops=0):
     """
     Process game events to extract data not found in tracker events (e.g. talents, hook casts).
     """
@@ -271,12 +324,21 @@ def process_game_events(events, players, stats_data):
                                     "source": "game_event"
                                 })
         
-        elif etype == 'SGameUserLeaveEvent':
-            uid = event.get('_userid', {}).get('m_userId')
+        elif etype in ('SGameUserLeaveEvent', 'SUserLeaveEvent'):
+            if not game_loops or gameloop <= 0:
+                continue
+            if gameloop < DC_EARLY_GAMELOOPS:
+                continue  # Loading/lobby noise
+            cutoff = game_loops - DC_GRACE_GAMELOOPS
+            if gameloop > cutoff:
+                continue  # End-of-game leave, not a real DC
+            userid = event.get('_userid')
+            uid = userid.get('m_userId') if isinstance(userid, dict) else None
+            if uid is None and hasattr(userid, 'get'):
+                uid = userid.get('m_userId')
             if uid is not None:
-                pid = uid + 1
-                if pid in stats_data:
-                    # Forensic DC tracking
+                pid = int(uid) + 1  # 0-indexed -> 1-indexed
+                if 1 <= pid <= len(players) and pid in stats_data:
                     stats_data[pid]['disconnected'] = True
                     stats_data[pid]['dc_gameloop'] = gameloop
                     stats_data[pid]['dc_timestamp'] = round(gameloop / 16.0, 1)

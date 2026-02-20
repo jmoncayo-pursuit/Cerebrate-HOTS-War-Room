@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import './VerificationModal.css';
-
+import { ACTIVE_SEASON } from '../config/season';
 import RankIcon from './RankIcon';
 
 export default function VerificationModal({ isOpen, onClose, onSuccess }) {
@@ -22,6 +22,8 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
     const [error, setError] = useState('');
     const [detectedHeroes, setDetectedHeroes] = useState([]);
     const [syncSuccess, setSyncSuccess] = useState(false);
+    const [activeSeason, setActiveSeason] = useState(ACTIVE_SEASON);
+    const [extractionSummary, setExtractionSummary] = useState('');
     const HERO_ALIASES = {
         "Crusader": "Johanna", "FaerieDragon": "Brightwing", "DemonHunter": "Valla",
         "Monk": "Kharazim", "Medic": "Lt. Morales", "Firebat": "Blaze",
@@ -45,9 +47,13 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
         try {
             const res = await fetch('/api/player_profile');
             const profile = await res.json();
+            const seasonFromProfile = profile?.active_season || profile?.config?.active_season;
+            // Prefer ACTIVE_SEASON when profile has a different (older) season
+            const effectiveSeason = (seasonFromProfile?.slug === ACTIVE_SEASON.slug) ? seasonFromProfile : ACTIVE_SEASON;
+            setActiveSeason(effectiveSeason);
+            const slug = effectiveSeason.slug;
             const sl = profile.rank_data?.storm_league || {};
 
-            // Load Heroes
             const hs = profile.hero_stats || {};
             const heroListLifetime = Object.entries(hs).map(([name, data]) => ({
                 hero: name,
@@ -56,14 +62,14 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                 level: data.verified_lifetime?.level || data.verified?.level || ''
             })).filter(h => h.games || h.wr);
 
+            const verifiedSeasonKey = `verified_${slug}`;
             const heroListSeason = Object.entries(hs).map(([name, data]) => ({
                 hero: name,
-                games: data.verified_season_2025_3?.games || '',
-                wr: data.verified_season_2025_3?.wr || '',
-                level: data.verified_season_2025_3?.level || ''
+                games: data[verifiedSeasonKey]?.games || '',
+                wr: data[verifiedSeasonKey]?.wr || '',
+                level: data[verifiedSeasonKey]?.level || ''
             })).filter(h => h.games || h.wr);
 
-            // Load Maps
             const ms = profile.map_records_verified || {};
             const mapList = Object.entries(ms).map(([name, data]) => ({
                 map: name,
@@ -72,6 +78,7 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                 wr: data.win_rate
             }));
 
+            const slSeason = sl[verifiedSeasonKey] || {};
             setBuckets(prev => ({
                 ...prev,
                 lifetime: {
@@ -90,10 +97,10 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                     ...prev.season,
                     stats: {
                         ...prev.season.stats,
-                        total_games: sl.verified_season_2025_3?.total_games || '',
-                        wins: sl.verified_season_2025_3?.wins || '',
-                        losses: sl.verified_season_2025_3?.losses || '',
-                        win_rate: sl.verified_season_2025_3?.win_rate || ''
+                        total_games: slSeason.total_games ?? slSeason.games ?? '',
+                        wins: slSeason.wins ?? '',
+                        losses: slSeason.losses ?? '',
+                        win_rate: slSeason.win_rate ?? slSeason.wr ?? ''
                     },
                     heroes: heroListSeason,
                     maps: mapList
@@ -111,9 +118,19 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
         setScreenshotPreview(null);
         setCurrentScreenshotIndex(0);
         setDetectedHeroes([]);
+        setExtractionSummary('');
         setError('');
         setExtractionPhase('');
         setExtractionProgress(0);
+    };
+
+    const parseSeasonFromExtraction = (seasonName) => {
+        if (!seasonName || typeof seasonName !== 'string') return null;
+        const m = seasonName.match(/(\d{4})\s*Season\s*(\d+)/i) || seasonName.match(/(\d{4})-(\d+)/);
+        if (!m) return null;
+        const slug = `season_${m[1]}_${m[2]}`;
+        const startDate = m[1] === '2026' ? '2026-01-01' : `${m[1]}-01-01`;
+        return { slug, name: seasonName.trim(), start_date: startDate };
     };
 
     if (!isOpen) return null;
@@ -162,6 +179,7 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
 
         setIsExtracting(true);
         setError('');
+        setExtractionSummary('');
 
         const simulateProgress = (start, end, duration, phase) => {
             setExtractionPhase(phase);
@@ -217,12 +235,20 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
 
                 clearInterval(progressInterval);
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.error || 'Failed to extract stats');
+                const text = await response.text();
+                let data;
+                try {
+                    data = text ? JSON.parse(text) : {};
+                } catch (_) {
+                    throw new Error('Server returned invalid response. Check API is running and GEMINI_API_KEY is set.');
                 }
 
-                const data = await response.json();
+                if (!response.ok) {
+                    throw new Error(data?.error || 'Failed to extract stats');
+                }
+                if (!data || typeof data !== 'object') {
+                    throw new Error('Server returned invalid response. Check API is running and GEMINI_API_KEY is set.');
+                }
 
                 if (data.success) {
                     setExtractionPhase("🔳 DATA MATRIX RECONSTRUCTION");
@@ -425,6 +451,27 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                     });
 
                     setStatType(typeFound);
+
+                    // Auto-set season from extraction when detected
+                    if (s.season_name) {
+                        const parsed = parseSeasonFromExtraction(s.season_name);
+                        if (parsed) setActiveSeason(parsed);
+                    }
+
+                    // Build extraction summary for user feedback
+                    const sumTg = parseInt(s.total_games || s.totalGames) || 0;
+                    const sumW = parseInt(s.wins || s.Wins) || 0;
+                    const sumL = parseInt(s.losses || s.Losses) || 0;
+                    const mapsCount = (s.maps || []).filter(m => m && m.map).length;
+                    const heroesCount = (s.heroes || s.hero_stats || []).filter(h => h && (h.hero || h.name)).length;
+                    const parts = [];
+                    if (sumTg > 0) parts.push(`${sumTg} games${sumW || sumL ? ` (${sumW}W-${sumL}L)` : ''}`);
+                    if (mapsCount > 0) parts.push(`${mapsCount} maps`);
+                    if (heroesCount > 0) parts.push(`${heroesCount} heroes`);
+                    if (s.rank) parts.push(`Rank ${s.rank}`);
+                    const summary = parts.length ? `Extracted: ${parts.join(' • ')}${s.season_name ? ` • ${s.season_name}` : ''}` : '';
+                    setExtractionSummary(summary);
+
                     const label = (screenType === 'heroes_profile' || screenType === 'talent_builds')
                         ? `🎯 EXTERNAL INTELLIGENCE (${screenType.replace('_', ' ').toUpperCase()})`
                         : (heroName ? `🎯 ${heroName.toUpperCase()} SYNCHRONIZED` : "🎯 PROFILES SYNCHRONIZED");
@@ -497,7 +544,8 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                             maps: b.maps
                         },
                         stat_type: type,
-                        hero_stats: b.heroes
+                        hero_stats: b.heroes,
+                        ...(type === 'season' && { season_slug: activeSeason.slug, season_name: activeSeason.name, season_start_date: activeSeason.start_date })
                     })
                 });
 
@@ -701,6 +749,11 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                     ⚠️ {error}
                                 </div>
                             )}
+                            {extractionSummary && (
+                                <div className="extraction-summary">
+                                    ✓ {extractionSummary}
+                                </div>
+                            )}
                         </div>
 
                         {/* Right Panel: Tactical Matrix */}
@@ -710,8 +763,9 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
                                 <button
                                     className={`tab-btn ${statType === 'season' ? 'active' : ''}`}
                                     onClick={() => setStatType('season')}
+                                    title={`${activeSeason.name} (since ${activeSeason.start_date})`}
                                 >
-                                    📊 SEASON {buckets.season.stats.total_games > 0 && `(READY)`}
+                                    📊 {activeSeason.name} {buckets.season.stats.total_games > 0 && `(READY)`}
                                 </button>
                                 <button
                                     className={`tab-btn ${statType === 'lifetime' ? 'active' : ''}`}
@@ -723,7 +777,7 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
 
                             {/* Stats Entry */}
                             <div className="stats-section">
-                                <label>Core Stats ({statType.toUpperCase()}):</label>
+                                <label>Core Stats ({statType === 'season' ? activeSeason.name : 'LIFETIME'}):</label>
                                 <div className="stats-grid">
                                     <div className="stat-input">
                                         <label>Total Games</label>

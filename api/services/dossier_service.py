@@ -42,7 +42,7 @@ class DossierService:
 
         # 2. Map Sectors
         sectors = self._get_sector_performance(hero_name)
-        avoid_sectors = self._get_avoid_sectors(hero_name)
+        training_sectors = self._get_training_sectors(hero_name)
         
         # 3. Nemesis Analysis (Enemies)
         nemesis = self._get_nemesis(hero_name)
@@ -70,7 +70,7 @@ class DossierService:
             Overall WR: {basic_stats['wr']}%
             Total Games: {basic_stats['games']}
             Top Sectors: {json.dumps(sectors)}
-            Avoid Sectors: {json.dumps(avoid_sectors)}
+            Training Sectors: {json.dumps(training_sectors)}
             Nemeses: {json.dumps(nemesis)}
             Risks: {json.dumps(risks)}
             Lethality Discovery: {json.dumps(self._get_lethality_analysis(hero_name))}
@@ -85,19 +85,6 @@ class DossierService:
                     verdict = json.loads(json_match.group(1))
                 else:
                     verdict = json.loads(raw_verdict)
-                
-                # AUDIT THE VERDICT
-                from agents.cerebrate_orchestrator import CerebrateOrchestrator
-                orchestrator = CerebrateOrchestrator(call_gemini_fn=intel.generate_chat_response)
-                audit_context = {
-                    'target_query': hero_name,
-                    'target_context': stats_context,
-                    'target_response': verdict['analysis'],
-                    'audit_type': 'DOSSIER'
-                }
-                auditor_result = orchestrator.agents['auditor'].analyze(hero_name, audit_context)
-                if auditor_result.get('success'):
-                    audit = auditor_result.get('audit')
             except Exception as e:
                 print(f"AI Verdict/Audit Failure: {e}")
                 verdict = self._generate_verdict(basic_stats['wr'], sectors, lethality=self._get_lethality_analysis(hero_name))
@@ -121,7 +108,7 @@ class DossierService:
             "theme": theme,
             "medals": medals,
             "sectors": sectors,
-            "avoidSectors": avoid_sectors,
+            "trainingSectors": training_sectors,
             "risks": risks,
             "nemesis": nemesis,
             "recentPerformance": self._get_recent_performance(hero_name),
@@ -158,15 +145,21 @@ class DossierService:
 
 
     def _get_basic_stats(self, hero):
+        # Focus on "Seasonal" Performance (Last 30 games) instead of Lifetime
         query = """
             SELECT count(*), sum(case when result='WIN' then 1 else 0 end)
-            FROM matches
-            WHERE hero = ?
+            FROM (
+                SELECT result 
+                FROM matches 
+                WHERE hero = ? 
+                ORDER BY date DESC 
+                LIMIT 30
+            ) as recent_matches
         """
         with self.db._get_connection() as conn:
             row = conn.execute(query, (hero,)).fetchone()
-            games = row[0]
-            wins = row[1]
+            games = row[0] if row[0] is not None else 0
+            wins = row[1] if row[1] is not None else 0
             return {"games": games, "wins": wins, "wr": (wins/games*100) if games > 0 else 0}
 
     def _get_sector_performance(self, hero):
@@ -189,7 +182,7 @@ class DossierService:
                 sectors.append({"name": r[0], "wr": round(wr, 1), "status": status})
         return sectors
 
-    def _get_avoid_sectors(self, hero):
+    def _get_training_sectors(self, hero):
         # Bottom 2 Maps
         query = """
             SELECT map, count(*) as g, sum(case when result='WIN' then 1 else 0 end) as w

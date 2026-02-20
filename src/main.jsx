@@ -1,30 +1,33 @@
+import '@mcp-b/global'
 import React from 'react'
 import ReactDOM from 'react-dom/client'
 import App from './App'
 import './index.css'
 
-// Suppress console spam when server is down
-const suppressConnectionErrors = (originalFn) => {
+// Suppress console spam when server is down and WebMCP native-adapter noise
+const suppressNoise = (originalFn) => {
   return (...args) => {
     const message = args.join(' ')
-    // Suppress Vite HMR and fetch connection errors
     if (
       message.includes('ERR_CONNECTION_REFUSED') ||
       message.includes('server connection lost') ||
       message.includes('Polling for restart') ||
       message.includes('net::ERR_CONNECTION_REFUSED') ||
       message.includes('Failed to fetch') ||
-      (message.includes('GET') && message.includes('localhost:5173') && message.includes('ERR_CONNECTION_REFUSED'))
+      (message.includes('GET') && message.includes('localhost:5173') && message.includes('ERR_CONNECTION_REFUSED')) ||
+      message.includes('listTools is not a function') ||
+      message.includes('[WebModelContext]') ||
+      message.includes('Auto-initialization failed') ||
+      message.includes('Failed to initialize native adapter')
     ) {
-      return // Silent fail
+      return
     }
     originalFn.apply(console, args)
   }
 }
 
-// Override console.error and console.warn to suppress connection errors
-console.error = suppressConnectionErrors(console.error)
-console.warn = suppressConnectionErrors(console.warn)
+console.error = suppressNoise(console.error)
+console.warn = suppressNoise(console.warn)
 
 // Register Service Worker for offline caching
 // Register Service Worker for offline caching (Disabled to prevent stale cache issues)

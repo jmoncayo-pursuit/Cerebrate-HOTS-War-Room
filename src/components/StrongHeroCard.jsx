@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import BuildDisplay from './BuildDisplay'
 import ConfidenceScore from './ConfidenceScore'
+import ACTIVE_SEASON from '../config/season'
 
 export default function StrongHeroCard({ hero, profile, heroData, talentMap, talentData }) {
     const [topBuilds, setTopBuilds] = useState([])
@@ -88,7 +89,7 @@ export default function StrongHeroCard({ hero, profile, heroData, talentMap, tal
                         />
                     </div>
                     <div className="text-[9px] text-slate-500 uppercase flex items-center justify-end gap-1">
-                        S3 WR {hero.lt_wr > 0 && <span className="opacity-50">vs {hero.lt_wr}% LT</span>}
+                        Season WR {hero.lt_wr > 0 && <span className="opacity-50">vs {hero.lt_wr}% LT</span>}
                     </div>
                 </div>
             </div>
@@ -98,7 +99,7 @@ export default function StrongHeroCard({ hero, profile, heroData, talentMap, tal
                 <span className="w-1 h-1 rounded-full bg-white/20"></span>
                 <span>{hero.role}</span>
                 <span className="w-1 h-1 rounded-full bg-white/20"></span>
-                <span className="text-[10px] text-cyan-400/60">Season 3 2025</span>
+                <span className="text-[10px] text-cyan-400/60">{profile?.active_season?.name || ACTIVE_SEASON.name}</span>
             </div>
 
             {hero.notes && (

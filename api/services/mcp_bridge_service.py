@@ -52,10 +52,9 @@ class MCPBridgeService:
                         self._connected = True
                         ColoredLogger.success("Neural Link: Connected to Chrome DevTools MCP Server", "MCP")
                         
-                        # Keep alive loop
+                        # Keep alive loop (no log every 60s to avoid terminal spam)
                         while self._connected:
                             await asyncio.sleep(60)
-                            ColoredLogger.info("Neural Link: Linkage Heartbeat Stable", "MCP")
             except Exception as e:
                 self._connected = False
                 ColoredLogger.error(f"Neural Link Linkage Failure: {e}", "MCP")

@@ -1,15 +1,18 @@
 import React, { useState, useEffect, useRef, Fragment } from 'react'
 import ReactDOM from 'react-dom'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer, RefreshCw, Users, BrainCircuit, ChevronDown, ChevronUp } from 'lucide-react'
+import { X, Award, AlertTriangle, Target, TrendingUp, Shield, Swords, Heart, Zap, Clock, MessageSquare, CheckCircle, Skull, Crown, ArrowUpCircle, Settings, FileText, Activity, Terminal, BarChart3, Timer, RefreshCw, Users, BrainCircuit, ChevronDown, ChevronUp, Flame } from 'lucide-react'
 import HeroPortrait from './HeroPortrait'
 import talentData from '../data/talents.json'
 // import profileData from '../data/player_profile.json' // Removed
 import { formatFullDateTime } from '../utils/dateUtils'
 import { normalizeHeroName } from '../utils/heroUtils'
 import MatchTimeline from './MatchTimeline'
+import HeroText from './HeroText'
 import { processHeroIcons } from './HeroText'
 import heroData from '../data/hero_data.json'
+import talentMapData from '../data/talent_id_map.json'
+import BuildDisplay from './BuildDisplay'
 
 const getHeroPortrait = (heroName) => {
     if (!heroName) return '';
@@ -126,6 +129,8 @@ const TalentImage = ({ hero, tier, talentIndex, talentName, talentMap, size = "m
             src={`/images/talents/${iconFilename}`}
             alt={`Lvl ${level}`}
             title={talentName || `Lvl ${level}`}
+            loading="lazy"
+            decoding="async"
             className={`${dims} rounded border border-white/20 shadow-sm bg-black object-cover`}
             onError={() => setError(true)}
         />
@@ -336,36 +341,36 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
             .catch(err => console.error(err))
     }, [])
 
-    // NEURAL RE-SYNC: If analysis is missing, try to fetch it once
+    // NEURAL RE-SYNC: If analysis missing or Stitches/Kharazim/Azmodan missing forensics, fetch full analysis
     useEffect(() => {
-        if (localMatch && (!localMatch.analysis || Object.keys(localMatch.analysis).length === 0)) {
-            if (isSyncing.current) return;
-            isSyncing.current = true;
+        if (!localMatch?.id || isSyncing.current) return
+        const a = localMatch.analysis || {}
+        const needsForensics = ['Stitches', 'Kharazim', 'Azmodan'].includes(localMatch.hero)
+        const hasForensics = a.forensics?.tactical_highlights?.length > 0 || a.forensics?.mechanics?.length > 0
+        const needsSync = !a.verdict && Object.keys(a).length === 0
+            || (needsForensics && !hasForensics)
 
-            console.log(`[Neural Link] Missing analysis for ${localMatch.id}. Attempting re-sync...`);
-            fetch(`/api/analyze_replay`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ match_id: localMatch.id })
+        if (!needsSync) return
+        isSyncing.current = true
+        fetch(`/api/analyze_replay`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ match_id: localMatch.id, force: needsForensics && !hasForensics })
+        })
+            .then(res => res.json())
+            .then(data => {
+                if (data.status === 'complete' && data.analysis) {
+                    setLocalMatch(prev => ({ ...prev, analysis: data.analysis }))
+                }
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.status === 'complete' && data.analysis) {
-                        console.log(`[Neural Link] Analysis synchronized for ${localMatch.id}`);
-                        setLocalMatch(prev => ({ ...prev, analysis: data.analysis }));
-                    }
-                })
-                .catch(err => console.error("[Neural Link] Sync failed:", err))
-                .finally(() => {
-                    isSyncing.current = false;
-                });
-        }
-    }, [localMatch?.id])
+            .catch(() => {})
+            .finally(() => { isSyncing.current = false })
+    }, [localMatch?.id, localMatch?.hero, localMatch?.analysis?.forensics])
 
     const handleForceRefresh = async () => {
         if (isVerifying) return; // Use isVerifying for the refresh state
         setIsVerifying(true);
-        console.log(`[Neural Link] FORCING re-parse/analysis for ${localMatch.id}...`);
+        console.log(`[Match] Forcing re-analysis for ${localMatch.id}...`);
         try {
             const res = await fetch(`/api/analyze_replay`, {
                 method: 'POST',
@@ -374,11 +379,11 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
             });
             const data = await res.json();
             if (data.status === 'complete' && data.analysis) {
-                console.log(`[Neural Link] Forced synchronization complete for ${localMatch.id}`);
+                console.log(`[Match] Re-analysis complete for ${localMatch.id}`);
                 setLocalMatch(prev => ({ ...prev, analysis: data.analysis }));
             }
         } catch (err) {
-            console.error("[Neural Link] Forced refresh failed:", err);
+            console.error("[Match] Forced refresh failed:", err);
         } finally {
             setIsVerifying(false);
         }
@@ -395,6 +400,7 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
 
     const { map, hero, result, date, analysis, advanced_stats, players } = localMatch
     const isWin = result?.toUpperCase() === 'WIN'
+    const interactions = useEncounteredPlayers()
 
     return (
         <AnimatePresence>
@@ -431,7 +437,7 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
                                 <span className="w-1 h-1 bg-gray-600 rounded-full" />
                                 <div className="flex items-center gap-1 px-2 py-0.5 rounded bg-cyan-500/10 border border-cyan-500/20">
                                     <div className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_5px_#22d3ee] animate-pulse" />
-                                    <span className="text-[10px] text-cyan-500 font-black uppercase tracking-widest italic">Cerebrate Forensic Link Verified (v{localMatch.pipeline_version || '2.1.0'})</span>
+                                    <span className="text-[10px] text-cyan-500 font-black uppercase tracking-widest">Analysis v{localMatch.pipeline_version || '2.1.0'}</span>
                                 </div>
                             </div>
                         </div>
@@ -467,9 +473,9 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 flex justify-center">
                         <div className="w-full">
                             {activeTab === 'stats' && <StatsScoreboard match={localMatch} players={players} onDiscuss={onDiscuss} />}
-                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={localMatch.analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} handleForceRefresh={handleForceRefresh} isVerifying={isVerifying} />}
+                            {activeTab === 'summary' && <SummaryTab match={localMatch} analysis={localMatch.analysis} onDiscuss={onDiscuss} localMatch={localMatch} setLocalMatch={setLocalMatch} onClose={onClose} handleForceRefresh={handleForceRefresh} isVerifying={isVerifying} playerProfile={playerProfile} talentMap={talentMap} talentData={talentData} heroData={heroData} />}
                             {activeTab === 'talents' && <TalentGrid match={localMatch} players={players} talentMap={talentMap} onDiscuss={onDiscuss} playerProfile={playerProfile} />}
-                            {activeTab === 'personnel' && <PersonnelTab match={localMatch} analysis={localMatch.analysis} />}
+                            {activeTab === 'personnel' && <PersonnelTab match={localMatch} analysis={localMatch.analysis} interactions={interactions} heroData={heroData} />}
                             {activeTab === 'timeline' && (
                                 <MatchTimeline
                                     matchId={localMatch.id}
@@ -542,10 +548,13 @@ function StatsScoreboard({ match, players, onDiscuss }) {
 
     // Handle column header click
     const handleSort = (column) => {
-        if (sortBy === column) {
-            setSortDir(sortDir === 'desc' ? 'asc' : 'desc')
-        } else {
+        if (sortBy !== column) {
             setSortBy(column)
+            setSortDir('desc')
+        } else if (sortDir === 'desc') {
+            setSortDir('asc')
+        } else {
+            setSortBy('HeroDamage')
             setSortDir('desc')
         }
     }
@@ -559,7 +568,7 @@ function StatsScoreboard({ match, players, onDiscuss }) {
                     <div className="pl-4 flex items-center text-xs font-bold text-gray-400 uppercase tracking-wider">
                         Hero
                     </div>
-                    <StatHeader label="Kills" sub="Combat" icon={Swords} color="#94a3b8" column="SoloKills" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
+                    <StatHeader label="Kills" sub="Combat" icon={Swords} color="#94a3b8" column="SoloKill" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                     <StatHeader label="Assists" sub="Combat" icon={Heart} color="#fbbf24" column="Assists" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                     <StatHeader label="Deaths" sub="Combat" icon={Skull} color="#a855f7" column="Deaths" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
                     <StatHeader label="Siege" sub="Damage" icon={Award} color="#94a3b8" column="SiegeDamage" sortBy={sortBy} sortDir={sortDir} onSort={handleSort} />
@@ -693,10 +702,18 @@ function PlayerRow({ player, isUser, isTop, onDiscuss, interactions }) {
 
 // --- SUMMARY TAB ---
 
-// Helper function to render text with **bold** markdown and hero icons
+// Sanitize AI output: ensure spaces around **bold** so words don't run together
+function sanitizeMarkdown(s) {
+    if (!s || typeof s !== 'string') return s;
+    return s
+        .replace(/\*\*([^*]+)\*\*(?=[^\s])/g, '**$1** ')
+        .replace(/([^\s])\*\*([^*]+)\*\*/g, '$1 **$2**');
+}
+
 // Helper function to render text with **bold** markdown and hero icons
 function renderMarkdown(text) {
     if (!text) return text;
+    text = sanitizeMarkdown(text);
 
     // 1. Process hero names with optional possessives (e.g. "Sylvanas's")
     const HERO_NAMES = Object.keys(heroData).sort((a, b) => b.length - a.length);
@@ -890,7 +907,7 @@ function renderMarkdown(text) {
 }
 
 
-function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onClose, handleForceRefresh, isVerifying }) {
+function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onClose, handleForceRefresh, isVerifying, playerProfile, talentMap = {}, talentData = {}, heroData = {} }) {
     const [showChallengeConfirm, setShowChallengeConfirm] = useState(false)
 
     // Get user's stats and team stats for comparison
@@ -900,7 +917,14 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
         (p.name && p.name.includes('CerebrateUser')) ||
         p.hero === match.hero
     );
-    const userStats = userPlayer?.stats || {};
+    const userStats = userPlayer?.stats || userPlayer?.kv_stats || {};
+    const buildKey = userPlayer ? [1, 2, 3, 4, 5, 6, 7].map(tier => userStats[`Tier${tier}Talent`] || 0).join('') : '';
+    const buildSpec = userPlayer ? [1, 2, 3, 4, 5, 6, 7].map(tier => userStats[`Tier${tier}Talent`] || 0).join('-') : '';
+    const tb = playerProfile?.talent_builds;
+    const heroBuilds = tb?.[match.hero] ?? tb?.[match.hero?.toLowerCase()];
+    const buildData = (buildKey && heroBuilds?.[buildKey]) ? heroBuilds[buildKey] : null;
+    const buildWr = buildData?.wr ?? null;
+    const buildGames = buildData?.games ?? null;
     const userTeam = match.players?.filter(p => p.team === userPlayer?.team) || [];
 
     // Calculate team max for each stat
@@ -1033,27 +1057,75 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                         <h2 className="text-cyan-500 text-sm font-bold uppercase tracking-widest">Analytical Verdict</h2>
                     </div>
                     <div className="text-5xl font-black text-white mb-6 italic tracking-tight">{analysis?.verdict || "ANALYZING..."}</div>
-                    <div className="text-gray-300 leading-relaxed text-2xl font-light border-t border-white/10 pt-4">
+                    {(buildWr != null || buildSpec) && (
+                        <div className="flex items-center gap-3 mb-4 text-sm flex-wrap">
+                            <span className="text-slate-500 uppercase tracking-wider font-bold">Build WR</span>
+                            {buildWr != null && (
+                                <>
+                                    <span className={buildWr >= 50 ? 'text-green-400 font-bold' : 'text-red-400 font-bold'}>{Number(buildWr).toFixed(1)}%</span>
+                                    {buildGames != null && <span className="text-slate-500">({buildGames}g)</span>}
+                                </>
+                            )}
+                            {buildKey && match.hero && (
+                                <span className="inline-block transform scale-90 origin-left">
+                                    <BuildDisplay hero={match.hero} buildStr={buildKey} compact stats={{ wr: buildWr ?? undefined, games: buildGames ?? undefined }} source="LIFETIME" talentMap={Object.keys(talentMap || {}).length ? talentMap : talentMapData} talentData={talentData} heroData={heroData} />
+                                </span>
+                            )}
+                        </div>
+                    )}
+                    <div className="text-gray-300 leading-relaxed text-base font-normal border-t border-white/10 pt-4 space-y-2">
                         {renderMarkdown(analysis?.summary)}
                     </div>
                 </div>
 
-                {/* Critical Mistake */}
-                {analysis?.critical_mistake && (
-                    <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
-                        <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
-                            <div className="p-2 bg-orange-500/10 rounded">
-                                <Activity className="text-orange-400" size={24} />
+                {/* Critical Mistake — hide "None detected" placeholders and offer re-analyze */}
+                {(() => {
+                    const cm = analysis?.critical_mistake?.trim() || '';
+                    const cmLower = cm.toLowerCase();
+                    const isPlaceholder = [
+                        'none detected', 'no mistakes', 'no mistake', 'none found',
+                        'no critical mistake', 'no errors', 'no error', 'perfect game'
+                    ].some(p => cmLower.includes(p));
+                    if (!cm) return null;
+                    if (isPlaceholder) {
+                        return (
+                            <div className="bg-slate-800/50 border border-amber-500/30 p-6 rounded relative shadow-xl mb-8">
+                                <div className="flex items-center gap-3 mb-3 pb-2 border-b border-white/5">
+                                    <Activity className="text-amber-400" size={24} />
+                                    <h3 className="text-amber-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                                </div>
+                                <p className="text-gray-400 text-sm mb-4">
+                                    This summary was generated before we required opportunity-cost insights. Re-analyze to get a concrete critical mistake (what prevented carrying harder).
+                                </p>
+                                {handleForceRefresh && (
+                                    <button
+                                        type="button"
+                                        onClick={() => handleForceRefresh()}
+                                        disabled={isVerifying}
+                                        className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 font-bold text-sm uppercase tracking-wider disabled:opacity-50"
+                                    >
+                                        {isVerifying ? 'Re-analyzing…' : 'Re-analyze match'}
+                                    </button>
+                                )}
                             </div>
-                            <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                        );
+                    }
+                    return (
+                        <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
+                            <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                                <div className="p-2 bg-orange-500/10 rounded">
+                                    <Activity className="text-orange-400" size={24} />
+                                </div>
+                                <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                            </div>
+                            <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
+                                <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
+                                    {renderMarkdown(analysis.critical_mistake)}
+                                </div>
+                            </Questionable>
                         </div>
-                        <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
-                            <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
-                                {renderMarkdown(analysis.critical_mistake)}
-                            </div>
-                        </Questionable>
-                    </div>
-                )}
+                    );
+                })()}
 
                 {/* Win Condition */}
                 {(analysis?.win_condition || analysis?.win_condition_analysis) && (
@@ -1132,6 +1204,21 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                         </div>
                                     </div>
                                 )}
+                                {(() => {
+                                    const deathsCount = analysis?.key_insights?.deaths ?? userStats?.Deaths ?? 0;
+                                    return (
+                                        <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
+                                            <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Attrition</div>
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center gap-2">
+                                                    <Skull size={20} className="text-red-400" />
+                                                    <span className="text-base text-gray-300">Deaths</span>
+                                                </div>
+                                                <span className="text-4xl font-black text-red-300">{deathsCount}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })()}
                                 {analysis.key_insights.mercenary_camps && parseInt(analysis.key_insights.mercenary_camps) > 0 && (
                                     <div className="bg-black/30 rounded-lg p-5 border border-purple-500/20">
                                         <div className="text-sm text-purple-400 uppercase tracking-wider mb-3 font-bold">Mercenary Camps</div>
@@ -1424,27 +1511,58 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                             sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
                         }
 
-                        // Filter out "Your Kills" and potentially "Deaths" (if Stitches forensics exist) to prevent redundancy
+                        // Filter out "Your Kills" to prevent redundancy with tactical timeline
                         return sections.filter(s => {
                             if (s.title === "Your Kills") return false;
-
-                            // If we have Stitches forensics with a death log, the "Deaths" section in main summary is redundant
-                            if (s.title === "Deaths" && match.hero === 'Stitches' && analysis?.forensics?.death_highlights) {
-                                return false;
-                            }
-
                             return true;
                         }).map((section, idx) => {
 
                             if (!section.title || !section.items) return null;
 
                             // Deaths section with hero portraits
-                            if (section.title === "Deaths") {
+                            if (section.title?.toLowerCase() === "deaths") {
+                                // Check if there are actual deaths (filter out NO_DATA, N/A, empty entries)
+                                const validDeaths = section.items.filter(death => {
+                                    if (!death) return false;
+                                    const isObject = typeof death === 'object';
+                                    const time = isObject ? death.time : death.match(/(\d+:\d+)/)?.[1];
+                                    const killer = isObject ? death.killer : death.match(/Killed by (\w+)/)?.[1] || death.match(/- (\w+) -/)?.[1];
+                                    const context = isObject ? death.context : death;
+                                    const deathStr = String(death).toUpperCase();
+                                    // Filter out placeholder data
+                                    return time && time !== 'N/A' && time !== 'NO_DATA' && 
+                                           killer && killer !== 'N/A' && killer !== 'NO_DATA' &&
+                                           !deathStr.includes('NO_DATA') && !deathStr.includes('NO DEATHS RECORDED');
+                                });
+
+                                // If no valid deaths, show flawless victory message or skip entirely
+                                if (validDeaths.length === 0) {
+                                    const deathsCount = analysis?.key_insights?.deaths ?? userStats?.Deaths ?? 0;
+                                    if (deathsCount === 0) {
+                                        // Flawless victory - show clean message
+                                        return (
+                                            <div key={idx} className="bg-black/30 rounded-lg p-4 border border-green-500/20 shadow-lg shadow-green-900/10">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-full bg-green-500/20 border-2 border-green-500/50 flex items-center justify-center shrink-0">
+                                                        <span className="text-green-400 text-xl">✓</span>
+                                                    </div>
+                                                    <div className="flex-1">
+                                                        <div className="text-[10px] text-green-400 uppercase tracking-wider mb-1 font-bold">Flawless Victory</div>
+                                                        <div className="text-xs text-gray-300">No deaths recorded. Perfect uptime maintained.</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    // If deaths count exists but no valid death items, skip rendering
+                                    return null;
+                                }
+
                                 return (
                                     <div key={idx} className="bg-black/30 rounded-lg p-4 border border-red-500/20 shadow-lg shadow-red-900/10">
                                         <div className="text-[10px] text-red-400 uppercase tracking-wider mb-3 font-bold">Deaths</div>
                                         <div className="space-y-3">
-                                            {section.items.map((death, i) => {
+                                            {validDeaths.map((death, i) => {
                                                 // Handle both object and string formats
                                                 const isObject = typeof death === 'object';
                                                 const time = isObject ? death.time : death.match(/(\d+:\d+)/)?.[1];
@@ -1571,6 +1689,109 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                             {(() => {
                                 const mechanics = analysis.forensics.mechanics || [];
+
+                                // Azmodan Specific Logic
+                                if (match.hero === 'Azmodan') {
+                                    const quest = analysis.forensics?.quest_progression || {};
+                                    const milestones = quest.milestones || [];
+                                    const final_val = quest.value || 0;
+                                    const efficiency = (final_val / 400 * 100).toFixed(0);
+
+
+                                    return (
+                                        <div className="bg-orange-500/5 rounded-lg border border-orange-500/20 p-4 hover:bg-orange-500/10 transition-colors col-span-2">
+                                            <div className="flex justify-between items-start mb-4">
+                                                <div>
+                                                    <div className="text-[10px] text-orange-400 uppercase font-black tracking-widest leading-tight">Annihilation Milestone Audit</div>
+                                                    <div className="text-xs font-bold text-orange-200">Scaling Velocity</div>
+                                                </div>
+                                                <div className="px-1.5 py-0.5 bg-orange-500/20 rounded text-[9px] font-black text-orange-300 border border-orange-500/30 font-mono">
+                                                    {quest.verdict || 'SCALING'}
+                                                </div>
+                                            </div>
+
+                                            <div className="relative h-12 flex items-center mb-6 mt-4">
+                                                {/* Background Track */}
+                                                <div className="absolute inset-x-0 h-1.5 bg-slate-800 rounded-full overflow-hidden">
+                                                    <div
+                                                        style={{ width: `${Math.min(100, (final_val / 400) * 100)}%` }}
+                                                        className="h-full bg-gradient-to-r from-orange-600 to-orange-400 transition-all duration-1000 shadow-[0_0_10px_rgba(251,146,60,0.3)]"
+                                                    ></div>
+                                                </div>
+
+                                                {/* Milestone Markers */}
+                                                {[75, 150, 225, 300, 400].map((m, i) => {
+                                                    const milestone = milestones.find(ms => ms.stacks === m);
+                                                    const pos = (m / 400) * 100;
+                                                    const achieved = final_val >= m;
+
+                                                    return (
+                                                        <div
+                                                            key={i}
+                                                            className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center"
+                                                            style={{ left: `${pos}%` }}
+                                                        >
+                                                            <div className={`w-3 h-3 rounded-full border-2 transition-all ${achieved ? 'bg-orange-400 border-white/50 scale-125 shadow-[0_0_15px_rgba(251,146,60,0.6)]' : 'bg-slate-900 border-slate-700'}`}></div>
+                                                            <div className={`absolute -top-6 whitespace-nowrap text-[8px] font-black uppercase tracking-tighter ${achieved ? 'text-orange-200' : 'text-slate-600'}`}>
+                                                                {m === 400 ? 'MAX' : m}
+                                                            </div>
+                                                            {milestone && (
+                                                                <div className="absolute top-4 flex flex-col items-center">
+                                                                    <span className="text-orange-400 font-bold text-[9px] animate-in fade-in slide-in-from-top-1 duration-500">{milestone.time}</span>
+                                                                    <span className="text-slate-500 text-[7px] font-mono leading-none tracking-tighter">LVL {milestone.level}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </div>
+
+                                            <div className="flex justify-between items-center mt-4 border-t border-white/5 pt-3">
+                                                <div className="flex items-center gap-6">
+                                                    <div>
+                                                        <div className="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Current Stacks</div>
+                                                        <div className="text-xl font-black text-white leading-none">{final_val}<span className="text-[10px] text-slate-500 ml-1">/ 400</span></div>
+                                                    </div>
+                                                    <div>
+                                                        <div className="text-[8px] text-slate-500 uppercase tracking-widest font-bold">Efficiency</div>
+                                                        <div className="text-xl font-black text-orange-400 leading-none">{efficiency}%</div>
+                                                    </div>
+                                                </div>
+                                                <Flame size={20} className={`${final_val >= 400 ? 'text-orange-400 animate-pulse' : 'text-orange-900/40'}`} />
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                // Kharazim Specific Logic
+                                if (match.hero === 'Kharazim') {
+                                    const saves = mechanics.find(m => m.label === 'Palm Saves')?.value || 0;
+                                    const casts = mechanics.find(m => m.label === 'Palm Casts')?.value || 0;
+                                    const saveRate = casts > 0 ? (saves / casts * 100).toFixed(0) + '%' : '0%';
+
+                                    return (
+                                        <div className="bg-emerald-500/5 rounded-lg border border-emerald-500/20 p-4 hover:bg-emerald-500/10 transition-colors">
+                                            <div className="flex justify-between items-start mb-2">
+                                                <div>
+                                                    <div className="text-[10px] text-emerald-400 uppercase font-black tracking-widest leading-tight">Divine Save Frequency</div>
+                                                    <div className="text-xs font-bold text-emerald-200">Anti-Death Conversion</div>
+                                                </div>
+                                                <div className="px-1.5 py-0.5 bg-emerald-500/20 rounded text-[9px] font-black text-emerald-300 border border-emerald-500/30">
+                                                    PROTECTOR
+                                                </div>
+                                            </div>
+                                            <div className="flex items-end justify-between">
+                                                <div>
+                                                    <div className="text-3xl font-black text-white leading-none">{saveRate}</div>
+                                                    <div className="text-[9px] text-slate-500 uppercase mt-1">Landed Palm → Life %</div>
+                                                </div>
+                                                <Heart size={24} className="text-emerald-500/20 mb-1" />
+                                            </div>
+                                        </div>
+                                    );
+                                }
+
+                                // Stitches Specific Logic
                                 const lethalHooks = mechanics.find(m => m.label === 'Lethal Hooks')?.value;
                                 const landedHooks = mechanics.find(m => m.label === 'Hooks Landed')?.value;
 
@@ -1593,7 +1814,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                                 <div className="text-[10px] text-red-400 uppercase font-black tracking-widest leading-tight">Hook Lethality</div>
                                                 <div className="text-xs font-bold text-red-200">Kill Conversion</div>
                                             </div>
-                                            <div className="px-1.5 py-0.5 bg-red-500/20 rounded text-[9px] font-black text-red-300 border border-red-500/30 animate-pulse">
+                                            <div className="px-1.5 py-0.5 bg-red-500/20 rounded text-[9px] font-black text-red-300 border border-red-500/30">
                                                 LETHAL
                                             </div>
                                         </div>
@@ -1609,179 +1830,107 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                             })()}
                         </div>
 
-                        {/* Hook Range Distribution */}
-                        {analysis.forensics.tactical_highlights && (
+                        {/* Distribution Views (Hook or Globe) */}
+                        {analysis.forensics.tactical_highlights && match.hero !== 'Azmodan' && (
                             <div className="bg-black/30 rounded-lg p-4 border border-cyan-500/10 mb-6 mx-1">
-                                <div className="text-[10px] text-cyan-400 uppercase font-black tracking-widest mb-3 flex justify-between items-center">
-                                    <div className="flex items-center gap-2">
-                                        <img
-                                            src="/images/talents/stitches-7-1.png"
-                                            className="w-4 h-4 rounded-full border border-white/10 shadow-[0_0_5px_rgba(168,85,247,0.3)]"
-                                            alt="Serrated Edge"
-                                        />
-                                        <span>Hook Range Distribution</span>
-                                    </div>
-                                    <span className="text-slate-500 font-normal">Displacement Analysis</span>
-                                </div>
-                                <div className="relative flex items-center group/bar">
-                                    <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex ring-1 ring-white/5 relative z-0">
-                                        {(() => {
-                                            const hooks = analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK');
-                                            const short = hooks.filter(h => h.displacement < 6);
-                                            const med = hooks.filter(h => h.displacement >= 6 && h.displacement <= 12);
-                                            const long = hooks.filter(h => h.displacement > 12);
+                                {match.hero === 'Kharazim' ? (
+                                    <>
+                                        <div className="text-[10px] text-emerald-400 uppercase font-black tracking-widest mb-3 flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                <Heart size={12} />
+                                                <span>Monastic Output Distribution</span>
+                                            </div>
+                                            <span className="text-slate-500 font-normal">Sustain Analysis</span>
+                                        </div>
+                                        <div className="relative flex items-center group/bar">
+                                            <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex ring-1 ring-white/5 relative z-0">
+                                                {(() => {
+                                                    const highlights = analysis.forensics.tactical_highlights;
+                                                    const saves = highlights.filter(h => h.type === 'SAVE');
+                                                    const other = highlights.filter(h => h.type !== 'SAVE');
+                                                    const total = highlights.length || 1;
 
-                                            const total = hooks.length || 1;
-                                            const s_lethal = short.filter(h => h.lethal).length;
-                                            const m_lethal = med.filter(h => h.lethal).length;
-                                            const l_lethal = long.filter(h => h.lethal).length;
+                                                    return (
+                                                        <>
+                                                            <div style={{ width: `${(saves.length / total) * 100}%` }} className="h-full bg-emerald-400 border-r border-black/20" title={`Saves: ${saves.length}`}></div>
+                                                            <div style={{ width: `${(other.length / total) * 100}%` }} className="h-full bg-emerald-900" title={`Other Actions: ${other.length}`}></div>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between mt-2 text-[9px] uppercase font-bold tracking-tighter">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full"></div>
+                                                <span className="text-emerald-400">Divine Saves: {analysis.forensics.tactical_highlights.filter(h => h.type === 'SAVE').length}</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 bg-emerald-900 rounded-full"></div>
+                                                <span className="text-emerald-700">Combat Actions: {analysis.forensics.tactical_highlights.filter(h => h.type !== 'SAVE').length}</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="text-[10px] text-cyan-400 uppercase font-black tracking-widest mb-3 flex justify-between items-center">
+                                            <div className="flex items-center gap-2">
+                                                <img
+                                                    src="/images/talents/stitches-7-1.png"
+                                                    loading="lazy"
+                                                    decoding="async"
+                                                    className="w-4 h-4 rounded-full border border-white/10 shadow-[0_0_5px_rgba(168,85,247,0.3)]"
+                                                    alt="Serrated Edge"
+                                                />
+                                                <span>Hook Range Distribution</span>
+                                            </div>
+                                            <span className="text-slate-500 font-normal">Displacement Analysis</span>
+                                        </div>
+                                        <div className="relative flex items-center group/bar">
+                                            <div className="h-4 w-full bg-slate-800 rounded-full overflow-hidden flex ring-1 ring-white/5 relative z-0">
+                                                {(() => {
+                                                    const hooks = analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK');
+                                                    const short = hooks.filter(h => h.displacement < 6);
+                                                    const med = hooks.filter(h => h.displacement >= 6 && h.displacement <= 12);
+                                                    const long = hooks.filter(h => h.displacement > 12);
 
-                                            return (
-                                                <>
-                                                    <div style={{ width: `${(short.length / total) * 100}%` }} className="h-full bg-slate-600 border-r border-black/20" title={`Short: ${short.length} (${s_lethal} lethal)`}></div>
-                                                    <div style={{ width: `${(med.length / total) * 100}%` }} className="h-full bg-cyan-700 border-r border-black/20" title={`Medium: ${med.length} (${m_lethal} lethal)`}></div>
-                                                    <div style={{ width: `${(long.length / total) * 100}%` }} className="h-full bg-cyan-400" title={`Long: ${long.length} (${l_lethal} lethal)`}></div>
-                                                </>
-                                            );
-                                        })()}
-                                    </div>
-                                </div>
-                                <div className="flex justify-between mt-2 text-[9px] uppercase font-bold tracking-tighter">
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-1.5 h-1.5 bg-slate-600 rounded-full"></div>
-                                        <span className="text-slate-400">Short: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement < 6).length} </span>
-                                        <span className="text-[7px] text-red-400 opacity-70">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement < 6 && h.lethal).length} L)</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-1.5 h-1.5 bg-cyan-700 rounded-full"></div>
-                                        <span className="text-cyan-600">Med: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement >= 6 && h.displacement <= 12).length} </span>
-                                        <span className="text-[7px] text-red-400 opacity-70">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement >= 6 && h.displacement <= 12 && h.lethal).length} L)</span>
-                                    </div>
-                                    <div className="flex items-center gap-1.5">
-                                        <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
-                                        <span className="text-cyan-400">Long: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement > 12).length} </span>
-                                        <span className="text-[7px] text-red-500 font-black">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement > 12 && h.lethal).length} L)</span>
-                                    </div>
-                                </div>
+                                                    const total = hooks.length || 1;
+                                                    const s_lethal = short.filter(h => h.lethal).length;
+                                                    const m_lethal = med.filter(h => h.lethal).length;
+                                                    const l_lethal = long.filter(h => h.lethal).length;
+
+                                                    return (
+                                                        <>
+                                                            <div style={{ width: `${(short.length / total) * 100}%` }} className="h-full bg-slate-600 border-r border-black/20" title={`Short: ${short.length} (${s_lethal} lethal)`}></div>
+                                                            <div style={{ width: `${(med.length / total) * 100}%` }} className="h-full bg-cyan-700 border-r border-black/20" title={`Medium: ${med.length} (${m_lethal} lethal)`}></div>
+                                                            <div style={{ width: `${(long.length / total) * 100}%` }} className="h-full bg-cyan-400" title={`Long: ${long.length} (${l_lethal} lethal)`}></div>
+                                                        </>
+                                                    );
+                                                })()}
+                                            </div>
+                                        </div>
+                                        <div className="flex justify-between mt-2 text-[9px] uppercase font-bold tracking-tighter">
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 bg-slate-600 rounded-full"></div>
+                                                <span className="text-slate-400">Short: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement < 6).length} </span>
+                                                <span className="text-[7px] text-red-400 opacity-70">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement < 6 && h.lethal).length} L)</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 bg-cyan-700 rounded-full"></div>
+                                                <span className="text-cyan-600">Med: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement >= 6 && h.displacement <= 12).length} </span>
+                                                <span className="text-[7px] text-red-400 opacity-70">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement >= 6 && h.displacement <= 12 && h.lethal).length} L)</span>
+                                            </div>
+                                            <div className="flex items-center gap-1.5">
+                                                <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full"></div>
+                                                <span className="text-cyan-400">Long: {analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement > 12).length} </span>
+                                                <span className="text-[7px] text-red-500 font-black">({analysis.forensics.tactical_highlights.filter(h => h.type === 'HOOK' && h.displacement > 12 && h.lethal).length} L)</span>
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
 
-                        {/* Unified Tactical Log (Hooks, Kills, Deaths) */}
-                        {(analysis.forensics.tactical_highlights || analysis.forensics.highlights) && (() => {
-                            const highlights = analysis.forensics.tactical_highlights || analysis.forensics.highlights;
 
-                            // Aggregate data for summary view
-                            const tally = highlights.reduce((acc, h) => {
-                                if (!h.victim) return acc;
-                                if (!acc[h.victim]) acc[h.victim] = { count: 0, lethal: 0 };
-                                acc[h.victim].count++;
-                                if (h.lethal) acc[h.victim].lethal++;
-                                return acc;
-                            }, {});
-
-                            const totalHooks = highlights.filter(h => h.event.includes('Hooked')).length;
-                            const totalLethal = highlights.filter(h => h.lethal).length;
-
-                            return (
-                                <div className="bg-[#0f172a]/50 border border-cyan-500/20 rounded-lg p-3 mt-4">
-                                    <details className="group/timeline open:bg-black/20 transition-colors rounded">
-                                        <summary className="flex items-center justify-between cursor-pointer list-none p-1 select-none">
-                                            <div className="flex items-center gap-3">
-                                                <div className="text-[10px] text-slate-400 uppercase tracking-widest font-bold flex items-center gap-2">
-                                                    <Swords size={12} />
-                                                    Tactical Engagement Timeline
-                                                </div>
-                                                <div className="text-[9px] px-1.5 py-0.5 rounded bg-cyan-900/30 text-cyan-300 border border-cyan-500/20 group-open/timeline:hidden">
-                                                    {highlights.length} Events &bull; {totalLethal} Lethal
-                                                </div>
-                                            </div>
-
-                                            {/* Collapsed Preview: Mini Icons */}
-                                            <div className="flex items-center gap-1 group-open/timeline:hidden overflow-hidden max-w-[50%] opacity-70">
-                                                {Object.entries(tally).slice(0, 5).map(([hero, stats], i) => (
-                                                    <div key={i} className="w-5 h-5 rounded-full border border-white/10 overflow-hidden relative" title={`${hero}: ${stats.count} events`}>
-                                                        <HeroPortrait heroName={hero} size="full" />
-                                                        {stats.lethal > 0 && <div className="absolute inset-0 bg-red-500/30 ring-1 ring-inset ring-red-500/50"></div>}
-                                                    </div>
-                                                ))}
-                                                {Object.keys(tally).length > 5 && <span className="text-[9px] text-gray-500">+{Object.keys(tally).length - 5}</span>}
-                                                <div className="ml-2 text-cyan-500/50 hover:text-cyan-400"><ChevronDown size={14} /></div>
-                                            </div>
-
-                                            <div className="hidden group-open/timeline:block text-cyan-500/50 hover:text-cyan-400">
-                                                <ChevronUp size={14} />
-                                            </div>
-                                        </summary>
-
-                                        <div className="pt-3 animate-in slide-in-from-top-2 duration-300">
-                                            {/* Hero Tally Grid */}
-                                            {Object.keys(tally).length > 0 && (
-                                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4 pb-4 border-b border-white/5">
-                                                    {Object.entries(tally).sort((a, b) => b[1].count - a[1].count).map(([hero, stats]) => {
-                                                        const lethalRate = stats.count > 0 ? (stats.lethal / stats.count * 100).toFixed(0) : 0;
-                                                        return (
-                                                            <div key={hero} className="flex items-center gap-2 bg-black/40 p-1.5 rounded border border-white/5 hover:border-cyan-500/30 transition-colors">
-                                                                <div className="w-8 h-8 rounded border border-white/10 overflow-hidden shrink-0 relative">
-                                                                    <HeroPortrait heroName={hero} size="full" />
-                                                                </div>
-                                                                <div className="flex flex-col leading-none">
-                                                                    <div className="text-[11px] font-bold text-slate-200">{hero}</div>
-                                                                    <div className="text-[9px] text-slate-500 flex items-center gap-1">
-                                                                        <span className="text-cyan-400 font-bold">{stats.count}</span>
-                                                                        <span>{stats.count === 1 ? 'hook' : 'hooks'}</span>
-                                                                        {stats.lethal > 0 && (
-                                                                            <span className="text-red-400 font-bold ml-1">({lethalRate}%)</span>
-                                                                        )}
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        );
-                                                    })}
-                                                </div>
-                                            )}
-
-                                            {/* Detailed Log */}
-                                            <div className="space-y-1.5 max-h-[400px] overflow-y-auto pr-1 custom-scrollbar">
-                                                {highlights.map((h, i) => (
-                                                    <div key={i} className={`flex items-center gap-3 p-2 rounded border text-[11px] group/item transition-colors ${h.lethal ? 'bg-red-900/20 border-red-500/30' : 'bg-black/40 border-white/5 hover:bg-white/5'}`}>
-                                                        <span className={`font-mono w-10 shrink-0 text-right font-bold ${h.lethal ? 'text-red-400' : 'text-cyan-500/70'}`}>{h.time}</span>
-                                                        {h.victim ? (
-                                                            <div className={`w-6 h-6 rounded border overflow-hidden shrink-0 bg-black ${h.lethal ? 'border-red-500/50' : 'border-cyan-500/30'}`}>
-                                                                <HeroPortrait heroName={h.victim} size="full" />
-                                                            </div>
-                                                        ) : (
-                                                            <div className="w-6 h-6 flex items-center justify-center">
-                                                                <Target size={12} className="text-cyan-500/50" />
-                                                            </div>
-                                                        )}
-                                                        <div className="flex-1 truncate pr-2 flex items-center gap-2">
-                                                            <span className={`transition-colors ${h.lethal ? 'text-red-300 font-bold' : 'text-slate-400 group-hover/item:text-slate-200'}`}>
-                                                                {h.event.includes('Hooked') || h.event.includes('Direct Kill') ? (
-                                                                    <span>{h.event}</span>
-                                                                ) : (
-                                                                    <span>{h.event} {h.victim ? `-> ${h.victim}` : ''}</span>
-                                                                )}
-                                                            </span>
-                                                            {h.type === 'HOOK' && (
-                                                                <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-black flex items-center gap-1 shadow-sm whitespace-nowrap ${h.displacement > 12 ? 'text-cyan-400 bg-cyan-900/40 ring-1 ring-cyan-500/50 animate-pulse' : h.displacement > 0 ? 'text-slate-400 bg-black/60 border border-white/5' : 'text-slate-600 bg-black/20 border border-white/5 opacity-50'}`}>
-                                                                    {h.displacement > 12 && <Target size={10} className="animate-spin-slow" />}
-                                                                    {h.displacement || 0} units
-                                                                </span>
-                                                            )}
-                                                        </div>
-                                                        {h.lethal && (
-                                                            <div className="px-1.5 py-0.5 bg-red-500/20 rounded text-[9px] font-bold text-red-400 border border-red-500/30 uppercase tracking-wider flex items-center gap-1">
-                                                                <Skull size={8} /> Lethal
-                                                            </div>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    </details>
-                                </div>
-                            );
-                        })()}
                     </div >
                 )}
 
@@ -1869,13 +2018,24 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                             sections = Object.entries(analysis.areas_for_improvement).map(([title, items]) => ({ title, items }));
                         }
 
-                        const killSection = sections.find(s => s.title === "Your Kills");
+                        let killSection = sections.find(s => s.title === "Your Kills");
+                        // Fallback 1: forensics.tactical_highlights (Stitches, Azmodan)
+                        if (!killSection && analysis?.forensics?.tactical_highlights?.length) {
+                            const killItems = analysis.forensics.tactical_highlights
+                                .filter(h => h.type === 'KILL')
+                                .map(h => ({ time: h.time || '', victim: h.victim || 'Unknown', context: h.event }));
+                            if (killItems.length > 0) {
+                                killSection = { title: "Your Kills", items: killItems };
+                            }
+                        }
+                        // Fallback 2: SoloKill from stats when AI omitted Your Kills (Jaina, etc.)
+                        const soloKill = userStats?.SoloKill ?? 0;
+                        if (!killSection && soloKill > 0) {
+                            killSection = { title: "Your Kills", items: [{ time: "SUMMARY", victim: "Stats", context: `${soloKill} eliminations this match` }] };
+                        }
                         if (!killSection) return null;
 
-                        // If we have Stitches forensics, the "Your Kills" section is redundant with the Tactical Engagement Timeline
-                        if (match.hero === 'Stitches' && analysis?.forensics?.tactical_highlights) {
-                            return null;
-                        }
+
 
                         return (
                             <div className="bg-[#052e16]/30 border border-green-500/30 p-6 rounded-lg relative hover:bg-[#052e16]/40 transition-all shadow-2xl shadow-green-900/20 group">
@@ -1930,18 +2090,18 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                         }
 
                                         return (
-                                            <div key={i} className="flex items-center gap-3 p-2.5 bg-black/40 rounded border border-green-500/20 hover:border-green-400/50 transition-colors">
+                                            <div key={i} className="flex items-start gap-3 p-2.5 bg-black/40 rounded border border-green-500/20 hover:border-green-400/50 transition-colors">
                                                 {victim && (
                                                     <div className="w-10 h-10 rounded border border-green-500/40 overflow-hidden shrink-0 relative bg-black shadow-inner">
                                                         {PortraitComponent}
                                                     </div>
                                                 )}
                                                 <div className="flex-1 min-w-0">
-                                                    <div className="flex items-center justify-between gap-2 mb-0.5">
-                                                        <span className="text-[10px] font-mono text-green-400 font-bold bg-green-900/30 px-1.5 py-0.5 rounded border border-green-500/20">{time}</span>
-                                                        {victim && !isSummary && !isAssist && <span className="text-[11px] font-black text-white uppercase tracking-tight truncate">{victim}</span>}
+                                                    <div className="flex items-center justify-between gap-2 mb-1">
+                                                        <span className="text-[10px] font-mono text-green-400 font-bold bg-green-900/30 px-1.5 py-0.5 rounded border border-green-500/20 shrink-0">{time}</span>
+                                                        {victim && !isSummary && !isAssist && <span className="text-[11px] font-black text-white uppercase tracking-tight break-words">{victim}</span>}
                                                     </div>
-                                                    {context && <div className="text-[10px] text-gray-500 font-medium truncate">{context}</div>}
+                                                    {context && <div className="text-[10px] text-gray-400 font-medium leading-relaxed break-words">{context}</div>}
                                                 </div>
                                             </div>
                                         );
@@ -1958,121 +2118,214 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
 // --- TALENT GRID ---
 
-function PersonnelTab({ match, analysis }) {
-    // Fallback: Show basic roster if no social insights
-    if (!analysis || !analysis.social_insights) {
-        const userPlayer = match.players?.find(p => p.name === 'Discerning' || p.hero === match.hero);
-        const userTeam = userPlayer ? userPlayer.team : 0;
+/** Personnel tab: social intel only — neural briefs (aiStrategy), relationship history, match notes, rivalry, dc. */
+function PersonnelTab({ match, analysis, interactions = {}, heroData: propHeroData }) {
+    const userPlayer = match.players?.find(p => p.name === 'Discerning' || p.hero === match.hero);
+    const userTeam = userPlayer?.team ?? 0;
+    const heroDataForText = propHeroData ?? {};
 
-        const allies = match.players?.filter(p => p.team === userTeam) || [];
-        const enemies = match.players?.filter(p => p.team !== userTeam) || [];
+    const byName = (() => {
+        const map = {};
+        Object.values(interactions || {}).forEach(p => {
+            const name = p?.name;
+            if (!name) return;
+            const matches = p.matches || [];
+            let winsWith = p.wins_with, totalWith = p.total_with, winsAgainst = p.wins_against, totalAgainst = p.total_against;
+            if (totalWith === undefined || totalAgainst === undefined) {
+                let ww = 0, tw = 0, wa = 0, ta = 0;
+                matches.forEach(m => {
+                    if (m.team === 'WITH') { tw++; if (m.result === 'WIN') ww++; }
+                    else if (m.team === 'AGAINST') { ta++; if (m.result === 'WIN') wa++; }
+                });
+                if (totalWith === undefined) { winsWith = ww; totalWith = tw; }
+                if (totalAgainst === undefined) { winsAgainst = wa; totalAgainst = ta; }
+            }
+            map[name] = { ...p, wins_with: winsWith, total_with: totalWith, wins_against: winsAgainst, total_against: totalAgainst };
+        });
+        return map;
+    })();
 
-        const PlayerCard = ({ player, isAlly }) => {
-            const stats = player.stats || {};
-            return (
-                <div className={`p-4 rounded-lg border ${isAlly ? 'bg-cyan-500/5 border-cyan-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
-                    <div className="flex items-center gap-3 mb-3">
-                        <div className="w-10 h-10 rounded bg-black/40 border border-white/10 overflow-hidden shrink-0">
-                            <HeroPortrait heroName={player.hero} size="full" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className={`font-black text-sm ${isAlly ? 'text-cyan-400' : 'text-red-400'}`}>{player.name}</span>
-                            <span className="text-[10px] text-slate-500 uppercase font-bold">{player.hero}</span>
-                        </div>
-                    </div>
-                    <div className="grid grid-cols-3 gap-2 text-xs">
-                        <div className="bg-black/20 p-2 rounded">
-                            <div className="text-gray-500 text-[10px]">K/D/A</div>
-                            <div className="text-white font-bold">{stats.SoloKill || 0}/{stats.Deaths || 0}/{stats.Assists || 0}</div>
-                        </div>
-                        <div className="bg-black/20 p-2 rounded">
-                            <div className="text-gray-500 text-[10px]">Hero Dmg</div>
-                            <div className="text-white font-bold">{(stats.HeroDamage || 0).toLocaleString()}</div>
-                        </div>
-                        <div className="bg-black/20 p-2 rounded">
-                            <div className="text-gray-500 text-[10px]">XP</div>
-                            <div className="text-white font-bold">{(stats.ExperienceContribution || 0).toLocaleString()}</div>
-                        </div>
-                    </div>
-                </div>
-            );
-        };
+    const { notable_nodes } = analysis?.social_insights || {};
+    const noteByPlayer = (notable_nodes || []).reduce((acc, n) => { acc[n.name] = n.note; return acc; }, {});
+
+    const playersList = match.players || [];
+    const gameLength = match.game_length || 0;
+    const DC_GRACE = 30; // ignore DCs in last 30s (game effectively over)
+    const dcList = playersList
+        .filter((p) => (p.disconnected === 1 || p.disconnected === true) && (gameLength - (p.dc_timestamp || 0)) > DC_GRACE)
+        .map((p) => ({ name: p.name, hero: p.hero, ts: p.dc_timestamp }));
+    const fmtTime = (s) => {
+        if (s == null || s === undefined) return '—';
+        const m = Math.floor(Number(s) / 60);
+        const sec = Math.floor(Number(s) % 60);
+        return `${m}:${sec.toString().padStart(2, '0')}`;
+    };
+    const userWasBanner = match.user_was_banner === 1 || match.user_was_banner === true;
+    const enemyBannerName = match.enemy_banner_name || null;
+    const newEncounterNames = playersList
+        .filter((p) => {
+            if (p.name === userPlayer?.name) return false;
+            const intel = byName[p.name];
+            const withG = intel?.total_with ?? 0;
+            const vsG = intel?.total_against ?? 0;
+            return withG === 0 && vsG === 0;
+        })
+        .map((p) => p.name);
+    const newEncounterCount = newEncounterNames.length;
+
+    const withYouList = playersList
+        .filter((p) => (byName[p.name]?.total_with ?? 0) > 0)
+        .map((p) => {
+            const intel = byName[p.name];
+            const g = intel.total_with ?? 0;
+            const wr = (intel.wins_with != null && g > 0) ? (intel.wins_with / g * 100).toFixed(0) : null;
+            return { name: p.name, hero: p.hero, g, wr };
+        });
+    const vsYouList = playersList
+        .filter((p) => (byName[p.name]?.total_against ?? 0) > 0)
+        .map((p) => {
+            const intel = byName[p.name];
+            const g = intel.total_against ?? 0;
+            const theirWins = intel.wins_against ?? 0;
+            const yourWins = g - theirWins;
+            return { name: p.name, hero: p.hero, g, yourWins, theirWins };
+        });
+    const hasBriefList = playersList.filter((p) => byName[p.name]?.aiStrategy).map((p) => p.name);
+
+    const yourTeam = playersList.filter((p) => p.team === userTeam);
+    const enemyTeam = playersList.filter((p) => p.team !== userTeam);
+
+    const RosterRow = ({ player, isYou, intel, didDC, dcTime }) => {
+        const withG = intel?.total_with ?? 0;
+        const vsG = intel?.total_against ?? 0;
+        const wrWith = (intel?.wins_with != null && withG > 0) ? (intel.wins_with / withG * 100).toFixed(0) : null;
+        const theirWins = intel?.wins_against ?? 0;
+        const yourWins = vsG - theirWins;
+        const isNewEncounter = !isYou && withG === 0 && vsG === 0;
+
+        let badge = '';
+        if (isYou) badge = 'You';
+        else if (isNewEncounter) badge = 'New';
+        else if (withG > 0) badge = `${withG}g ${wrWith}%`;
+        else if (vsG > 0) badge = `${vsG}g you ${yourWins}-${theirWins}`;
+        if (didDC && dcTime) badge = badge ? `${badge} · DC ${dcTime}` : `DC ${dcTime}`;
+        else if (didDC) badge = badge ? `${badge} · DC` : 'DC';
 
         return (
-            <div className="space-y-6">
-                <div className="bg-cyan-500/10 border border-cyan-500/20 rounded-lg p-4">
-                    <h3 className="text-cyan-400 font-bold uppercase text-sm mb-4">Your Team</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {allies.map((p, i) => <PlayerCard key={i} player={p} isAlly={true} />)}
-                    </div>
+            <div className={`flex items-center gap-3 px-3 py-2 ${player.team === userTeam ? 'bg-cyan-500/5' : 'bg-red-500/5'} ${didDC ? 'border-l-2 border-l-amber-500/60' : ''}`}>
+                <div className="w-8 h-8 rounded overflow-hidden shrink-0 border border-white/10 bg-black/40">
+                    <HeroPortrait heroName={player.hero} size="full" />
                 </div>
-                <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-4">
-                    <h3 className="text-red-400 font-bold uppercase text-sm mb-4">Enemy Team</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-                        {enemies.map((p, i) => <PlayerCard key={i} player={p} isAlly={false} />)}
-                    </div>
+                <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+                    <span className={`font-bold text-sm truncate ${isYou ? 'text-slate-400' : player.team === userTeam ? 'text-cyan-400' : 'text-red-400'}`}>
+                        {isYou ? 'You' : player.name}
+                    </span>
+                    <span className="text-xs text-slate-500 uppercase shrink-0">{player.hero}</span>
+                    {badge && <span className="text-xs text-slate-400">· {badge}</span>}
+                    {didDC && <span className="text-[10px] font-bold text-amber-400 bg-amber-500/20 px-1.5 py-0.5 rounded shrink-0">DC</span>}
                 </div>
+                {!!intel?.aiStrategy && (
+                    <span className="text-[10px] text-purple-400 font-medium shrink-0" title={intel.aiStrategy?.slice(0, 80)}>brief</span>
+                )}
             </div>
         );
-    }
+    };
 
-    const { social_summary, notable_nodes, rivalry_factor } = analysis.social_insights;
+    const empty = !userWasBanner && !enemyBannerName && dcList.length === 0 && newEncounterCount === 0 && withYouList.length === 0 && vsYouList.length === 0 && hasBriefList.length === 0;
 
     return (
-        <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
-            {/* Social Summary Card */}
-            <div className="bg-gradient-to-br from-[#1a0b2e] to-[#0f172a] border border-purple-500/20 rounded-lg p-8 shadow-2xl relative overflow-hidden">
-                <div className="absolute right-0 top-0 opacity-5 p-4">
-                    <Users size={120} />
+        <div className="space-y-5 animate-in fade-in slide-in-from-bottom-4 duration-500">
+            {/* Compact summary: pills + two-column relationship grid */}
+            <div className="bg-black/40 border border-white/10 rounded-lg p-4 space-y-4">
+                <div className="flex flex-wrap gap-2">
+                    {newEncounterCount > 0 && (
+                        <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-full px-2.5 py-1">
+                            {newEncounterCount} new: {newEncounterNames.slice(0, 5).join(', ')}{newEncounterNames.length > 5 ? ' …' : ''}
+                        </span>
+                    )}
+                    {(userWasBanner || enemyBannerName) && (
+                        <span className="text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-2.5 py-1">
+                            Banner: {userWasBanner && 'You'}{userWasBanner && enemyBannerName && ' · '}{enemyBannerName && `Enemy ${enemyBannerName}`}
+                        </span>
+                    )}
+                    {dcList.length > 0 && (
+                        <span className="text-xs font-medium text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-full px-2.5 py-1">
+                            DC: {dcList.map(({ name, hero, ts }) => `${name} @ ${fmtTime(ts)}`).join(', ')}
+                        </span>
+                    )}
                 </div>
-                <div className="flex items-center gap-3 mb-6">
-                    <Zap className="text-purple-400" size={20} />
-                    <h2 className="text-purple-300 text-xs font-bold uppercase tracking-widest">Team Neural Sync</h2>
-                </div>
-                <p className="text-xl font-light text-slate-200 leading-relaxed italic">
-                    "{social_summary}"
-                </p>
-            </div>
 
-            {/* Notable Nodes Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {notable_nodes?.map((node, idx) => {
-                    const player = match.players?.find(p => p.name === node.name);
-                    const isAlly = player?.team === match.players?.find(p => p.name === 'Discerning' || p.hero === match.hero)?.team;
-
-                    return (
-                        <div key={idx} className={`p-5 rounded-xl border ${isAlly ? 'bg-cyan-500/5 border-cyan-500/20' : 'bg-red-500/5 border-red-500/20'} transition-all hover:scale-[1.02]`}>
-                            <div className="flex items-center gap-3 mb-3">
-                                {player && (
-                                    <div className="w-10 h-10 rounded bg-black/40 border border-white/10 overflow-hidden shrink-0">
-                                        <img src={getHeroPortrait(player.hero)} alt={player.hero} className="w-full h-full object-cover" />
-                                    </div>
-                                )}
-                                <div className="flex flex-col">
-                                    <span className={`font-black text-sm ${isAlly ? 'text-cyan-400' : 'text-red-400'}`}>{node.name}</span>
-                                    <span className="text-[10px] text-slate-500 uppercase font-bold tracking-tighter">{player?.hero || 'Unknown Unit'}</span>
+                {(withYouList.length > 0 || vsYouList.length > 0) && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        {withYouList.length > 0 && (
+                            <div>
+                                <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Your team · Prior teammates</div>
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-300">
+                                    {withYouList.map(({ name, g, wr }) => (
+                                        <span key={name}><span className="text-cyan-400 font-medium">{name}</span> {g}g {wr != null ? `${wr}%` : ''}</span>
+                                    ))}
                                 </div>
                             </div>
-                            <div className="text-xs text-slate-300 leading-relaxed bg-black/20 p-3 rounded border border-white/5">
-                                {node.note}
+                        )}
+                        {vsYouList.length > 0 && (
+                            <div>
+                                <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2">Enemy team · Prior opponents</div>
+                                <div className="flex flex-wrap gap-x-3 gap-y-1 text-sm text-slate-300">
+                                    {vsYouList.map(({ name, g, yourWins, theirWins }) => (
+                                        <span key={name}><span className="text-red-400 font-medium">{name}</span> {g}g you {yourWins}-{theirWins}</span>
+                                    ))}
+                                </div>
                             </div>
-                        </div>
-                    );
-                })}
+                        )}
+                    </div>
+                )}
+
+                {hasBriefList.length > 0 && (
+                    <div className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">
+                        Neural briefs: <span className="text-slate-400 font-normal">{hasBriefList.join(', ')}</span>
+                    </div>
+                )}
+
+                {empty && (
+                    <span className="text-slate-500 text-sm">No prior encounter data. Open Social Intelligence to build briefs.</span>
+                )}
             </div>
 
-            {/* Rivalry Factor */}
-            {rivalry_factor && (
-                <div className="bg-black/40 border border-white/5 p-6 rounded-lg">
-                    <div className="flex items-center gap-2 mb-4 text-red-400/80">
-                        <Swords size={16} />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Neural Rivalry Matrix</span>
+            {/* Roster: Your team | Enemy team */}
+            <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider mb-2">Your team</div>
+                        <div className="rounded-lg border border-white/10 overflow-hidden bg-black/20 divide-y divide-white/5">
+                            {yourTeam.map((player, idx) => (
+                                <RosterRow
+                                    key={idx}
+                                    player={player}
+                                    isYou={player.name === userPlayer?.name || player.hero === match.hero}
+                                    intel={byName[player.name]}
+                                    didDC={player.disconnected === 1 || player.disconnected === true}
+                                    dcTime={player.dc_timestamp != null ? fmtTime(player.dc_timestamp) : null}
+                                />
+                            ))}
+                        </div>
                     </div>
-                    <p className="text-sm text-slate-400 italic">
-                        {rivalry_factor}
-                    </p>
+                    <div>
+                        <div className="text-[10px] font-bold text-red-400 uppercase tracking-wider mb-2">Enemy team</div>
+                        <div className="rounded-lg border border-white/10 overflow-hidden bg-black/20 divide-y divide-white/5">
+                            {enemyTeam.map((player, idx) => (
+                                <RosterRow
+                                    key={idx}
+                                    player={player}
+                                    isYou={false}
+                                    intel={byName[player.name]}
+                                    didDC={player.disconnected === 1 || player.disconnected === true}
+                                    dcTime={player.dc_timestamp != null ? fmtTime(player.dc_timestamp) : null}
+                                />
+                            ))}
+                        </div>
+                    </div>
                 </div>
-            )}
+            </div>
         </div>
     );
 }
@@ -2165,19 +2418,17 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
                                 ? 'bg-[#172554]/30 border-l-blue-500/60 hover:bg-[#172554]/40'
                                 : 'bg-[#450a0a]/20 border-l-red-500/60 hover:bg-[#450a0a]/30'
 
-                        // Generate build hash from player's talents
+                        // Build key: no separator (matches player_profile.talent_builds from calculate_build_stats)
+                        const buildKey = [1, 2, 3, 4, 5, 6, 7]
+                            .map(tier => p.stats?.[`Tier${tier}Talent`] || 0)
+                            .join('')
                         const buildHash = [1, 2, 3, 4, 5, 6, 7]
                             .map(tier => p.stats?.[`Tier${tier}Talent`] || 0)
                             .join('-')
 
-                        // Real data only - remove mock fallbacks
-                        const buildStats = playerProfile?.talent_builds?.[p.hero]?.[buildHash]
+                        const buildStats = playerProfile?.talent_builds?.[p.hero]?.[buildKey]
                         const realBuildWR = buildStats?.wr
                         const realBuildGames = buildStats?.games
-
-                        // Safety fallbacks to prevent ReferenceError in JSX
-                        const mockBuildWR = 0
-                        const mockBuildGames = 0
 
                         return (
                             <div key={i} className={`grid grid-cols-[180px_repeat(7,minmax(0,1fr))_120px] min-h-[60px] py-0.5 border-b border-[#2e2158] items-center transition-colors hover:brightness-110 border-l-[6px] ${rowClass}`}>
@@ -2297,28 +2548,27 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
                                                                 </div>
                                                             )}
 
-                                                            {/* Meta WR */}
-                                                            <div className="flex justify-between items-center">
-                                                                <span className="text-[10px] text-slate-400 font-bold uppercase">Meta WR</span>
-                                                                <div className="flex flex-col items-end">
-                                                                    {realWR !== undefined ? (
-                                                                        <>
-                                                                            <span className={`text-xs font-bold ${realWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                                                                                {realWR.toFixed(1)}%
-                                                                            </span>
-                                                                            <span className="text-[8px] text-slate-500">
-                                                                                PR: {displayPR?.toFixed(1)}%
-                                                                            </span>
-                                                                        </>
-                                                                    ) : (
-                                                                        <span className="text-[10px] text-slate-600">No Data</span>
-                                                                    )}
+                                                            {/* Meta WR: only show when we have data */}
+                                                            {realWR !== undefined && (
+                                                                <div className="flex justify-between items-center">
+                                                                    <span className="text-[10px] text-slate-400 font-bold uppercase">Meta WR</span>
+                                                                    <div className="flex flex-col items-end">
+                                                                        <span className={`text-xs font-bold ${realWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                            {realWR.toFixed(1)}%
+                                                                        </span>
+                                                                        {displayPR != null && (
+                                                                            <span className="text-[8px] text-slate-500">PR: {displayPR.toFixed(1)}%</span>
+                                                                        )}
+                                                                    </div>
                                                                 </div>
-                                                            </div>
+                                                            )}
                                                         </div>
 
-                                                        <div className="mt-2 text-[9px] text-slate-500 italic border-t border-white/5 pt-1">
-                                                            {talentInfo?.description?.slice(0, 60)}...
+                                                        <div className="mt-2 flex items-center justify-between gap-2 border-t border-white/5 pt-1">
+                                                            <span className="text-[9px] text-slate-500 italic flex-1 min-w-0 truncate" title={talentInfo?.description}>
+                                                                {talentInfo?.description?.slice(0, 50) ?? ''}{(talentInfo?.description?.length ?? 0) > 50 ? '…' : ''}
+                                                            </span>
+                                                            <a href={`https://www.heroesprofile.com/Global/Talents/${(p.hero || '').replace(/\s+/g, '')}`} target="_blank" rel="noopener noreferrer" className="text-[8px] text-blue-400 hover:text-blue-300 whitespace-nowrap">HP</a>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -2351,69 +2601,74 @@ function TalentGrid({ match, players, talentMap, onDiscuss, playerProfile }) {
 
                                             {/* Compact Stats Display */}
                                             <div className="flex flex-col gap-0.5 w-full items-center">
-                                                {/* YOUR WR (Personal or Spec) - Only for the player */}
+                                                {/* My spec WR - only for the player; flag when missing */}
                                                 {(p.name?.toLowerCase() === 'discerning' || p.name === playerProfile?.battletag?.split('#')[0]) && (
-                                                    <>
-                                                        {(() => {
-                                                            // Try Specific Build Stats first
-                                                            const currentBuildKey = match?.talent_build;
-                                                            const specStats = currentBuildKey ? playerProfile?.talent_builds?.[p.hero]?.[currentBuildKey] : null;
+                                                    (() => {
+                                                        const specStats = buildKey ? playerProfile?.talent_builds?.[p.hero]?.[buildKey] : null;
 
-                                                            if (specStats) {
-                                                                return (
-                                                                    <div className="flex items-center gap-1">
-                                                                        <span className="text-[8px] text-orange-400 uppercase font-bold">SPEC</span>
-                                                                        <span className={`text-[9px] font-bold ${specStats.wr >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                                                                            {specStats.wr.toFixed(1)}%
-                                                                        </span>
-                                                                        <span className="text-[7px] text-slate-500">
-                                                                            ({specStats.games}g)
-                                                                        </span>
-                                                                    </div>
-                                                                );
-                                                            }
+                                                        if (specStats != null && specStats.wr != null) {
+                                                            return (
+                                                                <div className="flex items-center gap-1">
+                                                                    <span className="text-[8px] text-orange-400 uppercase font-bold">SPEC</span>
+                                                                    <span className={`text-[9px] font-bold ${specStats.wr >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                        {Number(specStats.wr).toFixed(1)}%
+                                                                    </span>
+                                                                    <span className="text-[7px] text-slate-500">({specStats.games ?? 0}g)</span>
+                                                                </div>
+                                                            );
+                                                        }
 
-                                                            // Fallback to S3 Hero Stats
-                                                            const s3Stats = playerProfile?.personal_talent_stats?.[p.hero]?.overall?.season_3;
-                                                            const lifetimeStats = playerProfile?.personal_talent_stats?.[p.hero]?.overall?.lifetime;
-                                                            const pWR = s3Stats?.wr ?? lifetimeStats?.wr;
-                                                            const isS3 = s3Stats?.wr !== undefined;
+                                                        const s3Stats = playerProfile?.personal_talent_stats?.[p.hero]?.overall?.season_3;
+                                                        const lifetimeStats = playerProfile?.personal_talent_stats?.[p.hero]?.overall?.lifetime;
+                                                        const pWR = s3Stats?.wr ?? lifetimeStats?.wr;
+                                                        const isS3 = s3Stats?.wr !== undefined;
 
+                                                        if (pWR !== undefined) {
                                                             return (
                                                                 <div className="flex items-center gap-1">
                                                                     <span className="text-[8px] text-cyan-400 uppercase font-bold">{isS3 ? 'S3' : 'YOU'}</span>
-                                                                    {pWR !== undefined ? (
-                                                                        <span className={`text-[9px] font-bold ${pWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                                                                            {pWR.toFixed(1)}%
-                                                                        </span>
-                                                                    ) : <span className="text-[8px] text-slate-600">N/A</span>}
+                                                                    <span className={`text-[9px] font-bold ${pWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                        {Number(pWR).toFixed(1)}%
+                                                                    </span>
                                                                 </div>
                                                             );
-                                                        })()}
-                                                    </>
+                                                        }
+
+                                                        return (
+                                                            <div className="flex items-center gap-1" title="Spec WR not in profile — verify stats to populate">
+                                                                <span className="text-[8px] text-amber-400 uppercase font-bold">SPEC</span>
+                                                                <span className="text-[8px] text-amber-500/90">Missing</span>
+                                                            </div>
+                                                        );
+                                                    })()
                                                 )}
 
-                                                {/* META WR with game count inline */}
-                                                <div className="flex items-center gap-1">
-                                                    <span className="text-[8px] text-slate-400 uppercase font-bold">META</span>
-                                                    <span className={`text-[9px] font-bold ${(realBuildWR || mockBuildWR) >= 50 ? 'text-green-400' : 'text-red-400'}`}>
-                                                        {(realBuildWR || mockBuildWR).toFixed(1)}%
-                                                    </span>
-                                                    <span className="text-[7px] text-slate-500">
-                                                        ({realBuildGames || mockBuildGames}g)
-                                                    </span>
-                                                </div>
+                                                {/* META = global build WR (e.g. Heroes Profile). Only show when different from SPEC so we don't duplicate. */}
+                                                {realBuildWR != null && realBuildGames != null && (() => {
+                                                    const specWR = (p.name?.toLowerCase() === 'discerning' || p.name === playerProfile?.battletag?.split('#')[0])
+                                                        ? (playerProfile?.talent_builds?.[p.hero]?.[buildKey]?.wr ?? null) : null;
+                                                    if (specWR !== null && Math.abs(Number(realBuildWR) - Number(specWR)) < 0.01) return null;
+                                                    return (
+                                                        <div className="flex items-center gap-1">
+                                                            <span className="text-[8px] text-slate-400 uppercase font-bold">META</span>
+                                                            <span className={`text-[9px] font-bold ${realBuildWR >= 50 ? 'text-green-400' : 'text-red-400'}`}>
+                                                                {Number(realBuildWR).toFixed(1)}%
+                                                            </span>
+                                                            <span className="text-[7px] text-slate-500">({realBuildGames}g)</span>
+                                                        </div>
+                                                    );
+                                                })()}
                                             </div>
 
-                                            {/* HeroesProfile Link - Compact */}
+                                            {/* SPEC = your build WR (parsed). META = global build WR → Heroes Profile */}
                                             <a
-                                                href={`https://www.heroesprofile.com/Global/Talents/${p.hero.replace(/\s+/g, '')}`}
+                                                href={`https://www.heroesprofile.com/Global/Talents/${(p.hero || '').replace(/\s+/g, '')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-[7px] text-blue-400 hover:text-blue-300 underline"
-                                                title="View on HeroesProfile"
+                                                title="SPEC = your WR with this build. META = global build WR on Heroes Profile"
                                             >
-                                                HP
+                                                HP (META)
                                             </a>
                                         </>
                                     ) : (

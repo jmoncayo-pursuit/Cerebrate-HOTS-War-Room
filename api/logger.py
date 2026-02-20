@@ -51,6 +51,7 @@ class ColoredLogger:
                 '/api/player_interactions',  # Silent polling
                 '/api/rejected_replays',  # Frequent polling
                 '/api/cerebrate_config',  # Frequent polling
+                '/api/healer/status',  # Healer disabled; silence if still polled
                 '/api/data_sources/status',  # Frequent polling
                 '/api/data_sources/conflicts'  # Frequent polling
             ]
