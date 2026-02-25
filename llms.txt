@@ -1,0 +1,32 @@
+# Nexus Command Lab
+
+The Nexus Command Lab is a high-performance HOTS (Heroes of the Storm) tactical laboratory and AI-agentic brain. It provides data-driven match forensics, automated replay ingestion, and real-time tactical intelligence.
+
+## MCP Server (Nexus Comm-Link)
+
+The project includes an MCP (Model Context Protocol) server that allows any capable AI (Cursor, Windsurf, etc.) to interface with the Nexus API.
+
+- **Server Executable**: `scripts/nexus_mcp_server.py`
+- **Transport**: Stdio
+- **API Target**: `http://localhost:8000` (configurable via `NEXUS_API_URL`)
+
+### Available Tools for AI Agents
+
+- `nexus_health`: Verify dlink status and system versions.
+- `nexus_player_profile`: Retrieve the operator's rank, win rates, and primary hero pool.
+- `nexus_match_history`: Search and retrieve recent match records from the SQL archive.
+- `nexus_hero_dossier`: Generate a deep forensic report on a specific hero (builds, counters, mechanical lethality).
+- `nexus_map_stats`: Analyze performance across all battlegrounds to identify tactical advantages.
+- `nexus_intel_query`: Dispatch natural language queries to the Nexus Agentic Brain for draft and strategy suggestions.
+- `nexus_config_manifest`: Inspect global roster constraints and active strategy overrides.
+
+## System Components
+
+- **Nexus Healer**: Autonomous integrity agent maintaining the SQL archive and summary quality.
+- **Replay Watcher**: Background service for real-time ingestion of `.StormReplay` files.
+- **Agentic Brain**: Multi-agent system (Analyst, Scout, Coach, Tactician) for high-tier tactical synthesis.
+
+## Data Schema
+All tactical data is persisted in `src/data/nexus_command_lab.db`. 
+Key tables: `matches`, `match_players`, `global_meta_stats`, `hero_dossiers`.
+Core KV config: `nexus_config` (managed via `DatabaseManager`).

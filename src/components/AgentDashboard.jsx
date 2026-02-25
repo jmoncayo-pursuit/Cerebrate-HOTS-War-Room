@@ -81,7 +81,7 @@ const AgentDashboard = () => {
   }, [])
 
   const fetchAgents = () => {
-    fetch('/api/cerebrate/agents')
+    fetch('/api/nexus/agents')
       .then(res => res.json())
       .then(data => {
         setAgents(data.agents || [])
@@ -113,7 +113,7 @@ const AgentDashboard = () => {
     if (!testQuery.trim()) return
 
     try {
-      const response = await fetch('/api/cerebrate/ask', {
+      const response = await fetch('/api/nexus/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

@@ -64,8 +64,8 @@ const renderTacticalContent = (text, talentMapData) => {
 };
 
 // --- Constants ---
-const getSystemPrompt = (profile) => `You are the **Cerebrate**, a high-level tactical intelligence engine designed for Nexus dominance.
-**System Status:** NEURAL LINK ACTIVE.
+const getSystemPrompt = (profile) => `You are the **Nexus Brain**, a high-level tactical intelligence engine designed for Nexus dominance.
+**System Status:** NEXUS COMM-LINK ACTIVE.
 **Mission Profile:**
 - **Commander:** ${profile?.battletag || 'Commander'}
 - **Current Sector:** ${profile?.active_season?.name || '2026 Season 1'} Storm League
@@ -99,7 +99,7 @@ When analyzing combat records (matches), adhere to this schema:
 
 **Takeaway:** [One short, memorable lesson]
 
-**CRITICAL:** Do not be chatty. Be effective. You are the Cerebrate.
+**CRITICAL:** Do not be chatty. Be effective. You are the Nexus Brain.
 
 **Database Schemas:**
 - strategies.json: { "Map": { "primary": {...}, "rules": [{ "content": "Rule text", "type": "warning" }] } }
@@ -1084,7 +1084,7 @@ export default function UnifiedChat({
   const handleAgentQuery = async (userInput) => {
     // Route query to multi-agent system
     try {
-      const response = await fetch('/api/cerebrate/ask', {
+      const response = await fetch('/api/nexus/ask', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
