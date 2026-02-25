@@ -98,8 +98,8 @@ class NexusOrchestrator:
         # context['live_telemetry'] = None
 
         # PRIORITY 0: SYSTEM/DEBUG INTERVENTION
-        # If the user is asking about the neural link or logs, route to ANALYST immediately
-        system_keywords = ['console', 'log', 'error', 'debug', 'fail', 'warning', 'neural link', 'telemetry']
+        # If the user is asking about the nexus link or logs, route to ANALYST immediately
+        system_keywords = ['console', 'log', 'error', 'debug', 'fail', 'warning', 'nexus link', 'comm-link', 'telemetry']
         if any(w in query.lower() for w in system_keywords) and context.get('live_telemetry'):
              return self.agents['analyst'].analyze(query, context)
 

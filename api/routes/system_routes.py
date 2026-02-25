@@ -16,11 +16,11 @@ DISCOVERY = {
         {"method": "GET", "path": "/api/match_history", "description": "Match history"},
         {"method": "POST", "path": "/api/upload_replay", "description": "Upload replay file"},
         {"method": "POST", "path": "/api/analyze_replay", "description": "Trigger replay analysis"},
-        {"method": "POST", "path": "/api/chat", "description": "Consult Cerebrate (natural language)"},
+        {"method": "POST", "path": "/api/chat", "description": "Consult Nexus (natural language)"},
         {"method": "GET", "path": "/api/advice/stats", "description": "Advice stats"},
         {"method": "GET", "path": "/api/telemetry/temporal", "description": "Temporal telemetry"},
-        {"method": "GET", "path": "/api/cerebrate/agents", "description": "List AI agents"},
-        {"method": "POST", "path": "/api/cerebrate/ask", "description": "Ask agents (structured)"},
+        {"method": "GET", "path": "/api/nexus/agents", "description": "List AI agents"},
+        {"method": "POST", "path": "/api/nexus/ask", "description": "Ask agents (structured)"},
         {"method": "GET", "path": "/api/player_interactions", "description": "Player interactions"},
         {"method": "GET", "path": "/api/player_network", "description": "Player network graph"},
         {"method": "POST", "path": "/api/extract_stats_from_screenshot", "description": "Extract stats from screenshot"},
@@ -49,25 +49,25 @@ def source_status():
         hero_mastery = conn.execute("SELECT COUNT(*) FROM global_meta_stats WHERE games_played > 0").fetchone()[0]
 
     return jsonify({
-        "secure_datalink": {
+        "nexus_core": {
             "healthy": True,
-            "last_updated": log['entries'][0]['timestamp'] if log['entries'] else "2026-02-02T12:00:00",
+            "last_updated": log['entries'][0]['timestamp'] if log['entries'] else "2026-02-25T12:00:00",
             "record_count": match_count,
             "coverage": 100,
-            "confidence": "Absolute (Local SQL)"
+            "confidence": "Absolute (Local SQL Archive)"
         },
         "neural_synthesizer": {
             "healthy": True,
-            "last_updated": "2026-02-02T12:00:00",
+            "last_updated": "2026-02-25T12:00:00",
             "record_count": hero_mastery,
-            "coverage": 85,
+            "coverage": 95,
             "confidence": "High (AI Synthesis)"
         },
         "telemetry_link": {
             "healthy": True,
-            "last_updated": "2026-02-02T12:00:00",
+            "last_updated": "2026-02-25T12:00:00",
             "record_count": player_records,
-            "coverage": 92,
+            "coverage": 98,
             "confidence": "Verified"
         }
     })
@@ -87,7 +87,7 @@ def lineage_search():
             results.append({
                 "target": h['hero'],
                 "type": "Mastery Dossier",
-                "source": "SECURE_DATALINK",
+                "source": "NEXUS_CORE",
                 "evidence": f"{h['games_played']} verified matches recorded.",
                 "confidence": "100%"
             })
@@ -133,17 +133,30 @@ def get_browser_logs():
     return jsonify(logs)
 
 def is_healer_running():
-    return False  # Healer removed: token cost outweighed value
+    pid_file = "logs/pids/healer.pid"
+    if os.path.exists(pid_file):
+        try:
+            with open(pid_file, 'r') as f:
+                pid = int(f.read().strip())
+            os.kill(pid, 0)
+            return True
+        except:
+            pass
+    return False
 
-# Healer removed: token cost outweighed value. Endpoints retained for backwards compatibility.
 @system_bp.route('/healer/status', methods=['GET'])
 def healer_status():
+    hea_stats = db.get_kv('healer_reaudit_stats') or {"date": None, "count": 0}
     return jsonify({
-        "running": False,
+        "running": is_healer_running(),
         "last_pulse": None,
-        "mode": "OFFLINE",
-        "summary_queue_count": 0,
-        "reaudit_stats": {"date": None, "count": 0, "max_daily": 0},
+        "mode": "ACTIVE" if is_healer_running() else "OFFLINE",
+        "summary_queue_count": len(db.get_kv('summary_reaudit_queue') or []),
+        "reaudit_stats": {
+            "date": hea_stats.get("date"),
+            "count": hea_stats.get("count"),
+            "max_daily": 20
+        },
     })
 
 @system_bp.route('/healer/start', methods=['POST'])

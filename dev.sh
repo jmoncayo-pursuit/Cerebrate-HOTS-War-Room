@@ -8,7 +8,7 @@ FRONTEND_URL="http://localhost:5173"
 API_URL="http://localhost:8000/api/health"
 
 echo "=================================================="
-echo "🚀 INITIATING ELITE DEVELOPMENT ENVIRONMENT 🚀"
+echo "🚀 INITIATING NEXUS COMMAND LAB ENVIRONMENT 🚀"
 echo "=================================================="
 
 # 1. Neural Link Check
@@ -46,7 +46,7 @@ else
         fi
         echo "✅ Neural Link established on port $DEBUG_PORT."
     else
-        echo "❌ Chrome Canary not found at standard path."
+        echo "❌ Chrome Canary not found."
         echo "   Please install Google Chrome Canary or update the path in this script."
         exit 1
     fi
@@ -60,6 +60,6 @@ if [ ! -f "start_server.sh" ]; then
 fi
 
 # 3. Hand off to Core Startup
-echo "[3/3] Interfacing with War Room..."
+echo "[3/3] Interfacing with Nexus Command Lab..."
 echo "🔌 Passing control to Core Startup Script..."
 ./start_server.sh

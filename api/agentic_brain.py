@@ -69,7 +69,7 @@ class AgenticBrain:
         return "Ranged Assassin" # Default fallback
 
     def _get_constraints(self):
-        config = self.db.get_kv('cerebrate_config') or {}
+        config = self.db.get_kv('nexus_config') or {}
         return config.get('roster_constraints', {})
 
     def _audit_map(self, map_name):
@@ -210,8 +210,8 @@ class AgenticBrain:
 
     def _build_tactical_dossier(self, audit, map_name, hero_name):
         """Construct the raw intelligence payload for the AI."""
-        dossier = "=== AGENTIC TACTICAL DOSSIER [SOURCE: HYBRID_SYNTHESIS] ===\n"
-        dossier += "METADATA: All stats marked 'Verified' pull directly from SECURE_DATALINK (SQL Archive).\n"
+        dossier = "=== NEXUS TACTICAL DOSSIER [SOURCE: HYBRID_SYNTHESIS] ===\n"
+        dossier += "METADATA: All stats marked 'Verified' pull directly from NEXUS_CORE (SQL Archive).\n"
         dossier += "METADATA: Strategic directives are generated via NEURAL_SYNTHESIS (Cross-referenced analysis).\n\n"
         
         # Freshness Check: Load Rework Registry

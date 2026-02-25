@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify, current_app
 import os
 import json
 import time
-from agents.cerebrate_orchestrator import CerebrateOrchestrator
+from agents.nexus_orchestrator import NexusOrchestrator
 from api.services.database import DatabaseManager
 from api.services.quota_manager import QuotaManager
 from api.logger import ColoredLogger
@@ -17,7 +17,6 @@ from api.routes.system_routes import is_healer_running
 
 # We need the call_gemini_api function. In this architecture, it's usually 
 # handled by IntelligenceService or passed down.
-# Let's define a wrapper that uses the model from IntelligenceService.
 from api.services.intelligence_service import IntelligenceService
 
 # Global orchestrator instance (lazy loaded)
@@ -33,31 +32,22 @@ def get_orchestrator():
         def call_gemini(prompt, raw_mode=False, silent=False, image_data=None, **kwargs):
              # Wrapper for orchestrator
              try:
-                 # Check if image data is provided (support for vision models)
                  contents = [prompt]
-                 if image_data:
-                      # If image_data is provided (base64 string or PIL), add it to contents
-                      # Note: This requires the model to support vision. IntelligenceService handles this?
-                      # IntelligenceService.model is typically a GenerativeModel object.
-                      # We won't implement complex image logic here unless requested, 
-                      # but we accept the arg to prevent crash.
-                      pass
-
                  response = intel_service.model.generate_content(contents)
                  return response.text
              except Exception as e:
                  ColoredLogger.error(f"Agent API Call Error: {e}")
                  return f"Error: {e}"
 
-        _orchestrator = CerebrateOrchestrator(call_gemini_api_fn=call_gemini, db_manager=db)
+        _orchestrator = NexusOrchestrator(call_gemini_api_fn=call_gemini, db_manager=db)
     return _orchestrator
 
-@agent_bp.route('/cerebrate/agents', methods=['GET'])
+@agent_bp.route('/nexus/agents', methods=['GET'])
 def get_agents():
     orchestrator = get_orchestrator()
     return jsonify({"agents": orchestrator.get_available_agents()})
 
-@agent_bp.route('/cerebrate/ask', methods=['POST'])
+@agent_bp.route('/nexus/ask', methods=['POST'])
 def ask_agent():
     data = request.json or {}
     query = data.get('query')
@@ -69,9 +59,6 @@ def ask_agent():
     if 'matches' not in context:
         context['matches'] = db.get_matches(limit=50)
 
-    # Note: Neural/Console log injection has been deprecated per user request.
-    # The MCP bridge remains active for background tasks but is not queried here.
-        
     orchestrator = get_orchestrator()
     result = orchestrator.route_query(query, context)
     responder = result.get('orchestrator', {}).get('selected_agent', 'UNKNOWN')
@@ -80,20 +67,20 @@ def ask_agent():
     provenance = result.get('data_provenance', 'AI_GENERATED')
     
     # Record usage if successful and NOT a programmatic/cached response
-    # SWARM_PROTOCOL_CACHE, STATIC_VERIFIED, and LOCAL_COGNITION do not use Gemini tokens
     is_programmatic = provenance in ['SWARM_PROTOCOL_CACHE', 'STATIC_VERIFIED', 'LOCAL_COGNITION']
     
     if result.get('success') and not is_programmatic:
-        quota_manager.record_request()
+        # Use the default model for telemetry
+        quota_manager.record_request(model="gemini-3-flash-preview")
     
     # Add responder info to result for frontend transparency
     result['responder_id'] = responder
 
-    # Sanitize response: jargon → plain language, collapse duplicate hero names
+    # Sanitize response
     if result.get('response') and isinstance(result['response'], str):
         from api.services.replay_service import ReplayService
         result['response'] = ReplayService().clean_text(result['response'])
-        # Collapse "Stitches\nStitches" → "Stitches"
+        # Collapse duplicate hero name artifacts
         import re
         result['response'] = re.sub(r'\b([A-Z][a-z]+)(\s+\1)+\b', r'\1', result['response'])
         
@@ -126,8 +113,8 @@ def get_usage():
         "total_calls": telemetry.get('total_calls', 0),
         "history": telemetry.get('history', []),
         "link_quality": quality,
-        "current_model": "Gemini 1.5 Flash",
-        "pipeline_version": "2.5.0",
+        "current_model": "Gemini 3.1 Pro",
+        "pipeline_version": "3.2.0",
         "services": {
             "mcp_bridge": "ACTIVE" if mcp_bridge.is_healthy() else "DISCONNECTED",
             "healer": "ACTIVE" if is_healer_running() else "OFFLINE",

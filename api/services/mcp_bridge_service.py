@@ -38,7 +38,7 @@ class MCPBridgeService:
             future = asyncio.run_coroutine_threadsafe(coro, self._loop)
             return future.result(timeout=10)
         except Exception as e:
-            ColoredLogger.error(f"Neural Link Command Error: {e}", "MCP")
+            ColoredLogger.error(f"Nexus Comm-Link Error: {e}", "MCP")
             return {"error": str(e)}
 
     async def connect_forever(self):
@@ -50,14 +50,14 @@ class MCPBridgeService:
                         self.session = session
                         await self.session.initialize()
                         self._connected = True
-                        ColoredLogger.success("Neural Link: Connected to Chrome DevTools MCP Server", "MCP")
+                        ColoredLogger.success("Nexus Comm-Link: Connected to Chrome DevTools MCP Server", "MCP")
                         
                         # Keep alive loop (no log every 60s to avoid terminal spam)
                         while self._connected:
                             await asyncio.sleep(60)
             except Exception as e:
                 self._connected = False
-                ColoredLogger.error(f"Neural Link Linkage Failure: {e}", "MCP")
+                ColoredLogger.error(f"Nexus Comm-Link Failure: {e}", "MCP")
                 ColoredLogger.warn("Manual Action Required: Ensure 'Remote Debugging' is enabled at chrome://inspect/#remote-debugging", "MCP")
                 await asyncio.sleep(10)
 

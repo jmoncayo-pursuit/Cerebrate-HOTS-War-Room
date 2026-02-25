@@ -34,8 +34,8 @@ def get_profile():
     
     return jsonify(profile)
 
-@management_bp.route('/cerebrate_config', methods=['GET'])
-def cerebrate_config():
+@management_bp.route('/nexus_config', methods=['GET'])
+def nexus_config():
     """Returns the master configuration including strategies and constraints."""
     return jsonify(mgmt_service.get_constraints())
 

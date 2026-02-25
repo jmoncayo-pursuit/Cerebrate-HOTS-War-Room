@@ -414,7 +414,7 @@ class NexusHealer:
                 ColoredLogger.warn(
                     f"🛑 [HEALER] Global quota low "
                     f"({remaining_global} remaining; buffer={self.min_quota_buffer}). "
-                    "Pausing summary re-audits so War Room and user actions stay priority.",
+                    "Pausing summary re-audits so Nexus Command Lab and user actions stay priority.",
                     "HEAL"
                 )
                 return

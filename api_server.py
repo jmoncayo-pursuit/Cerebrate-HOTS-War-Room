@@ -28,7 +28,7 @@ def create_app():
     # Initialize Dependencies
     init_consultation_routes(db, os.environ.get('GEMINI_API_KEY'))
     
-    # Start Neural Link (MCP Bridge)
+    # Start Nexus Comm-Link (MCP Bridge)
     mcp_bridge.start_background()
     
     # Register Consolidated Blueprints

@@ -122,12 +122,12 @@ class DossierService:
             "lethality": self._get_lethality_analysis(hero_name),
             "audit": audit, # PERSIST AUDIT
             "statSources": {
-                "overallWR": "SECURE_DATALINK",
-                "totalGames": "SECURE_DATALINK",
-                "sectors": "SECURE_DATALINK",
-                "medals": "SECURE_DATALINK",
-                "forensics": "MECHANICAL_AUDIT",
-                "lethality": "MECHANICAL_AUDIT",
+                "overallWR": "NEXUS_CORE",
+                "totalGames": "NEXUS_CORE",
+                "sectors": "NEXUS_CORE",
+                "medals": "NEXUS_CORE",
+                "forensics": "NEXUS_MECHANICAL_AUDIT",
+                "lethality": "NEXUS_MECHANICAL_AUDIT",
                 "tacticalSummary": "NEURAL_SYNTHESIS"
             }
         }

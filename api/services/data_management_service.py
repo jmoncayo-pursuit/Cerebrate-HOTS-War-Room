@@ -11,14 +11,14 @@ class DataManagementService:
 
     # --- ROSTER & CONSTRAINTS ---
     def get_constraints(self):
-        return self.db.get_kv('cerebrate_config') or {}
+        return self.db.get_kv('nexus_config') or {}
 
     def update_hero_status(self, hero, action):
         config = self.get_constraints()
         bans = config.setdefault('roster_constraints', {}).setdefault('global_bans', [])
         if action == 'ban' and hero not in bans: bans.append(hero)
         elif action == 'unban' and hero in bans: bans.remove(hero)
-        self.db.set_kv('cerebrate_config', config)
+        self.db.set_kv('nexus_config', config)
         return config
 
     # --- STRATEGIES ---
