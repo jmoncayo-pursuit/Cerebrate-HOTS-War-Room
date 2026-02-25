@@ -67,8 +67,8 @@ def match_history():
     try:
         limit = int(limit)
     except ValueError:
-        limit = 200
-    limit = min(limit, 200)  # cap list size for memory
+        limit = 2000
+    limit = min(limit, 2000)  # cap list size for memory
     matches = replay_service.get_match_history(
         limit=limit, include_details=include_details, search=search, hero=hero, since=since, match_id=match_id
     )

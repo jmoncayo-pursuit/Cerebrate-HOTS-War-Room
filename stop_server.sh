@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Cerebrate HOTS War Room - Stop All Services
+# Nexus Command Lab - Stop All Services
 
-echo "🛑 Stopping Cerebrate HOTS War Room..."
+echo "🛑 Stopping Nexus Command Lab..."
 echo ""
 
 cd "$(dirname "$0")"
@@ -14,55 +14,36 @@ NC='\033[0m'
 
 stopped_count=0
 
-# Stop API Server
-if [ -f .api_server.pid ]; then
-    PID=$(cat .api_server.pid)
-    if kill -0 $PID 2>/dev/null; then
-        kill $PID 2>/dev/null
-        echo -e "${GREEN}✅ Stopped API Server (PID: $PID)${NC}"
-        stopped_count=$((stopped_count + 1))
+# Stop Processes by PID (if exists)
+for service in "server" "watcher" "healer"; do
+    PID_FILE="logs/pids/${service}.pid"
+    if [ -f "$PID_FILE" ]; then
+        PID=$(cat "$PID_FILE")
+        if kill -0 $PID 2>/dev/null; then
+            kill $PID 2>/dev/null
+            echo -e "${GREEN}✅ Stopped ${service} (PID: $PID)${NC}"
+            stopped_count=$((stopped_count + 1))
+        fi
+        rm "$PID_FILE"
     fi
-    rm .api_server.pid
-fi
+done
 
-# Stop Frontend
-if [ -f .frontend.pid ]; then
-    PID=$(cat .frontend.pid)
-    if kill -0 $PID 2>/dev/null; then
-        kill $PID 2>/dev/null
-        echo -e "${GREEN}✅ Stopped Frontend (PID: $PID)${NC}"
-        stopped_count=$((stopped_count + 1))
-    fi
-    rm .frontend.pid
-fi
-
-# Stop Replay Watcher
-if [ -f .replay_watcher.pid ]; then
-    PID=$(cat .replay_watcher.pid)
-    if kill -0 $PID 2>/dev/null; then
-        kill $PID 2>/dev/null
-        echo -e "${GREEN}✅ Stopped Replay Watcher (PID: $PID)${NC}"
-        stopped_count=$((stopped_count + 1))
-    fi
-    rm .replay_watcher.pid
-fi
-
-# Kill any remaining processes on ports
+# Kill any remaining processes on relevant ports
 for port in 5001 8000 5173; do
     if lsof -Pi :$port -sTCP:LISTEN -t >/dev/null 2>&1; then
         lsof -ti:$port | xargs kill -9 2>/dev/null || true
-        echo -e "${YELLOW}⚠️  Killed process on port $port${NC}"
+        echo -e "${YELLOW}⚠️  Killed stray process on port $port${NC}"
         stopped_count=$((stopped_count + 1))
     fi
 done
 
-# Kill Watcher and Healer if not caught by PID
+# Force kill any remaining python workers
 pkill -f replay_watcher.py 2>/dev/null && echo -e "${GREEN}✅ Stopped Replay Watcher${NC}"
-pkill -f cerebrate_healer.py 2>/dev/null && echo -e "${GREEN}✅ Stopped Healer Protocol${NC}"
+pkill -f nexus_healer.py 2>/dev/null && echo -e "${GREEN}✅ Stopped Healer Protocol${NC}"
 
 echo ""
 if [ $stopped_count -eq 0 ]; then
-    echo "ℹ️  No services were running"
+    echo "ℹ️  No core services were running"
 else
     echo -e "${GREEN}✅ Stopped $stopped_count service(s)${NC}"
 fi

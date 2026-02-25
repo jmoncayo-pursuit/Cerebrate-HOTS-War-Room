@@ -68,7 +68,7 @@ const getSystemPrompt = (profile) => `You are the **Cerebrate**, a high-level ta
 **System Status:** NEURAL LINK ACTIVE.
 **Mission Profile:**
 - **Commander:** ${profile?.battletag || 'Commander'}
-- **Current Sector:** Season 3 2025 Storm League
+- **Current Sector:** ${profile?.active_season?.name || '2026 Season 1'} Storm League
 - **Protocol:** "Victory at all costs."
 
 **Directives:**
@@ -410,7 +410,7 @@ const MessageBubble = ({ message, onSaveAdvice, showSaveButton, matchContext }) 
 
           {!isUser && message.showExamples && (
             <div className="flex flex-wrap gap-1.5 mt-2">
-              {/* Season 3 2025 Map Rotation */}
+              {/* Current Map Rotation */}
               {['Alterac Pass', 'Battlefield of Eternity', "Blackheart's Bay", 'Braxis Holdout', 'Cursed Hollow', 'Dragon Shire', 'Garden of Terror', 'Hanamura Temple', 'Infernal Shrines', 'Sky Temple', 'Tomb of the Spider Queen', 'Towers of Doom', 'Volskaya Foundry', 'Warhead Junction'].map(map => (
                 <button
                   key={map}

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import { ACTIVE_SEASON } from '../config/season'
 
 export function useReplayData() {
   const [matches, setMatches] = useState([])
@@ -21,7 +22,7 @@ export function useReplayData() {
     cachedAt: null
   })
 
-  const DEFAULT_SEASON_START = '2026-01-01'
+  const DEFAULT_SEASON_START = ACTIVE_SEASON.start_date
 
   const loadData = async (isInitial = false, query = '') => {
     if (isInitial) setLoading(true)
@@ -36,7 +37,7 @@ export function useReplayData() {
       const seasonStart = profileData?.active_season?.start_date || DEFAULT_SEASON_START
 
       const historyResponse = await fetch(
-        `/api/match_history?limit=200&since=${encodeURIComponent(seasonStart)}${searchParam}&t=` + Date.now()
+        `/api/match_history?limit=2000&since=${encodeURIComponent(seasonStart)}${searchParam}&t=` + Date.now()
       ).catch(() => null)
       let historyData = []
       if (historyResponse?.ok) {

@@ -79,9 +79,8 @@ def get_source_status():
         "healthy": True if match_history else False
     }
     
-    # HeroesProfile Status (placeholder - implement when API is integrated)
     heroesprofile_status = {
-        "last_updated": "2026-01-06T20:55:00-05:00",
+        "last_updated": "2026-02-10T00:00:00-05:00",
         "record_count": 0,
         "coverage": 0,
         "confidence": "api",

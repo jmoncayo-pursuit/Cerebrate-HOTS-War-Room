@@ -14,7 +14,7 @@ class IntelligenceService:
     
     # --- NEURAL TIERING CONFIG ---
     TIERS = {
-        "REASONING": "gemini-2.5-flash", 
+        "REASONING": "gemini-3-pro-preview", 
         "SENSING": "gemini-2.5-flash",  
         "CHAT": "gemini-2.5-flash"      
     }
@@ -63,17 +63,19 @@ class IntelligenceService:
         )
 
     # --- CHAT & AI LOGIC ---
-    def generate_chat_response(self, message, history=None, tier="CHAT"):
+    def generate_chat_response(self, message, history=None, tier="CHAT", skip_brain=False):
         if not self.model: return "AI Not Initialized"
         try:
             # 1. Select the appropriate Tier
             active_model = self._get_model_for_tier(tier)
             
-            # 2. Agentic Pre-Computation
-            dossier = self.brain.process_request(message)
+            # 2. Agentic Pre-Computation (Skip if programmatic/structured context already provided)
+            dossier = ""
+            if not skip_brain:
+                dossier = self.brain.process_request(message)
             
             # 3. Inject Dossier into Prompt
-            full_prompt = f"{dossier}\n\nUSER QUERY: {message}"
+            full_prompt = f"{dossier}\n\nUSER QUERY: {message}" if dossier else message
             
             chat = active_model.start_chat(history=history or [])
             response = chat.send_message(full_prompt)

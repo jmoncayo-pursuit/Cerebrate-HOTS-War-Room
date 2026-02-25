@@ -52,7 +52,7 @@ if __name__ == '__main__':
     try:
         app = create_app()
         port = int(os.environ.get('API_PORT', 5001))
-        ColoredLogger.success(f"Cerebrate API Online | Port: {port}", "API")
+        ColoredLogger.success(f"Nexus API Online | Port: {port}", "API")
         app.run(host='0.0.0.0', port=port, debug=False)
     except Exception as e:
         ColoredLogger.error(f"Server Startup Error: {e}", "API")

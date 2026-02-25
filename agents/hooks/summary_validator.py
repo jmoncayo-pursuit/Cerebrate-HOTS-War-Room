@@ -194,6 +194,30 @@ def summary_validator_hook(data: Dict[str, Any]) -> HookResponse:
         if p in analysis_lowered:
             issues.append(f"AI filler detected ('{p}'). Start directly with the tactical audit, no intros or outros.")
     
+    # Check 13: Ban generic "coach speak" in win_condition
+    generic_advice = [
+        "die less", "position better", "collect more globes", "be more disciplined",
+        "focus on objectives", "improve positioning", "better positioning",
+        "avoid unnecessary deaths", "play more carefully", "play safer",
+        "ensure consistent collection", "maintain consistent", "maintain discipline",
+        "continue to prioritize", "prioritize significant", "reinforce sustain",
+        "minimize reliance", "further enabling aggressive",
+        "focus on macro", "improve macro", "better macro play",
+        "stay alive longer", "reduce deaths", "take fewer risks"
+    ]
+    wc_lower = (summary.get('win_condition') or '').lower()
+    found_generic = [g for g in generic_advice if g in wc_lower]
+    if found_generic:
+        issues.append(f"Generic advice detected in win_condition ({found_generic}). Must reference specific game data: enemy hero names, timestamps, stat thresholds, or map-specific rotations. Not 'die less' or 'position better'.")
+
+    # Check 14: Bold hero names (UI renders badges automatically, bold wrapping causes orphaned **)
+    all_hero_names = [p.get('hero', '') for p in match_data.get('players', [])]
+    full_text = (summary_text + ' ' + critical_mistake + ' ' + wc_lower)
+    for h in all_hero_names:
+        if h and f'**{h}**' in full_text:
+            issues.append(f"Hero name '{h}' is wrapped in **bold**. Write hero names as plain text (the UI auto-renders badges).")
+            break  # One error is enough
+
     if issues:
         feedback = "Summary quality issues:\n" + "\n".join(f"- {issue}" for issue in issues)
         return HookResponse.deny(

@@ -172,6 +172,16 @@
     height: 100%;
 }
 
+.stats-card.ban:hover {
+    border-color: rgba(245, 158, 11, 0.3);
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.05);
+}
+
+.stats-card.ban .card-header {
+    border-bottom: 1px solid rgba(245, 158, 11, 0.1);
+    padding-bottom: 0.75rem;
+}
+
 @media (max-width: 1200px) {
     .trends-container {
         grid-template-columns: 1fr;

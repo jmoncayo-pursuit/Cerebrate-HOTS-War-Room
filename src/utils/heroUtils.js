@@ -57,6 +57,9 @@ export const normalizeHeroName = (name) => {
         // Common mistypes or short names
         "gaz": "gazlowe",
         "azmo": "azmodan",
+        "azmodan": "azmodan",
+        "dryad": "lunara",
+        "lunara": "lunara",
         "naz": "nazeebo",
         "nazeebo": "nazeebo",
         "sylv": "sylvanas",

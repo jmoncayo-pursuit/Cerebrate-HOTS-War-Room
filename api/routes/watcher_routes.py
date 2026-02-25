@@ -8,9 +8,9 @@ from api.services.database import DatabaseManager
 
 watcher_bp = Blueprint('watcher', __name__, url_prefix='/api')
 
-STATUS_FILE = ".watcher_status.json"
-ACTIVITY_LOG_FILE = ".watcher_activity.json"
-PID_FILE = ".watcher.pid"
+STATUS_FILE = "storage/tracker/watcher_status.json"
+ACTIVITY_LOG_FILE = "storage/tracker/watcher_activity.json"
+PID_FILE = "logs/pids/watcher.pid"
 
 def get_watcher_pid():
     if os.path.exists(PID_FILE):

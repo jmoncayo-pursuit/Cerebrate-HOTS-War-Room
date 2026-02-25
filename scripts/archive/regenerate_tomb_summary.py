@@ -3,7 +3,7 @@ import os
 import json
 sys.path.append(os.getcwd())
 
-os.environ['GEMINI_API_KEY'] = 'AIzaSyDr6-IQB8R96Qp0J12rr6fdMgMoPkOnEmQ'
+os.environ['GEMINI_API_KEY'] = os.environ.get('GEMINI_API_KEY', 'YOUR_KEY_HERE')
 
 from api.services.replay_service import ReplayService
 from api.services.replay_parser.header import get_match_id

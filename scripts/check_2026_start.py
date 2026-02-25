@@ -4,7 +4,7 @@ import json
 from datetime import datetime
 
 def check_season_start():
-    conn = sqlite3.connect('war_room.db')
+    conn = sqlite3.connect('nexus_command_lab.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 

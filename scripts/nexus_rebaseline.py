@@ -7,7 +7,7 @@ import os
 from datetime import datetime
 
 API_URL = "http://localhost:5001/api/reparse_match"
-DB_PATH = "src/data/cerebrate.db"
+DB_PATH = "src/data/nexus_core.db"
 PIPELINE_VERSION = "2.1.0"
 
 def get_outdated_matches():

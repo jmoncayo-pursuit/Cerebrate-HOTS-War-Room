@@ -14,7 +14,7 @@ RESET='\033[0m'
 # Display startup banner
 echo ""
 echo -e "${CYAN}${BOLD}🧊 ═══════════════════════════════════════════════════════════════${RESET}"
-echo -e "${CYAN}${BOLD}   CEREBRATE WAR ROOM - ONLINE${RESET}"
+echo -e "${CYAN}${BOLD}   NEXUS WAR ROOM - ONLINE${RESET}"
 echo -e "${CYAN}${BOLD}═══════════════════════════════════════════════════════════════${RESET}"
 echo ""
 echo -e "   ${MAGENTA}🌐 Frontend:${RESET}  ${GREEN}http://localhost:5173${RESET}"

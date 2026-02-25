@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { TrendingUp, TrendingDown, Award, AlertTriangle, Upload, History } from 'lucide-react'
+import { TrendingUp, TrendingDown, Award, AlertTriangle, Upload, History, Swords } from 'lucide-react'
 import ReplaySelector from './ReplaySelector'
 import { formatElegantDate } from '../utils/dateUtils'
 import './QuickStatsPanel.css'
@@ -14,6 +14,7 @@ import { useReplayData } from '../hooks/useReplayData'
 import { normalizeHeroName } from '../utils/heroUtils'
 import RankIcon from './RankIcon'
 import ConfidenceScore from './ConfidenceScore'
+import { ACTIVE_SEASON } from '../config/season'
 
 export default function QuickStatsPanel({ onSelectMatch }) {
     const { matches: allMatches, profile, heroData, talentMap: talentMapData, talentData, loading: replayLoading, dataChanged, lastUpdated } = useReplayData()
@@ -25,7 +26,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
         if (!replayLoading && allMatches) {
             // Sort descending (newest first) - only process what we need
             const sorted = [...allMatches].sort((a, b) => new Date(b.date || b.timestamp_iso) - new Date(a.date || a.timestamp_iso))
-            setRecentMatches(sorted.slice(0, 12)) // Reduced from 16 to 12
+            setRecentMatches(sorted.slice(0, 17)) // Adjusted for better balance
             setLoading(false)
         }
     }, [replayLoading, allMatches])
@@ -45,8 +46,8 @@ export default function QuickStatsPanel({ onSelectMatch }) {
     const maps = profile.map_preferences || {}
 
     // Calculate Current Season Performance: Baseline + Parsed Replays
-    const SEASON_START_DATE = profile?.active_season?.start_date || '2026-01-06'
-    const BASELINE_CUTOFF = '2026-01-06' // Date when we established baseline
+    const SEASON_START_DATE = profile?.active_season?.start_date || ACTIVE_SEASON.start_date
+    const BASELINE_CUTOFF = SEASON_START_DATE // Date when we established baseline
     const s3Matches = allMatches.filter(m => new Date(m.date || m.timestamp_iso) > new Date(SEASON_START_DATE))
     const newReplays = s3Matches.filter(m => new Date(m.date || m.timestamp_iso) > new Date(BASELINE_CUTOFF))
 
@@ -188,6 +189,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
             .slice(0, 3)
     }
 
+
     return (
         <div className="space-y-6">
             {/* Data Update Notification */}
@@ -199,9 +201,13 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                 <div className="section-stat flex items-center gap-3">
                     {(() => {
                         const sSlugRank = profile?.active_season?.slug || 'season_2026_1';
-                        const s3Stats = profile?.rank_data?.storm_league?.[`verified_${sSlugRank}`] || profile?.rank_data?.storm_league?.verified_season_2025_3 || {};
+                        const slData = profile?.rank_data?.storm_league || {};
+                        const s3Stats = slData[`verified_${sSlugRank}`] || slData.verified_season_2026_1 || {};
+
                         const displayGames = s3Stats.total_games || s3Matches.length;
-                        const displayWR = s3Stats.win_rate || (s3Matches.length > 0 ? ((s3Matches.filter(m => m.result === 'WIN').length / s3Matches.length) * 100).toFixed(1) : 0);
+                        const displayWR = s3Stats.win_rate
+                            ? s3Stats.win_rate.toFixed(1)
+                            : (s3Matches.length > 0 ? ((s3Matches.filter(m => m.result === 'WIN').length / s3Matches.length) * 100).toFixed(1) : 0);
                         const peakRank = profile?.rank_data?.peak_rank;
 
                         return (
@@ -267,6 +273,7 @@ export default function QuickStatsPanel({ onSelectMatch }) {
                         )}
                     </div>
                 </div>
+
 
                 {/* Quick Summary */}
                 <div className="bg-transparent h-full">

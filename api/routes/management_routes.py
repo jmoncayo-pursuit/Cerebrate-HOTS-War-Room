@@ -24,8 +24,15 @@ def data_status():
 
 @management_bp.route('/player_profile', methods=['GET'])
 def get_profile():
-    profile = mgmt_service.db.get_kv('player_profile')
-    return jsonify(profile or {})
+    profile = mgmt_service.db.get_kv('player_profile') or {}
+    config = mgmt_service.get_constraints()
+    
+    # Season Flow Fix: Ensure profile always reflects current active season from config
+    active_season = config.get('active_season')
+    if active_season:
+        profile['active_season'] = active_season
+    
+    return jsonify(profile)
 
 @management_bp.route('/cerebrate_config', methods=['GET'])
 def cerebrate_config():

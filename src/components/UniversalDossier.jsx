@@ -7,6 +7,7 @@ import ServiceRecord from './ServiceRecord';
 import HeroPortrait from './HeroPortrait';
 import ConfidenceScore from './ConfidenceScore';
 import { formatFullDateTime } from '../utils/dateUtils';
+import { normalizeHeroName } from '../utils/heroUtils';
 
 const AuditBadge = ({ audit }) => {
     const [expanded, setExpanded] = useState(false);
@@ -216,25 +217,47 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                         </div>
                     </div>
 
-                    {/* Nemesis / Apex Threats */}
+                    {/* Strategic Ban Priorities */}
                     {stats.nemesis && stats.nemesis.length > 0 && (
-                        <div className="bg-red-500/5 border border-red-500/10 rounded-2xl p-6 relative overflow-hidden">
+                        <div className="bg-amber-500/5 border border-amber-500/20 rounded-2xl p-6 relative overflow-hidden group">
+                            <div className="absolute -right-2 -top-2 opacity-5 group-hover:opacity-10 transition-opacity">
+                                <Swords className="w-20 h-20 text-amber-500" />
+                            </div>
                             <div className="flex items-center gap-2 mb-6">
-                                <AlertTriangle className="w-5 h-5 text-red-400" />
-                                <h3 className="text-sm font-bold text-red-400 uppercase tracking-widest">Apex Threats Identified</h3>
+                                <Swords className="w-5 h-5 text-amber-500" />
+                                <h3 className="text-sm font-bold text-amber-500 uppercase tracking-widest">Strategic Ban Priorities</h3>
                             </div>
                             <div className="space-y-4">
-                                {(stats.nemesis || []).map((n, i) => (
-                                    <div key={i} className="flex justify-between items-center p-3 rounded-lg bg-red-500/10 border border-red-500/10 group hover:bg-red-500/20 transition-all">
-                                        <div>
-                                            <div className="text-white font-bold">{n.name}</div>
-                                            <div className="text-[10px] text-red-400/70 uppercase font-black">{n.type}</div>
+                                {(stats.nemesis || []).slice(0, 5).map((n, i) => (
+                                    <div key={i} className="flex justify-between items-center p-3 rounded-xl bg-amber-500/5 border border-amber-500/10 group/item hover:bg-amber-500/10 transition-all">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-lg border border-amber-500/30 overflow-hidden bg-black/40">
+                                                <img
+                                                    src={`/images/heroes/${normalizeHeroName(n.name)}.png`}
+                                                    alt={n.name}
+                                                    className="w-full h-full object-cover opacity-80 group-hover/item:opacity-100 group-hover/item:scale-110 transition-all font-mono text-[8px]"
+                                                    onError={(e) => { e.target.style.display = 'none'; e.target.onerror = null; }}
+                                                />
+                                            </div>
+                                            <div>
+                                                <div className="text-white font-bold uppercase text-xs">{n.name}</div>
+                                                <div className="text-[10px] text-amber-500/70 uppercase font-black tracking-tighter">
+                                                    {n.wr.toFixed(1)}% Matchup Threat
+                                                </div>
+                                            </div>
                                         </div>
                                         <div className="text-right">
-                                            <ConfidenceScore value={n.wr} n={n.games} className="scale-75 origin-right" />
+                                            <div className="text-[10px] text-slate-500 font-mono italic">
+                                                {n.games} encounters
+                                            </div>
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                            <div className="mt-4 pt-4 border-t border-white/5">
+                                <p className="text-[9px] text-slate-500 italic leading-relaxed">
+                                    Targeting specific threats that statistically degrade victory probability for this subject.
+                                </p>
                             </div>
                         </div>
                     )}
@@ -275,20 +298,33 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                                     </div>
 
                                     <div className="space-y-3">
-                                        <div className="flex justify-between items-end">
-                                            <div className="text-xs text-slate-400 font-bold uppercase tracking-tighter">Under {stats.lethality.threshold} Kills</div>
-                                            <div className="text-xs text-red-400 font-mono">{stats.lethality.low.wr}% WR</div>
+                                        <div className="flex items-center justify-between text-xs px-2">
+                                            <span className="text-slate-500 font-bold uppercase">ELITE ELIMINATIONS</span>
+                                            <span className="text-slate-500 font-bold uppercase">WIN PROBABILITY</span>
                                         </div>
-                                        <div className="w-full h-2 bg-white/5 rounded-full overflow-hidden">
-                                            <div className="h-full bg-red-500/40" style={{ width: `${stats.lethality.low.wr}%` }}></div>
+                                        <div className="bg-white/5 border border-white/5 rounded-xl p-4 overflow-hidden relative">
+                                            <div className="absolute top-0 left-0 w-1.5 h-full bg-cyan-500 shadow-[0_0_15px_rgba(6,182,212,0.5)]"></div>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex flex-col">
+                                                    <span className="text-white font-black text-lg">
+                                                        {stats.lethality.threshold}+ Kills
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-500">{stats.lethality.high.games} Sample Matches</span>
+                                                </div>
+                                                <div className="text-3xl font-black text-cyan-400">{stats.lethality.high.wr}%</div>
+                                            </div>
                                         </div>
-
-                                        <div className="flex justify-between items-end mt-4">
-                                            <div className="text-xs text-cyan-400 font-bold uppercase tracking-tighter">{stats.lethality.threshold}+ Kills (Power Zone)</div>
-                                            <div className="text-xs text-cyan-400 font-mono font-bold">{stats.lethality.high.wr}% WR</div>
-                                        </div>
-                                        <div className="w-full h-2 bg-white/10 rounded-full overflow-hidden shadow-[0_0_15px_rgba(6,182,212,0.2)]">
-                                            <div className="h-full bg-cyan-500 shadow-[0_0_10px_rgba(6,182,212,0.5)]" style={{ width: `${stats.lethality.high.wr}%` }}></div>
+                                        <div className="bg-white/5 border border-white/5 rounded-xl p-4 overflow-hidden relative opacity-50">
+                                            <div className="absolute top-0 left-0 w-1.5 h-full bg-slate-700"></div>
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex flex-col">
+                                                    <span className="text-slate-300 font-black text-lg">
+                                                        &lt; {stats.lethality.threshold} Kills
+                                                    </span>
+                                                    <span className="text-[10px] text-slate-500">{stats.lethality.low.games} Sample Matches</span>
+                                                </div>
+                                                <div className="text-2xl font-black text-slate-400">{stats.lethality.low.wr}%</div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -449,7 +485,7 @@ const UniversalDossier = ({ stats, loading, onGenerate }) => {
                         {/* Tactical Summary */}
                         {stats.tacticalSummary && (
                             <div className={`bg-gradient-to-br from-${theme.primary}-900/40 to-${theme.secondary}-900/40 border border-${theme.primary}-500/20 rounded-2xl p-6 relative overflow-hidden`}>
-                                <div className="absolute -top-1 -right-1">
+                                <div className="absolute top-2 right-2">
                                     <TruthBadge source={stats.statSources && stats.statSources.tacticalSummary} />
                                 </div>
                                 <div className="absolute -bottom-6 -right-6 opacity-10">

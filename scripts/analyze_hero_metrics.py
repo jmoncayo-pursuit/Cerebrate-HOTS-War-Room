@@ -3,7 +3,7 @@ import sqlite3
 import json
 from collections import defaultdict
 
-conn = sqlite3.connect('war_room.db')
+conn = sqlite3.connect('nexus_command_lab.db')
 cursor = conn.cursor()
 cursor.execute("SELECT hero, stats FROM match_players WHERE stats IS NOT NULL")
 rows = cursor.fetchall()

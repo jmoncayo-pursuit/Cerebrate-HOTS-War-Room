@@ -1,4 +1,5 @@
 import { normalizeHeroName } from './heroUtils'
+import { ACTIVE_SEASON } from '../config/season'
 
 export const calculateYourStats = (matches, profileData = null) => {
     const getVerifiedOverride = (heroName) => {
@@ -92,7 +93,7 @@ export const calculateYourStats = (matches, profileData = null) => {
     }
 
     const heroStats = {}
-    const SEASON_START = new Date(profileData?.active_season?.start_date || '2026-01-01')
+    const SEASON_START = new Date(profileData?.active_season?.start_date || ACTIVE_SEASON.start_date)
 
     // 1. Initialize from Profile Data
     // A. Verified Stats (hero_map_stats)
@@ -180,7 +181,7 @@ export const calculateYourStats = (matches, profileData = null) => {
 
             if (verified && verified.s3) {
                 // Start with verified stats as baseline
-                const baselineDate = new Date('2026-01-06') // BASELINE_CUTOFF from QuickStatsPanel
+                const baselineDate = new Date('2026-02-10')
                 const parsedAfterBaseline = matches.filter(m =>
                     m.hero === hero &&
                     new Date(m.date || m.timestamp_iso) > baselineDate &&
@@ -225,7 +226,7 @@ export const calculateYourStats = (matches, profileData = null) => {
 
             if (verified && verified.lifetime) {
                 // Add parsed matches after baseline to verified lifetime stats
-                const baselineDate = new Date('2026-01-06') // BASELINE_CUTOFF
+                const baselineDate = new Date('2026-02-10') // BASELINE_CUTOFF
                 const parsedAfterBaseline = matches.filter(m =>
                     m.hero === hero &&
                     new Date(m.date || m.timestamp_iso) > baselineDate

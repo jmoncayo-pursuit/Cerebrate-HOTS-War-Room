@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './VerificationModal.css';
 import { ACTIVE_SEASON } from '../config/season';
+import ConfidenceScore from './ConfidenceScore';
 import RankIcon from './RankIcon';
 
 export default function VerificationModal({ isOpen, onClose, onSuccess }) {
@@ -129,7 +130,7 @@ export default function VerificationModal({ isOpen, onClose, onSuccess }) {
         const m = seasonName.match(/(\d{4})\s*Season\s*(\d+)/i) || seasonName.match(/(\d{4})-(\d+)/);
         if (!m) return null;
         const slug = `season_${m[1]}_${m[2]}`;
-        const startDate = m[1] === '2026' ? '2026-01-01' : `${m[1]}-01-01`;
+        const startDate = m[1] === '2026' ? ACTIVE_SEASON.start_date : `${m[1]}-01-01`;
         return { slug, name: seasonName.trim(), start_date: startDate };
     };
 

@@ -1,5 +1,5 @@
 """
-Cerebrate Orchestrator
+Nexus Orchestrator
 Routes user queries to specialized agents and synthesizes responses
 """
 
@@ -24,7 +24,7 @@ from .map_experts.braxis_holdout_expert import BraxisHoldoutExpert
 from .map_experts.hanamura_temple_expert import HanamuraTempleExpert
 from .map_experts.garden_of_terror_expert import GardenOfTerrorExpert
 
-class CerebrateOrchestrator:
+class NexusOrchestrator:
     """
     Main orchestrator that routes queries to specialized agents
     """

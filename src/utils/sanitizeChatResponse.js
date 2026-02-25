@@ -27,8 +27,20 @@ export function sanitizeChatResponse(text) {
   t = t.replace(/\b([A-Z][a-z]+)(\s+\1)+\b/g, '$1');
 
   // Fix bold spacing: word**Bold** → word **Bold**; **Bold**word → **Bold** word
-  t = t.replace(/(\w)\*\*/g, '$1 **');
-  t = t.replace(/\*\*([^*]+)\*\*([A-Za-z])/g, '**$1** $2');
+  t = t.replace(/([a-zA-Z0-9,;:])\*\*/g, '$1 **');
+  t = t.replace(/\*\*([^*]+)\*\*([a-zA-Z])/g, '**$1** $2');
+
+  // Clean orphaned ** (odd count means one is unpaired)
+  const count = (t.match(/\*\*/g) || []).length;
+  if (count % 2 !== 0) {
+    const lastIdx = t.lastIndexOf('**');
+    if (lastIdx >= 0) {
+      t = t.substring(0, lastIdx) + t.substring(lastIdx + 2);
+    }
+  }
+
+  // Collapse multiple spaces
+  t = t.replace(/  +/g, ' ');
 
   return t.trim();
 }

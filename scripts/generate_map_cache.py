@@ -204,7 +204,7 @@ def generate_map_recommendations(verbose=False):
     def get_map_directives(map_name):
         """Fetch general map directives from databases"""
         raw_dirs = []
-        # 1. Try war_room.db
+        # 1. Try nexus_command_lab.db
         try:
             query = "SELECT content_json FROM strategies WHERE id = ?"
             row = DB._get_connection().execute(query, (f"map_{map_name}",)).fetchone()
@@ -213,10 +213,10 @@ def generate_map_recommendations(verbose=False):
                 raw_dirs.extend(data.get('directives', []))
         except: pass
             
-        # 2. Try cerebrate.db
+        # 2. Try nexus_core.db
         try:
             import sqlite3
-            c_db = sqlite3.connect(os.path.join(parent_dir, 'src', 'data', 'cerebrate.db'))
+            c_db = sqlite3.connect(os.path.join(parent_dir, 'src', 'data', 'nexus_core.db'))
             query = "SELECT content_json FROM strategies WHERE key = ?"
             row = c_db.execute(query, (map_name,)).fetchone()
             c_db.close()

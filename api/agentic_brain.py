@@ -5,7 +5,7 @@ from api.services.database import DatabaseManager
 
 class AgenticBrain:
     def __init__(self):
-        # Use the correct DatabaseManager that works with war_room.db
+        # Use the correct DatabaseManager that works with nexus_command_lab.db
         self.db = DatabaseManager()
         self.map_names = [
             "Alterac Pass", "Battlefield of Eternity", "Blackheart's Bay", 

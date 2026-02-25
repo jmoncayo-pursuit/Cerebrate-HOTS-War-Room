@@ -1,6 +1,7 @@
 """
 Quota Manager
-Tracks and enforces API usage limits to prevent quota exhaustion
+Tracks and enforces API usage limits for high-performance models.
+Customized for Nexus Command Lab's elite tier access.
 """
 
 import json
@@ -10,40 +11,40 @@ from pathlib import Path
 class QuotaManager:
     """Manages API quota tracking and enforcement"""
     
-    QUOTA_FILE = ".api_quota.json"
+    QUOTA_FILE = "api/config/quota.json"
     
-    # FREE TIER LIMITS (Google AI Pro Plan Tier 1)
-    # These are the FREE allotment limits - staying within these = $0 cost
+    # ELITE TIER LIMITS (Daily)
+    # Optimized for Gemini 3 and 3.1 access
     DAILY_LIMITS = {
-        "gemini-2.5-flash": 1500,     # Free tier RPD
-        "gemini-2.5-flash-lite": 1500, # Free tier RPD
-        "gemini-3-pro": 250,          # Free tier RPD (Legacy/Future support)
-        "gemini-2.5-pro": 250,        # Free tier RPD (Legacy/Future support)
-        "gemini-1.5-pro": 50,          # Free tier RPD (Lowered for stability)
-        "gemini-1.5-flash": 1000,      # Free tier RPD
-        "gemini-1.5-flash-002": 1000   # Legacy Support
+        "gemini-3.1-pro-preview": 250,        
+        "gemini-3-pro-preview": 250,
+        "gemini-3-flash-preview": 1000,
+        "gemini-2.5-flash": 1500,     
+        "gemini-2.0-flash": 1500,
+        "gemini-1.5-pro": 50,          
+        "gemini-1.5-flash": 1500      
     }
     
-    # RPM (Requests Per Minute) Limits - CRITICAL for staying free
+    # RPM Limits (Optimized for performance)
     RPM_LIMITS = {
-        "gemini-2.5-flash": 15,       # Free tier: 15 RPM
-        "gemini-2.5-flash-lite": 15,  # Free tier: 15 RPM
-        "gemini-3-pro": 2,            # Free tier: 2 RPM
-        "gemini-2.5-pro": 3,          # Free tier: 3 RPM
-        "gemini-1.5-pro": 2,          # Free tier: 2 RPM
-        "gemini-1.5-flash": 15,       # Free tier: 15 RPM
-        "gemini-1.5-flash-002": 15    # Legacy Support
+        "gemini-3.1-pro-preview": 5,          
+        "gemini-3-pro-preview": 5,
+        "gemini-3-flash-preview": 15,
+        "gemini-2.5-flash": 15,
+        "gemini-2.0-flash": 15,
+        "gemini-1.5-pro": 2,          
+        "gemini-1.5-flash": 15       
     }
     
-    # Minimum seconds between requests to respect RPM
+    # Minimum seconds between requests
     MIN_DELAY = {
-        "gemini-2.5-flash": 4,        # 60s / 15 RPM = 4s
-        "gemini-2.5-flash-lite": 4,   # 60s / 15 RPM = 4s
-        "gemini-3-pro": 30,           # 60s / 2 RPM = 30s
-        "gemini-2.5-pro": 20,         # 60s / 3 RPM = 20s
-        "gemini-1.5-pro": 30,         # 60s / 2 RPM = 30s
-        "gemini-1.5-flash": 4,        # 60s / 15 RPM = 4s
-        "gemini-1.5-flash-002": 4     # Legacy Support
+        "gemini-3.1-pro-preview": 12,
+        "gemini-3-pro-preview": 12,
+        "gemini-3-flash-preview": 4,
+        "gemini-2.5-flash": 4,
+        "gemini-2.0-flash": 4,
+        "gemini-1.5-pro": 30,         
+        "gemini-1.5-flash": 4        
     }
     
     def __init__(self):
@@ -55,19 +56,15 @@ class QuotaManager:
             try:
                 with open(self.QUOTA_FILE, 'r') as f:
                     data = json.load(f)
-                    
-                    # Reset if it's a new day
                     last_reset = data.get('last_reset', 0)
                     current_day = time.strftime('%Y-%m-%d')
                     last_day = time.strftime('%Y-%m-%d', time.localtime(last_reset))
                     
                     if current_day != last_day:
                         return self._create_fresh_quota()
-                    
                     return data
             except:
                 pass
-        
         return self._create_fresh_quota()
     
     def _create_fresh_quota(self):
@@ -75,46 +72,37 @@ class QuotaManager:
         return {
             'last_reset': time.time(),
             'reset_date': time.strftime('%Y-%m-%d'),
-            'usage': {
-                'gemini-2.5-flash': 0,
-                'gemini-2.5-flash-lite': 0,
-                'gemini-3-pro': 0,
-                'gemini-2.5-pro': 0,
-                'gemini-1.5-pro': 0,
-                'gemini-1.5-flash': 0,
-                'gemini-1.5-flash-002': 0
-            }
+            'usage': {model: 0 for model in self.DAILY_LIMITS}
         }
     
     def _save_quota(self):
         """Save quota data to file"""
         try:
+            Path(self.QUOTA_FILE).parent.mkdir(parents=True, exist_ok=True)
             with open(self.QUOTA_FILE, 'w') as f:
                 json.dump(self.quota_data, f, indent=2)
         except Exception as e:
             print(f"Warning: Could not save quota data: {e}")
     
-    def can_make_request(self, model="gemini-2.5-flash"):
+    def can_make_request(self, model="gemini-3-flash-preview"):
         """Check if we can make another API request"""
         current_usage = self.quota_data['usage'].get(model, 0)
-        limit = self.DAILY_LIMITS.get(model, 100)
-        
+        limit = self.DAILY_LIMITS.get(model, 1000)
         return current_usage < limit
     
-    def record_request(self, model="gemini-2.5-flash"):
+    def record_request(self, model="gemini-3-flash-preview"):
         """Record an API request"""
         if model not in self.quota_data['usage']:
             self.quota_data['usage'][model] = 0
-        
         self.quota_data['usage'][model] += 1
         self._save_quota()
     
-    def get_remaining(self, model="gemini-2.5-flash"):
+    def get_remaining(self, model="gemini-3-flash-preview"):
         """Get remaining requests for a model"""
         current_usage = self.quota_data['usage'].get(model, 0)
-        limit = self.DAILY_LIMITS.get(model, 100)
+        limit = self.DAILY_LIMITS.get(model, 1000)
         return max(0, limit - current_usage)
-
+    
     def get_status(self):
         """Get full quota status for all models"""
         status = {}
@@ -128,7 +116,3 @@ class QuotaManager:
                 'percent': round((current / limit * 100), 1) if limit > 0 else 0
             }
         return status
-
-    def can_process_replay(self):
-        """Allow replay processing (separate from AI quota for now)"""
-        return True

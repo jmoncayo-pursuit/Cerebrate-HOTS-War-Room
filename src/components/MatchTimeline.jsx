@@ -18,7 +18,8 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
     const [logMode, setLogMode] = useState('chrono'); // chrono | team
     const [myEventsOnly, setMyEventsOnly] = useState(false);
 
-    const yourTeam = userPlayer?.team ?? (matchProp?.players?.find(p => p.hero === matchProp?.hero)?.team ?? 0);
+    const yourTeamID = userPlayer?.team ?? (matchProp?.players?.find(p => p.hero === matchProp?.hero)?.team ?? 0);
+    const userName = userPlayer?.name || matchProp?.user_name || matchProp?.players?.find(p => p.hero === matchProp?.hero)?.name;
 
     useEffect(() => {
         const fetchWithDetails = (mid) => {
@@ -150,7 +151,7 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
 
     const { events, gameLength, originalMatch } = timelineData;
     const filteredEvents = events.filter(e => eventFilter.has(e.type));
-    const displayEvents = myEventsOnly ? filteredEvents.filter(e => e.team === yourTeam) : filteredEvents;
+    const displayEvents = myEventsOnly ? filteredEvents.filter(e => e.team === yourTeamID) : filteredEvents;
     const toggleFilter = (type) => {
         setEventFilter(prev => {
             const next = new Set(prev);
@@ -248,7 +249,7 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                 <div className="timeline-events relative h-40">
                                     {displayEvents.map((event, idx) => {
                                         const position = Math.min(98, Math.max(2, (event.timestamp / gameLength) * 100));
-                                        const isYourTeam = event.team === yourTeam;
+                                        const isYourTeam = event.team === yourTeamID;
                                         const teamClass = isYourTeam ? 'team-ally' : 'team-enemy';
                                         const rowY = { level: 8, structure: 48, merc: 88, talent: 128 }[event.type] ?? 8;
 
@@ -299,7 +300,7 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                 <div className="event-list-container space-y-2 p-4 pb-4 overflow-y-auto flex-1">
                                     {(() => {
                                         const renderRow = (event, idx) => {
-                                            const isYourTeam = event.team === yourTeam;
+                                            const isYourTeam = event.team === yourTeamID;
                                             const credit = event.credit ? ` · ${event.credit}` : '';
                                             return (
                                                 <div key={idx} className={`event-list-item bg-white/5 border-l-2 ${isYourTeam ? 'border-cyan-500' : 'border-red-500'} p-3 rounded hover:bg-white/10 transition-colors`}>
@@ -312,8 +313,8 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                                             );
                                         };
                                         if (logMode === 'team') {
-                                            const yourEvents = displayEvents.filter(e => e.team === yourTeam);
-                                            const enemyEvents = displayEvents.filter(e => e.team !== yourTeam);
+                                            const yourEvents = displayEvents.filter(e => e.team === yourTeamID);
+                                            const enemyEvents = displayEvents.filter(e => e.team !== yourTeamID);
                                             return (
                                                 <div className="space-y-4">
                                                     <div>
@@ -335,88 +336,143 @@ const MatchTimeline = ({ matchId, match: matchProp, userPlayer }) => {
                     </>
                 ) : (
                     <div className="draft-sequence-tab animate-in fade-in zoom-in-95 duration-300">
-                        <div className="flex items-center gap-3 mb-6">
-                            <Swords className="text-purple-400" size={24} />
-                            <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Draft sequence</h2>
+                        <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                                <Swords className="text-purple-400" size={24} />
+                                <h2 className="text-xl font-black uppercase tracking-wider text-white m-0">Draft sequence</h2>
+                            </div>
+                            {originalMatch.advanced_stats?.user_was_banner && (
+                                <div className="px-3 py-1 bg-cyan-500/10 border border-cyan-500/40 rounded text-[10px] text-cyan-400 font-bold uppercase tracking-widest animate-pulse">
+                                    You were the team banner
+                                </div>
+                            )}
                         </div>
 
-                        {/* Bans in draft order (1–6); banner = who placed ban, typically highest MMR on team */}
-                        {(originalMatch.advanced_stats?.bans?.length > 0 || originalMatch.raw_stats?.bans?.length > 0) && (
-                            <div className="mb-8">
-                                <div className="text-[10px] text-gray-400 uppercase font-black mb-3 tracking-widest">Bans (draft order) · by team banner (highest MMR)</div>
-                                <div className="flex flex-wrap gap-3 items-center">
-                                    {(originalMatch.advanced_stats?.bans || originalMatch.raw_stats?.bans || []).map((ban, i) => (
-                                        <div key={i} className="flex flex-col gap-0.5">
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-[10px] text-gray-500 font-mono w-5">{i + 1}.</span>
-                                                <div className="w-12 h-12 rounded-lg border border-red-500/30 overflow-hidden bg-black/40 flex-shrink-0">
-                                                    <img src={getHeroPortrait(ban.hero)} alt={ban.hero} className="w-full h-full object-cover grayscale opacity-80" onError={(e) => { e.target.style.display = 'none'; }} />
-                                                </div>
-                                                <span className="text-sm font-bold text-white">{ban.hero}</span>
-                                            </div>
-                                            {ban.banned_by && (
-                                                <span className="text-[10px] text-gray-500 pl-7">by {ban.banned_by}</span>
-                                            )}
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Picks: draft order from replay initData when available */}
+                        {/* Unified Draft Flow Section */}
                         {(() => {
-                            let picks = originalMatch.advanced_stats?.picks || originalMatch.raw_stats?.picks || [];
-                            if (!picks.length && originalMatch.players?.length) {
-                                picks = originalMatch.players.map((pl, i) => ({ order: i + 1, hero: pl.hero, team: pl.team, name: pl.name }));
-                            }
-                            const myTeam = userPlayer?.team;
-                            const picksMy = picks.filter(p => p.team === myTeam);
-                            const picksEnemy = picks.filter(p => p.team !== myTeam);
-                            const hasOrder = picks.length > 0;
-                            const isDerivedFromRoster = hasOrder && !(originalMatch.advanced_stats?.picks?.length || originalMatch.raw_stats?.picks?.length);
+                            const bans = (originalMatch.advanced_stats?.bans || originalMatch.raw_stats?.bans || []).map(b => ({ ...b, type: 'BAN' }));
+                            const picks = (originalMatch.advanced_stats?.picks || originalMatch.raw_stats?.picks || []).map(p => ({ ...p, type: 'PICK' }));
+
+                            // Combine and sort by gameloop
+                            const draftFlow = [...bans, ...picks].sort((a, b) => (a.gameloop || 0) - (b.gameloop || 0));
+
+                            if (draftFlow.length === 0) return <div className="text-gray-500 text-xs italic">No draft data available for this match.</div>;
+
                             return (
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-cyan-500/5 p-5 rounded-xl border border-cyan-500/20">
-                                        <div className="text-[10px] text-cyan-400 font-black mb-1 uppercase tracking-widest">Your team</div>
-                                        {hasOrder ? (
-                                            <div className="text-[10px] text-gray-400 mb-3">{isDerivedFromRoster ? 'Roster (draft order not in replay)' : 'Pick order (draft)'}</div>
-                                        ) : (
-                                            <div className="text-[10px] text-gray-500 mb-3">No roster data</div>
-                                        )}
-                                        <div className="flex flex-wrap gap-2">
-                                            {(hasOrder ? picksMy : originalMatch.players?.filter(p => p.team === myTeam) || []).map((p, i) => (
-                                                <div key={i} className="flex flex-col items-center gap-1">
-                                                    {hasOrder && <span className="text-[9px] text-gray-500 font-mono">{p.order}</span>}
-                                                    <div className="w-12 h-12 rounded-lg border-2 border-cyan-500/30 overflow-hidden bg-black/40">
-                                                        <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
-                                                    </div>
-                                                    <span className="text-[9px] font-bold text-cyan-200 truncate max-w-[60px] text-center">{p.hero}</span>
-                                                </div>
-                                            ))}
-                                        </div>
+                                <div className="mb-12">
+                                    <div className="text-[10px] text-gray-400 uppercase font-black mb-6 tracking-[0.3em] flex items-center gap-4">
+                                        <div className="h-px bg-white/10 flex-1"></div>
+                                        Chronological Draft Flow
+                                        <div className="h-px bg-white/10 flex-1"></div>
                                     </div>
-                                    <div className="bg-red-500/5 p-5 rounded-xl border border-red-500/20">
-                                        <div className="text-[10px] text-red-400 font-black mb-1 uppercase tracking-widest">Enemy team</div>
-                                        {hasOrder ? (
-                                            <div className="text-[10px] text-gray-400 mb-3">{isDerivedFromRoster ? 'Roster (draft order not in replay)' : 'Pick order (draft)'}</div>
-                                        ) : (
-                                            <div className="text-[10px] text-gray-500 mb-3">No roster data</div>
-                                        )}
-                                        <div className="flex flex-wrap gap-2">
-                                            {(hasOrder ? picksEnemy : originalMatch.players?.filter(p => p.team !== myTeam) || []).map((p, i) => (
-                                                <div key={i} className="flex flex-col items-center gap-1">
-                                                    {hasOrder && <span className="text-[9px] text-gray-500 font-mono">{p.order}</span>}
-                                                    <div className="w-12 h-12 rounded-lg border-2 border-red-500/30 overflow-hidden bg-black/40">
-                                                        <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+
+                                    <div className="flex flex-wrap gap-4 items-center justify-center">
+                                        {draftFlow.map((item, i) => {
+                                            const isAlly = item.team === yourTeamID;
+                                            const isBan = item.type === 'BAN';
+                                            const isBanner = (item.name === userName && originalMatch.advanced_stats?.user_was_banner) ||
+                                                (item.name === originalMatch.advanced_stats?.enemy_banner_name);
+
+                                            return (
+                                                <div key={i} className="flex flex-col items-center gap-2 group relative">
+                                                    {/* Event Label (1st, 2nd, etc) */}
+                                                    <span className={`text-[8px] font-mono ${isAlly ? 'text-cyan-500' : 'text-red-500'} font-bold`}>
+                                                        {i + 1}
+                                                    </span>
+
+                                                    {/* Portrait Box */}
+                                                    <div className={`
+                                                        w-14 h-14 rounded-lg border-2 
+                                                        ${isAlly ? (isBan ? 'border-cyan-500/30' : 'border-cyan-400') : (isBan ? 'border-red-500/30' : 'border-red-400')} 
+                                                        ${isBan ? 'bg-black/60 grayscale' : 'bg-black/20'} 
+                                                        overflow-hidden relative transition-all group-hover:scale-110 shadow-2xl
+                                                        ${isBanner ? 'ring-2 ring-amber-500 ring-offset-2 ring-offset-[#0c0518]' : ''}
+                                                    `}>
+                                                        <img
+                                                            src={getHeroPortrait(item.hero)}
+                                                            alt={item.hero}
+                                                            className={`w-full h-full object-cover ${isBan ? 'opacity-40' : 'opacity-100'}`}
+                                                            onError={(e) => { e.target.style.display = 'none'; }}
+                                                        />
+
+                                                        {/* Type Overlay */}
+                                                        <div className={`absolute bottom-0 inset-x-0 text-[7px] font-black text-center py-0.5 ${isAlly ? 'bg-cyan-500' : 'bg-red-500'} text-black uppercase`}>
+                                                            {isBan ? 'BAN' : 'PICK'}
+                                                        </div>
+
+                                                        {isBanner && (
+                                                            <div className="absolute top-0 right-0 p-0.5">
+                                                                <div className="w-2 h-2 bg-amber-500 rounded-full shadow-[0_0_8px_#f59e0b]" title="Drafted by Team Banner" />
+                                                            </div>
+                                                        )}
                                                     </div>
-                                                    <span className="text-[9px] font-bold text-red-200 truncate max-w-[60px] text-center">{p.hero}</span>
+
+                                                    {/* Hero Name / Player Name Tooltip-style */}
+                                                    <div className="flex flex-col items-center">
+                                                        <span className="text-[10px] font-black text-white uppercase tracking-tighter truncate max-w-[60px]">{item.hero}</span>
+                                                        {item.name && !isBan && (
+                                                            <span className={`text-[8px] font-bold ${isAlly ? 'text-cyan-600' : 'text-red-600'} truncate max-w-[60px]`}>{item.name}</span>
+                                                        )}
+                                                        {item.banned_by && isBan && (
+                                                            <span className={`text-[8px] font-bold ${isAlly ? 'text-cyan-700' : 'text-red-700'} truncate max-w-[60px]`}>{item.banned_by}</span>
+                                                        )}
+                                                    </div>
+
+                                                    {/* Arrow indicator for next in sequence */}
+                                                    {i < draftFlow.length - 1 && (
+                                                        <div className="absolute -right-3 top-1/2 -translate-y-1/2 opacity-20 group-hover:opacity-100 transition-opacity">
+                                                            <div className="w-1.5 h-1.5 border-t-2 border-r-2 border-white rotate-45" />
+                                                        </div>
+                                                    )}
                                                 </div>
-                                            ))}
-                                        </div>
+                                            );
+                                        })}
                                     </div>
                                 </div>
                             );
                         })()}
+
+                        {/* Traditional Team View (Summary) */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-6 border-t border-white/5">
+                            <div className="bg-cyan-500/5 p-5 rounded-xl border border-cyan-500/20">
+                                <div className="text-[10px] text-cyan-400 font-black mb-1 uppercase tracking-widest">Your team Summary</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {(originalMatch.advanced_stats?.picks?.filter(p => p.team === yourTeamID) || originalMatch.players?.filter(p => p.team === yourTeamID) || []).map((p, i) => {
+                                        const isBanner = (p.name === userName && originalMatch.advanced_stats?.user_was_banner);
+                                        return (
+                                            <div key={i} className="flex flex-col items-center gap-1">
+                                                <div className={`w-12 h-12 rounded-lg border-2 ${isBanner ? 'border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-cyan-500/30'} overflow-hidden bg-black/40 relative`}>
+                                                    <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                                                    {isBanner && (
+                                                        <div className="absolute top-0 right-0 bg-amber-500 text-black text-[7px] font-black px-1 rounded-bl">BANNER</div>
+                                                    )}
+                                                </div>
+                                                <span className={`text-[9px] font-bold truncate max-w-[60px] text-center ${isBanner ? 'text-amber-200' : 'text-cyan-200'}`}>{p.hero}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div className="bg-red-500/5 p-5 rounded-xl border border-red-500/20">
+                                <div className="text-[10px] text-red-400 font-black mb-1 uppercase tracking-widest">Enemy team Summary</div>
+                                <div className="flex flex-wrap gap-2">
+                                    {(originalMatch.advanced_stats?.picks?.filter(p => p.team !== yourTeamID) || originalMatch.players?.filter(p => p.team !== yourTeamID) || []).map((p, i) => {
+                                        const isBanner = (p.name === originalMatch.advanced_stats?.enemy_banner_name);
+                                        return (
+                                            <div key={i} className="flex flex-col items-center gap-1">
+                                                <div className={`w-12 h-12 rounded-lg border-2 ${isBanner ? 'border-amber-500 shadow-[0_0_10px_rgba(245,158,11,0.3)]' : 'border-red-500/30'} overflow-hidden bg-black/40 relative`}>
+                                                    <img src={getHeroPortrait(p.hero)} alt={p.hero} className="w-full h-full object-cover" onError={(e) => { e.target.style.display = 'none'; }} />
+                                                    {isBanner && (
+                                                        <div className="absolute top-0 right-0 bg-amber-500 text-black text-[7px] font-black px-1 rounded-bl">BANNER</div>
+                                                    )}
+                                                </div>
+                                                <span className={`text-[9px] font-bold truncate max-w-[60px] text-center ${isBanner ? 'text-amber-200' : 'text-red-200'}`}>{p.hero}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 )}
             </div>

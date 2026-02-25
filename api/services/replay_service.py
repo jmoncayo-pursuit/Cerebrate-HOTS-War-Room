@@ -59,51 +59,6 @@ class ReplayService:
         
         return hooks
     
-    def clean_text(self, text):
-        """Clean up formatting issues in AI-generated text."""
-        if not isinstance(text, str):
-            return text
-        
-        import re
-        
-        # 0. Replace jargon with plain language (model sometimes ignores prompt)
-        for pattern, repl in [
-            (r'\bTheoretical Value Deltas?\b', 'the main problem'),
-            (r'\bUnified Throughput\b', 'healing and damage output'),
-            (r'\bPure Soak\b', 'lane XP'),
-            (r'\bForce Multiplier\b', 'your impact'),
-            (r'\bAdditive Link\b', 'combo potential'),
-            (r'\bMacro Anchor(age|ing)?\b', 'macro pressure'),
-            (r'\bAttrition Scaling\b', 'sustained presence'),
-            (r'\bPositional Forensics\b', 'positioning awareness'),
-            (r'\bAdditive Failure\b', 'mistakes that added up'),
-            (r'\bMultiplicative Failure\b', 'teammate dependency'),
-        ]:
-            text = re.sub(pattern, repl, text, flags=re.IGNORECASE)
-        # 0b. Fix bold spacing: word**Bold** -> word **Bold**; **Bold**word -> **Bold** word
-        text = re.sub(r'(\w)\*\*', r'\1 **', text)
-        text = re.sub(r'\*\*([^*]+)\*\*([A-Za-z])', r'**\1** \2', text)
-        
-        # 1. Flow period into previous word: "match ." -> "match."
-        text = re.sub(r'\s+([.;])(?!\w)', r'\1', text)
-        
-        # 2. Join trailing period on new line to previous line: "match\n." -> "match."
-        # This specifically addresses the "stray periods on their own lines" issue
-        text = re.sub(r'(\w)\s*\n\s*([.;])', r'\1\2', text)
-        
-        # 3. Join lines that don't end in punctuation (if the next line starts with lowercase)
-        # This fixes "broken sentences" split across multiple lines
-        text = re.sub(r'([^.;!?\n])\n([a-z])', r'\1 \2', text)
-        
-        # 4. Collapse multiple spaces (but preserve newlines)
-        text = re.sub(r'[ \t]+', ' ', text)
-        
-        # 5. Fix periods/semicolons followed by spaces then newline
-        text = re.sub(r'([.;])\s+\n', r'\1\n', text)
-        
-        # 6. Handle escaped quotes and double-escaped newlines
-        text = text.replace("\\'", "'")
-        text = text.replace('\\\\n', '\n')
         
         # 7. Normalize paragraph breaks (max 2 newlines)
         text = re.sub(r'\n{3,}', '\n\n', text)
@@ -369,6 +324,7 @@ class ReplayService:
         mech_stats = ""
         social_stats = ""
         tactical_timeline_data = ""
+        hero_specific_context = ""
         if forensics:
              # Mechanics
              m_list = [f"{m['label']}: {m['value']}" for m in forensics.get('mechanics', [])]
@@ -378,6 +334,14 @@ class ReplayService:
              soc = forensics.get('social_mechanics', {})
              focus = soc.get('most_targeted_enemy', 'None')
              social_stats = f"Most Targeted Enemy: {focus}"
+
+             # Quest Progression
+             quest = forensics.get('quest_progression', {})
+             if quest:
+                 q_name = quest.get('name', 'Quest')
+                 q_val = quest.get('value', 0)
+                 q_verdict = quest.get('verdict', 'N/A')
+                 hero_specific_context += f"- QUEST: {q_name} | Progress: {q_val} {quest.get('stat', 'units')} | Milestone Status: {q_verdict}\n"
 
              # Tactical Highlights (Timeline)
              highlights = forensics.get('tactical_highlights', [])
@@ -441,12 +405,16 @@ class ReplayService:
         solo_kills = user_core_stats.get('SoloKill', 0)
         personal_mercs = user_core_stats.get('MercCampCaptures', 0)
 
-        # Stitches Specific Context
-        stitches_context = ""
         if 'Stitches' in hero:
              hooks_thrown = user_player.get('kv_stats', {}).get('HooksThrown', 
                             user_player.get('stats', {}).get('HooksThrown', 0))
-             stitches_context = f"- STITCHES SPECIFIC: {hooks_thrown} Hooks Thrown (Note: Landed count unavailable, judge based on Takedowns)"
+             hero_specific_context += f"- STITCHES SPECIFIC: {hooks_thrown} Hooks Thrown (Note: Landed count unavailable, judge based on Takedowns)\n"
+        
+        # Globe Quest Context
+        globe_heroes = ['Stitches', 'Tyrael', 'Jaina', 'Muradin', 'Chen', 'Diablo']
+        globes = user_core_stats.get('RegenerationGlobe', 0)
+        if (hero in globe_heroes or globes > 0) and "GLOBE" not in hero_specific_context:
+            hero_specific_context += f"- GLOBE COLLECTION: {globes} Regeneration Globes collected. If the user took a globe quest (like 'Hungry for More' or 'Fingers of Frost'), mention if they hit a strong milestone (usually 20-30+ globes).\n"
 
         # 4. Forensic Timeline Correlation (Deaths vs Objectives)
         merc_events = advanced.get('merc_captures', [])
@@ -566,7 +534,11 @@ You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tact
 5. **VERBOSE & FORENSIC**: Your summary MUST be 3-5 detail-heavy sentences. No 1-sentence summaries.
 6. **STRICT HERO VALIDATION**: You may ONLY mention these heroes: {", ".join(valid_hero_names)}.
 7. **ALWAYS IDENTIFY CRITICAL MISTAKE**: Even in dominant wins, you MUST identify what prevented carrying harder. Look for opportunity costs: missed rotations, suboptimal positioning windows, untapped macro potential, or failure to capitalize on enemy mistakes. NEVER output "None detected" or "No mistakes" for critical_mistake.
-8. **FORMATTING**: If using bold (e.g. **Stitches**), put a space before the opening ** and after the closing **. Never concatenate bold with adjacent words (e.g. wrong: "**Macro Anchor**performance" — correct: "**Macro Anchor** performance"). Do not output unpaired asterisks.
+8. **FORMATTING - CRITICAL**:
+   a) NEVER wrap hero names in **bold**. Write hero names as plain text (e.g. "Muradin" not "**Muradin**"). The UI auto-renders hero names with icons.
+   b) When using bold for non-hero terms, ALWAYS put a space before the opening ** and after the closing ** (e.g. "your **Experience Contribution** drove" NOT "your**Experience Contribution**drove").
+   c) Do NOT output unpaired asterisks. Every ** must have a matching closing **.
+9. **WIN CONDITION MUST BE SPECIFIC**: Do NOT give generic advice like "die less", "position better", "collect more globes", "be more disciplined", or "focus on objectives". Instead, cite SPECIFIC data: which objective at what timestamp, which enemy hero to focus/avoid, which rotation timing to change, with numbers. Example: "At the 12:00 Immortal, rotating 15s earlier would have secured the race by ~8000 HP. Focus burst on Anduin first to eliminate healing before committing to Li-Ming."
 
 **GOLD STANDARD EXAMPLE:**
 "Despite the loss, your performance was strong. Your {user_core_stats.get('ExperienceContribution', 0):,} Experience Contribution included {minion_xp:,} minion XP, proving you drove level progression. However, during the {map_name} objective, positioning too far from the focus target cost you ~35% of your healing output, and that teamfight attrition cost the game."
@@ -580,11 +552,11 @@ You are the Cerebrate Strategic Analyst. Perform a clinical audit with high tact
 - Kill Streak: {kill_streak}
 - Experience Contribution: {user_core_stats.get('ExperienceContribution', 0):,} ({contribution['ExperienceContribution']}% of team total)
 - Minion XP: {minion_xp:,} — Your isolated lane XP, proving your macro pressure (not team's)
+- When you contributed {contribution['ExperienceContribution']}% of team XP and {minion_xp:,} minion XP, that is your macro pressure (not the team's).
 - Mercenary Captures: {personal_mercs} personal / {team_merc_count} team
 - Downtime: {downtime} (Time Dead)
 {level_context if level_context else ""}
-{f"- MECHANICS (STITCHES): {mech_stats}" if mech_stats else ""}
-{stitches_context if stitches_context else ""}
+{f"{hero_specific_context}" if hero_specific_context else ""}
 {f"- SOCIAL FOCUS: {social_stats}" if social_stats else ""}
 {f"- CRITICAL: {user_dc_event}" if user_dc_event else ""}
 
@@ -622,6 +594,7 @@ You MUST process every single event in this log into the 'areas_for_improvement'
         "kill_streak": "{kill_streak}",
         "mercenary_camps": {personal_mercs},
         "pure_soak": "{minion_xp:,}",
+        "globes": {globes},
         "downtime": "{downtime}",
         "contribution_index": "{contribution['HeroDamage']}% Dmg / {contribution['ExperienceContribution']}% XP"
     }},
@@ -640,7 +613,7 @@ You MUST process every single event in this log into the 'areas_for_improvement'
         }}
     ],
     "critical_mistake": "REQUIRED: Even in dominant wins, identify the ONE action/decision that prevented carrying harder. Examples: 'Positioning at X:XX cost 2 potential kills', 'Missing macro rotation at Y:YY denied 500 XP', 'Not capitalizing on enemy cooldowns at Z:ZZ extended game by 2 minutes'. If no clear mistake exists, identify the highest-opportunity-cost decision (e.g., 'Could have rotated earlier to secure objective 30s faster'). NEVER say 'None detected' or 'No mistakes'.",
-    "win_condition": "Actionable advice to maximize your impact next time."
+    "win_condition": "REQUIRED: Must reference specific data from this match — enemy hero to exploit/avoid, rotation timing, objective timing, or stat threshold. NEVER give generic advice like 'die less', 'position better', 'collect more globes', 'be more disciplined'. Example: 'At the 12:00 Immortal, rotating 15s earlier secures the race. Focus burst on Anduin first (weakest with 3 deaths) before engaging Li-Ming.'"
 }}
 ```
 Do not include any text before or after the JSON block.
@@ -685,21 +658,7 @@ Do not include any text before or after the JSON block.
                     if not analysis:
                         raise ValueError("Failed to parse analysis JSON")
                     
-                    for key, value in analysis.items():
-                        if isinstance(value, str):
-                            analysis[key] = self.clean_text(value)
-                        elif isinstance(value, dict):
-                            for subkey, subvalue in value.items():
-                                if isinstance(subvalue, str):
-                                    value[subkey] = self.clean_text(subvalue)
-                        elif isinstance(value, list):
-                            for i, item in enumerate(value):
-                                if isinstance(item, str):
-                                    value[i] = self.clean_text(item)
-                                elif isinstance(item, dict):
-                                    for subkey, subvalue in item.items():
-                                        if isinstance(subvalue, str):
-                                            item[subkey] = self.clean_text(subvalue)
+                    pass
                 except Exception as json_e:
                     print(f"DEBUG: FAILED TO PARSE JSON. RAW TEXT: {res_text}")
                     raise json_e
@@ -803,18 +762,7 @@ Analyze the 'Neural Network' of this match. Focus on Human Factors.
             if not social:
                 return None
             
-            # Clean text in social insights
-            for key, value in social.items():
-                if isinstance(value, str):
-                    social[key] = self.clean_text(value)
-                elif isinstance(value, list):
-                    for i, item in enumerate(value):
-                        if isinstance(item, str):
-                            value[i] = self.clean_text(item)
-                        elif isinstance(item, dict):
-                            for subkey, subvalue in item.items():
-                                if isinstance(subvalue, str):
-                                    item[subkey] = self.clean_text(subvalue)
+            # Clean text removed
             return social
         except:
             return None

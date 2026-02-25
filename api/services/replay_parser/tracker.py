@@ -136,6 +136,7 @@ def process_tracker_events(events, players, stats_data, game_loops=0):
                     'hero': hero_display,
                     'team': pl['team'],
                     'name': pl['name'],
+                    'gameloop': gameloop
                 })
 
         # --- BANS ---
@@ -149,7 +150,7 @@ def process_tracker_events(events, players, stats_data, game_loops=0):
             if uid is not None and 0 <= uid < len(players):
                 banned_by = players[uid]['name']
             bans.append({
-                'hero': event.get('m_hero', b'').decode('utf-8'),
+                'hero': get_hero_display_name(event.get('m_hero', b'').decode('utf-8')),
                 'gameloop': gameloop,
                 'team': team_id,
                 'banned_by': banned_by

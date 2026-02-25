@@ -129,7 +129,8 @@ export default function MetaComparison() {
 
                     // Compare S3 WR if available (min 5 games), else Lifetime
                     const userWR = hero.s3.games >= 5 ? hero.s3.wr : hero.lifetime.wr
-                    const comparisonLabel = hero.s3.games >= 5 ? 'S3 2025' : 'LIFETIME'
+                    const seasonName = verifiedStats?.active_season?.name || 'SEASON 1'
+                    const comparisonLabel = hero.s3.games >= 5 ? seasonName : 'LIFETIME'
 
                     const delta = meta.win_rate !== null ? userWR - meta.win_rate : null
                     const status = getPerformanceStatus(delta)

@@ -26,7 +26,7 @@ class DatabaseManager:
         if db_path is None:
             base_dir = os.path.dirname(os.path.abspath(__file__))
             project_root = os.path.abspath(os.path.join(base_dir, '..', '..', '..'))
-            self.db_path = os.path.join(project_root, 'war_room.db')
+            self.db_path = os.path.join(project_root, 'src', 'data', 'nexus_command_lab.db')
         else:
             self.db_path = db_path
         self._init_db()

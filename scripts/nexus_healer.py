@@ -16,7 +16,7 @@ from api.logger import ColoredLogger
 from api.summary_schema import SUMMARY_SCHEMA_VERSION
 from api.services.quota_manager import QuotaManager
 
-class CerebrateHealer:
+class NexusHealer:
     def __init__(self):
         self.db = DatabaseManager()
         self.api_url = "http://localhost:8000"
@@ -31,8 +31,8 @@ class CerebrateHealer:
         self.max_daily_reaudits = int(os.environ.get("HEALER_MAX_DAILY_REAUDITS", "20"))
         # Leave a safety buffer of requests so user actions are never starved
         self.min_quota_buffer = int(os.environ.get("HEALER_QUOTA_BUFFER", "100"))
-        self.api_log_path = os.path.join(PROJECT_ROOT, "api_server.log")
-        self.diagnostics_dir = os.path.join(PROJECT_ROOT, ".diagnostics")
+        self.api_log_path = os.path.join(PROJECT_ROOT, "logs", "api_server.log")
+        self.diagnostics_dir = os.path.join(PROJECT_ROOT, "logs", "diagnostics")
         os.makedirs(self.diagnostics_dir, exist_ok=True)
         
     def check_api_health(self):
@@ -461,7 +461,7 @@ class CerebrateHealer:
     def run(self):
         # PID Lock to prevent recursive healers
         my_pid = os.getpid()
-        healer_pid_file = os.path.join(PROJECT_ROOT, ".healer.pid")
+        healer_pid_file = os.path.join(PROJECT_ROOT, "logs", "pids", "healer.pid")
         
         if os.path.exists(healer_pid_file):
             try:
@@ -476,7 +476,7 @@ class CerebrateHealer:
         with open(healer_pid_file, 'w') as f:
             f.write(str(my_pid))
 
-        # ColoredLogger.success("🧊 Cerebrate Healer Protocol: ACTIVE", "HEAL")
+        # ColoredLogger.success("🧊 Nexus Healer Protocol: ACTIVE", "HEAL")
         # ColoredLogger.info("⏳ Healer observing initialization (30s delay)...", "HEAL")
         time.sleep(30) # Delay start to avoid race conditions with start_server.sh
         while True:
@@ -539,8 +539,8 @@ class CerebrateHealer:
             time.sleep(self.check_interval)
 
 if __name__ == "__main__":
-    healer = CerebrateHealer()
-    healer_pid_file = os.path.join(PROJECT_ROOT, ".healer.pid")
+    healer = NexusHealer()
+    healer_pid_file = os.path.join(PROJECT_ROOT, "logs", "pids", "healer.pid")
     try:
         healer.run()
     except KeyboardInterrupt:

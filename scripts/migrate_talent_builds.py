@@ -3,7 +3,7 @@ import json
 import os
 
 def migrate_talent_builds():
-    db_path = 'src/data/cerebrate.db'
+    db_path = 'src/data/nexus_core.db'
     conn = sqlite3.connect(db_path)
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()

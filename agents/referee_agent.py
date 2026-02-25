@@ -13,7 +13,7 @@ class RefereeAgent:
     
     Grades match summaries on:
     - Strategic Accuracy (1-5): Does the analysis correctly identify what happened?
-    - Persona Consistency (1-5): Does it match the Cerebrate authoritative tone?
+    - Persona Consistency (1-5): Does it match the Nexus authoritative tone?
     - Map-Specific Insight (1-5): Does it provide map-relevant tactical advice?
     """
     

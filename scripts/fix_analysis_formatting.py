@@ -42,7 +42,7 @@ def clean_analysis_dict(analysis):
         return analysis
 
 def main():
-    db_path = 'war_room.db'
+    db_path = 'nexus_command_lab.db'
     
     print(f"🔧 Fixing formatting issues in {db_path}...")
     

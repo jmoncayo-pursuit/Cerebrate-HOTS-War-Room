@@ -12,7 +12,6 @@ const PlayerNetwork = lazy(() => import('./components/PlayerNetwork'))
 const WarRoom = lazy(() => import('./pages/WarRoom'))
 const DataProvenance = lazy(() => import('./pages/DataProvenance'))
 const AgentDashboard = lazy(() => import('./components/AgentDashboard'))
-const DraftSimulation = lazy(() => import('./components/DraftSimulation'))
 const TemporalAnalysis = lazy(() => import('./components/TemporalAnalysis'))
 const CompositionMatrix = lazy(() => import('./components/tactical/CompositionMatrix'))
 const DossierHub = lazy(() => import('./pages/DossierHub'))
@@ -176,7 +175,6 @@ function App() {
               { id: 'provenance', label: 'Sources', icon: '📈', active: 'border-indigo-500/50 bg-indigo-500/10 text-indigo-400' },
               { id: 'heroes', label: 'Mastery', icon: '⚔️', active: 'border-amber-500/50 bg-amber-500/10 text-amber-400' },
               { id: 'agents', label: 'Agents', icon: '🤖', active: 'border-purple-500/50 bg-purple-500/10 text-purple-400' },
-              { id: 'vision', label: 'Vision', icon: '👁️', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
               { id: 'services', label: 'Services', icon: '⚡', active: 'border-orange-500/50 bg-orange-500/10 text-orange-400' },
               { id: 'healer-ops', label: 'Healer & Ops', icon: '🩺', active: 'border-emerald-500/50 bg-emerald-500/10 text-emerald-400' },
             ].map((btn) => (
@@ -191,7 +189,7 @@ function App() {
                 <span>{btn.icon}</span>
                 <span className="ml-2 hidden sm:inline">
                   {btn.label}
-                  {(btn.id === 'agents' || btn.id === 'heroes' || btn.id === 'vision') && (
+                  {(btn.id === 'agents' || btn.id === 'heroes') && (
                     <span className="text-[8px] px-1.5 py-0.5 bg-orange-500/20 text-orange-400 rounded font-mono font-bold ml-1">DEV</span>
                   )}
                 </span>
@@ -227,7 +225,6 @@ function App() {
             {viewMode === 'dossier-hub' && <DossierHub />}
             {viewMode === 'provenance' && <DataProvenance />}
             {viewMode === 'agents' && <AgentDashboard />}
-            {viewMode === 'vision' && <DraftSimulation />}
             {viewMode === 'services' && <ServicesPanel />}
             {viewMode === 'healer-ops' && <HealerOpsPage />}
           </Suspense>

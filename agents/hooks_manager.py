@@ -1,5 +1,5 @@
 """
-Hooks Manager for Cerebrate AI Agent
+Hooks Manager for Nexus AI Agent
 Inspired by Gemini CLI hooks - allows custom logic injection at key points
 """
 
@@ -62,7 +62,7 @@ class Hook:
 
 class HooksManager:
     """
-    Manages hooks for the Cerebrate AI agent
+    Manages hooks for the Nexus AI agent
     
     Hook Events:
     - BeforeQuery: Before routing to an agent

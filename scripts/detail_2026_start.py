@@ -3,7 +3,7 @@ import sqlite3
 import json
 
 def detail_2026_matches():
-    conn = sqlite3.connect('war_room.db')
+    conn = sqlite3.connect('nexus_command_lab.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 

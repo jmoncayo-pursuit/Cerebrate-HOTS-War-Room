@@ -23,7 +23,7 @@ for f in files:
 print("=== IDENTITY TRACKING REPORT ===")
 
 # 2. Check for name changes (Multiple names, one handle)
-conn = sqlite3.connect('war_room.db')
+conn = sqlite3.connect('nexus_command_lab.db')
 conn.row_factory = sqlite3.Row
 
 name_changes = conn.execute("""

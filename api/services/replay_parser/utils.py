@@ -73,5 +73,12 @@ def get_hero_display_name(internal_name):
         "sgthammer": "Sgt. Hammer",
         "l90etc": "E.T.C."
     }
-    clean = clean_text(internal_name)
-    return m.get(clean, internal_name)
+    display = internal_name
+    if display.startswith('Hero'):
+        display = display[4:]
+        
+    clean = clean_text(display)
+    if clean in m:
+        return m[clean]
+        
+    return display

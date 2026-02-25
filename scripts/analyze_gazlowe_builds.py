@@ -3,7 +3,7 @@ import json
 import collections
 
 def get_gazlowe_builds():
-    conn = sqlite3.connect('src/data/cerebrate.db')
+    conn = sqlite3.connect('src/data/nexus_core.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
 

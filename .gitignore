@@ -178,3 +178,4 @@ scripts/debug_chat.py
 scripts/rebuild_player_profile.py
 scripts/update_personal_stats.py
 .healer.pid
+OUR_JOURNEY.md

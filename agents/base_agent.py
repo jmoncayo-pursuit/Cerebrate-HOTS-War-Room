@@ -1,10 +1,10 @@
 """
 Base Agent Class
-Foundation for all specialized Cerebrate agents
+Foundation for all specialized Nexus agents
 """
 
 class BaseAgent:
-    """Base class for all specialized agents in the Cerebrate system"""
+    """Base class for all specialized agents in the Nexus system"""
     
     def __init__(self, name, role, expertise, call_gemini_fn=None):
         """

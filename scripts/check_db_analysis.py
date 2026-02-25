@@ -2,7 +2,7 @@ import sqlite3
 import json
 import os
 
-DB_PATH = "/Users/jmoncayopursuit.org/Desktop/Cerebrate-HOTS-War-Room/war_room.db"
+DB_PATH = "/Users/jmoncayopursuit.org/Desktop/Cerebrate-HOTS-War-Room/nexus_command_lab.db"
 
 def check_analysis():
     conn = sqlite3.connect(DB_PATH)

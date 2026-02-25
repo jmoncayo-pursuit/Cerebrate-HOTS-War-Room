@@ -115,7 +115,7 @@ def _get_win_factor(team_stats, enemy_stats, merc_diff):
 
 def main():
     """Fix all bad summaries in database"""
-    db = sqlite3.connect('war_room.db')
+    db = sqlite3.connect('nexus_command_lab.db')
     cursor = db.cursor()
     
     # Get all matches with analysis

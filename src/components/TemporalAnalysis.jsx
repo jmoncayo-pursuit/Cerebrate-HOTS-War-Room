@@ -47,7 +47,9 @@ const TemporalAnalysis = () => {
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {['morning', 'afternoon', 'evening', 'night'].map(period => {
                     const data = stats[period];
-                    const isOptimal = period === 'night'; // hardcoded bias based on known data or check highest
+                    const periods = Object.keys(stats);
+                    const optimalPeriod = periods.reduce((a, b) => stats[a].wr > stats[b].wr ? a : b);
+                    const isOptimal = period === optimalPeriod;
 
                     return (
                         <div key={period} className={`p-4 rounded-lg border ${isOptimal ? 'bg-indigo-900/20 border-indigo-500/50' : 'bg-black/20 border-white/5'}`}>

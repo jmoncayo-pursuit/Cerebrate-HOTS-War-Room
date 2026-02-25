@@ -18,9 +18,9 @@ from scripts.calculate_build_stats import main as update_build_stats
 # Configuration
 API_PORT = os.environ.get('API_PORT', '5001')
 API_URL = f"http://localhost:{API_PORT}/api/analyze_replay"
-PROCESSED_LOG = ".processed_replays.txt"
-STATUS_FILE = ".watcher_status.json"
-ACTIVITY_LOG_FILE = ".watcher_activity.json"
+PROCESSED_LOG = "storage/tracker/processed_replays.txt"
+STATUS_FILE = "storage/tracker/watcher_status.json"
+ACTIVITY_LOG_FILE = "storage/tracker/watcher_activity.json"
 MAX_ACTIVITY_LOG = 100  # Keep last 100 activities
 CHECK_INTERVAL = 10  # seconds between scans
 
@@ -462,7 +462,7 @@ def upload_replay(filepath, filename, processed=0, total=0, stages=None, details
 def main(once=False):
     """Main watcher loop"""
     # Write PID for tracking
-    pid_file = ".watcher.pid"
+    pid_file = "logs/pids/watcher.pid"
     try:
         with open(pid_file, 'w') as f:
             f.write(str(os.getpid()))
@@ -738,7 +738,7 @@ if __name__ == "__main__":
     try:
         main(once=args.once)
     finally:
-        pid_file = ".watcher.pid"
+        pid_file = "logs/pids/watcher.pid"
         if os.path.exists(pid_file):
             try: os.remove(pid_file)
             except: pass

@@ -110,11 +110,19 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
 
   const loading = replayLoading || configLoading;
 
-  // Get season config from API or use defaults
-  const ACTIVE_SEASON = cerebrateConfig?.active_season || DEFAULT_SEASON;
+  // Get season config from profile (merged from config on server) or fallback
+  const ACTIVE_SEASON = profile?.active_season || cerebrateConfig?.active_season || DEFAULT_SEASON;
   const SEASON_START_DATE = ACTIVE_SEASON.start_date;
   const SEASON_SLUG = ACTIVE_SEASON.slug;
   const SEASON_NAME = ACTIVE_SEASON.name;
+
+  const formatDisplayDate = (dateStr) => {
+    if (!dateStr) return '';
+    if (dateStr.includes('T')) return new Date(dateStr).toLocaleDateString();
+    // For YYYY-MM-DD, use local parts to avoid shift
+    const [y, m, d] = dateStr.split('-');
+    return `${m}/${d}/${y}`;
+  };
 
   // Helper to get hero portrait
   const getHeroPortrait = (heroName) => {
@@ -519,41 +527,38 @@ export default function WarRoom({ selectedMap, setSelectedMap }) {
         }}
       />
 
-      {/* Banner performance: carry vs carry (you and enemy banner = highest MMR) */}
+      {/* Overall Parsed Performance */}
       {(() => {
         const seasonMatches = (matchHistory || []).filter(m => new Date(m.date || m.timestamp_iso) > new Date(SEASON_START_DATE));
-        const whenBanner = seasonMatches.filter(m => m.user_was_banner === 1 || m.user_was_banner === true);
-        const whenNotBanner = seasonMatches.filter(m => !m.user_was_banner);
-        const bannerVsBanner = seasonMatches.filter(m => (m.user_was_banner === 1 || m.user_was_banner === true) && m.enemy_banner_name);
-        const w = (arr) => arr.filter(m => m.result?.toUpperCase() === 'WIN').length;
-        const wr = (arr) => (arr.length ? ((w(arr) / arr.length) * 100).toFixed(1) : '—');
-        if (whenBanner.length === 0 && bannerVsBanner.length === 0) return null;
+        if (seasonMatches.length === 0) return null;
+        const wins = seasonMatches.filter(m => m.result?.toUpperCase() === 'WIN').length;
+        const losses = seasonMatches.length - wins;
+        const wr = ((wins / seasonMatches.length) * 100).toFixed(1);
+
         return (
-          <div className="mb-6 p-4 rounded-xl border border-amber-500/20 bg-amber-500/5">
-            <div className="text-[10px] text-amber-400/90 font-black uppercase tracking-widest mb-3">Banner performance (carry vs carry)</div>
-            <p className="text-[11px] text-slate-400 mb-3">When you were team banner (highest MMR), you face the enemy banner. Understanding these games explains losses to their carry.</p>
-            <div className="flex flex-wrap gap-6">
-              {whenBanner.length > 0 && (
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase">When you were banner</span>
-                  <div className="text-lg font-black text-white">{w(whenBanner)}–{whenBanner.length - w(whenBanner)}</div>
-                  <div className="text-[11px] text-slate-400">{wr(whenBanner)}% WR · {whenBanner.length} games</div>
+          <div className="mb-6 p-4 rounded-xl border border-cyan-500/20 bg-slate-900/50 backdrop-blur-sm">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="text-[10px] text-cyan-400 font-black uppercase tracking-widest mb-1 flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse"></span>
+                  Overall Parsed Performance ({SEASON_NAME})
                 </div>
-              )}
-              {bannerVsBanner.length > 0 && (
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase">Banner vs banner</span>
-                  <div className="text-lg font-black text-white">{w(bannerVsBanner)}–{bannerVsBanner.length - w(bannerVsBanner)}</div>
-                  <div className="text-[11px] text-slate-400">{wr(bannerVsBanner)}% WR · {bannerVsBanner.length} games</div>
+                <p className="text-[11px] text-slate-400">Total win rate across all verified replays processed since {formatDisplayDate(SEASON_START_DATE)}.</p>
+              </div>
+              <div className="flex items-center gap-6">
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Games</span>
+                  <div className="text-xl font-black text-white">{seasonMatches.length}</div>
                 </div>
-              )}
-              {whenNotBanner.length > 0 && (
-                <div>
-                  <span className="text-[10px] text-slate-500 uppercase">When you weren’t banner</span>
-                  <div className="text-lg font-black text-white">{w(whenNotBanner)}–{whenNotBanner.length - w(whenNotBanner)}</div>
-                  <div className="text-[11px] text-slate-400">{wr(whenNotBanner)}% WR · {whenNotBanner.length} games</div>
+                <div className="flex flex-col items-center">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold">Record</span>
+                  <div className="text-xl font-black text-white">{wins} - {losses}</div>
                 </div>
-              )}
+                <div className="flex flex-col items-center border-l border-white/10 pl-6">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-widest font-bold mb-1">Win Rate</span>
+                  <div className={`text-2xl font-black leading-none ${wr >= 50 ? 'text-emerald-400' : 'text-cyan-400'}`}>{wr}%</div>
+                </div>
+              </div>
             </div>
           </div>
         );

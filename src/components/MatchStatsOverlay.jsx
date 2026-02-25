@@ -363,7 +363,7 @@ export default function MatchStatsOverlay({ match: initialMatch, onClose, onDisc
                     setLocalMatch(prev => ({ ...prev, analysis: data.analysis }))
                 }
             })
-            .catch(() => {})
+            .catch(() => { })
             .finally(() => { isSyncing.current = false })
     }, [localMatch?.id, localMatch?.hero, localMatch?.analysis?.forensics])
 
@@ -702,12 +702,43 @@ function PlayerRow({ player, isUser, isTop, onDiscuss, interactions }) {
 
 // --- SUMMARY TAB ---
 
-// Sanitize AI output: ensure spaces around **bold** so words don't run together
+// Sanitize AI output: strip orphaned asterisks, fix bold spacing, remove bold around hero names
 function sanitizeMarkdown(s) {
     if (!s || typeof s !== 'string') return s;
-    return s
-        .replace(/\*\*([^*]+)\*\*(?=[^\s])/g, '**$1** ')
-        .replace(/([^\s])\*\*([^*]+)\*\*/g, '$1 **$2**');
+
+    // Build hero name list for targeted stripping
+    const heroNames = Object.keys(heroData).sort((a, b) => b.length - a.length);
+
+    // 1. Strip **bold** markers around hero names (heroes get badge icons, not bold text)
+    heroNames.forEach(hero => {
+        if (!hero) return;
+        const escaped = hero.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        // Match: **HeroName** or ** HeroName ** (with optional possessive 's)
+        const pattern = new RegExp(`\\*\\*\\s*(${escaped}(?:'s)?)\\s*\\*\\*`, 'gi');
+        s = s.replace(pattern, '$1');
+    });
+
+    // 2. Clean orphaned ** that don't form valid bold pairs
+    //    Count ** markers; if odd, remove the last one
+    const markerCount = (s.match(/\*\*/g) || []).length;
+    if (markerCount % 2 !== 0) {
+        // Remove the last orphaned **
+        const lastIdx = s.lastIndexOf('**');
+        if (lastIdx >= 0) {
+            s = s.substring(0, lastIdx) + s.substring(lastIdx + 2);
+        }
+    }
+
+    // 3. Ensure spaces AROUND bold markers so text doesn't concatenate
+    //    "word**Bold**" → "word **Bold**"
+    s = s.replace(/([a-zA-Z0-9,;:])(\*\*)/g, '$1 $2');
+    //    "**Bold**word" → "**Bold** word"
+    s = s.replace(/(\*\*)([a-zA-Z0-9])/g, '$1 $2');
+
+    // 4. Clean double/triple spaces introduced by the above
+    s = s.replace(/  +/g, ' ');
+
+    return s;
 }
 
 // Helper function to render text with **bold** markdown and hero icons
@@ -1289,85 +1320,85 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                         <h3 className="text-red-300 font-bold uppercase tracking-wider text-base">Mortality & Errors</h3>
                     </div>
                     <div className="space-y-4">
-                {/* Critical Mistake — hide "None detected" placeholders and offer re-analyze */}
-                {(() => {
-                    const cm = analysis?.critical_mistake?.trim() || '';
-                    const cmLower = cm.toLowerCase();
-                    const isPlaceholder = [
-                        'none detected', 'no mistakes', 'no mistake', 'none found',
-                        'no critical mistake', 'no errors', 'no error', 'perfect game'
-                    ].some(p => cmLower.includes(p));
-                    if (!cm) return null;
-                    if (isPlaceholder) {
-                        return (
-                            <div className="bg-slate-800/50 border border-amber-500/30 p-6 rounded relative shadow-xl mb-8">
-                                <div className="flex items-center gap-3 mb-3 pb-2 border-b border-white/5">
-                                    <Activity className="text-amber-400" size={24} />
-                                    <h3 className="text-amber-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
-                                </div>
-                                <p className="text-gray-400 text-sm mb-4">
-                                    This summary was generated before we required opportunity-cost insights. Re-analyze to get a concrete critical mistake (what prevented carrying harder).
-                                </p>
-                                {handleForceRefresh && (
-                                    <button
-                                        type="button"
-                                        onClick={() => handleForceRefresh()}
-                                        disabled={isVerifying}
-                                        className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 font-bold text-sm uppercase tracking-wider disabled:opacity-50"
-                                    >
-                                        {isVerifying ? 'Re-analyzing…' : 'Re-analyze match'}
-                                    </button>
-                                )}
-                            </div>
-                        );
-                    }
-                    return (
-                        <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
-                            <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
-                                <div className="p-2 bg-orange-500/10 rounded">
-                                    <Activity className="text-orange-400" size={24} />
-                                </div>
-                                <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
-                            </div>
-                            <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
-                                <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
-                                    {renderMarkdown(analysis.critical_mistake)}
-                                </div>
-                            </Questionable>
-                        </div>
-                    );
-                })()}
-                        {analysis?.key_insights && (<>
-                                {(() => {
-                                    const deathsCount = analysis?.key_insights?.deaths ?? userStats?.Deaths ?? 0;
-                                    return (
-                                        <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
-                                            <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Attrition</div>
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center gap-2">
-                                                    <Skull size={20} className="text-red-400" />
-                                                    <span className="text-base text-gray-300">Deaths</span>
-                                                </div>
-                                                <span className="text-4xl font-black text-red-300">{deathsCount}</span>
-                                            </div>
+                        {/* Critical Mistake — hide "None detected" placeholders and offer re-analyze */}
+                        {(() => {
+                            const cm = analysis?.critical_mistake?.trim() || '';
+                            const cmLower = cm.toLowerCase();
+                            const isPlaceholder = [
+                                'none detected', 'no mistakes', 'no mistake', 'none found',
+                                'no critical mistake', 'no errors', 'no error', 'perfect game'
+                            ].some(p => cmLower.includes(p));
+                            if (!cm) return null;
+                            if (isPlaceholder) {
+                                return (
+                                    <div className="bg-slate-800/50 border border-amber-500/30 p-6 rounded relative shadow-xl mb-8">
+                                        <div className="flex items-center gap-3 mb-3 pb-2 border-b border-white/5">
+                                            <Activity className="text-amber-400" size={24} />
+                                            <h3 className="text-amber-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
                                         </div>
-                                    );
-                                })()}
-                                {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
+                                        <p className="text-gray-400 text-sm mb-4">
+                                            This summary was generated before we required opportunity-cost insights. Re-analyze to get a concrete critical mistake (what prevented carrying harder).
+                                        </p>
+                                        {handleForceRefresh && (
+                                            <button
+                                                type="button"
+                                                onClick={() => handleForceRefresh()}
+                                                disabled={isVerifying}
+                                                className="px-4 py-2 rounded-lg bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 font-bold text-sm uppercase tracking-wider disabled:opacity-50"
+                                            >
+                                                {isVerifying ? 'Re-analyzing…' : 'Re-analyze match'}
+                                            </button>
+                                        )}
+                                    </div>
+                                );
+                            }
+                            return (
+                                <div className="bg-[#2a1d0a] border border-orange-500/20 p-6 rounded relative hover:border-orange-500/40 transition-colors shadow-xl mb-8">
+                                    <div className="flex items-center gap-3 mb-4 pb-2 border-b border-white/5">
+                                        <div className="p-2 bg-orange-500/10 rounded">
+                                            <Activity className="text-orange-400" size={24} />
+                                        </div>
+                                        <h3 className="text-orange-400 font-bold uppercase tracking-wider text-sm">Critical Mistake</h3>
+                                    </div>
+                                    <Questionable title="Critical Mistake" value={analysis.critical_mistake} onDiscuss={onDiscuss}>
+                                        <div className="text-orange-100/90 leading-relaxed text-lg font-medium italic">
+                                            {renderMarkdown(analysis.critical_mistake)}
+                                        </div>
+                                    </Questionable>
+                                </div>
+                            );
+                        })()}
+                        {analysis?.key_insights && match?.hero !== 'Stitches' && (<>
+                            {(() => {
+                                const deathsCount = analysis?.key_insights?.deaths ?? userStats?.Deaths ?? 0;
+                                return (
                                     <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
-                                        <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
+                                        <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Attrition</div>
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
                                                 <Skull size={20} className="text-red-400" />
-                                                <span className="text-base text-gray-300">Time spent dead</span>
+                                                <span className="text-base text-gray-300">Deaths</span>
                                             </div>
-                                            <div className="text-right">
-                                                <div className="text-4xl font-black text-red-300">{analysis.key_insights.downtime}</div>
-                                                <div className="text-[10px] text-gray-500">respawn time</div>
-                                            </div>
+                                            <span className="text-4xl font-black text-red-300">{deathsCount}</span>
                                         </div>
                                     </div>
-                                )}
+                                );
+                            })()}
+                            {analysis.key_insights.downtime && !["Not Available", "0:00", "0s", "0 seconds"].includes(analysis.key_insights.downtime) && (
+                                <div className="bg-black/30 rounded-lg p-5 border border-red-500/20">
+                                    <div className="text-sm text-red-400 uppercase tracking-wider mb-3 font-bold">Downtime</div>
+                                    <div className="flex items-center justify-between">
+                                        <div className="flex items-center gap-2">
+                                            <Skull size={20} className="text-red-400" />
+                                            <span className="text-base text-gray-300">Time spent dead</span>
+                                        </div>
+                                        <div className="text-right">
+                                            <div className="text-4xl font-black text-red-300">{analysis.key_insights.downtime}</div>
+                                            <div className="text-[10px] text-gray-500">respawn time</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </>)}
 
                         {/* Parse killer stats with timestamps - "**Alarak** (4 deaths: 01:59, 08:20, 15:46, 16:56)" */}
@@ -1542,9 +1573,9 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                     const context = isObject ? death.context : death;
                                     const deathStr = String(death).toUpperCase();
                                     // Filter out placeholder data
-                                    return time && time !== 'N/A' && time !== 'NO_DATA' && 
-                                           killer && killer !== 'N/A' && killer !== 'NO_DATA' &&
-                                           !deathStr.includes('NO_DATA') && !deathStr.includes('NO DEATHS RECORDED');
+                                    return time && time !== 'N/A' && time !== 'NO_DATA' &&
+                                        killer && killer !== 'N/A' && killer !== 'NO_DATA' &&
+                                        !deathStr.includes('NO_DATA') && !deathStr.includes('NO DEATHS RECORDED');
                                 });
 
                                 // If no valid deaths, show flawless victory message or skip entirely
@@ -1948,7 +1979,7 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
 
                 {/* Neural Attrition Audit - Dedicated Death Logic */}
                 {
-                    analysis?.forensics?.death_highlights && analysis.forensics.death_highlights.length > 0 && (
+                    analysis?.forensics?.death_highlights && analysis.forensics.death_highlights.length > 0 && match?.hero !== 'Stitches' && (
                         <div className="bg-[#1a0f1a] border border-red-500/30 rounded-lg p-6 shadow-2xl relative overflow-hidden group">
                             <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                                 <Skull size={100} className="text-red-500" />
@@ -1976,8 +2007,8 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                             });
                                             if (aiDeath) {
                                                 deathContext = typeof aiDeath === 'object' ? aiDeath.context : aiDeath;
-                                                // Clean up if it starts with timestamp/killer
-                                                deathContext = deathContext.replace(/^\d+:\d+\s*-\s*/, '').replace(/Killed by \w+\s*-\s*/, '');
+                                                // Clean up if it starts with timestamp/killer and strip markdown asterisks
+                                                deathContext = deathContext.replace(/^\d+:\d+\s*-\s*/, '').replace(/Killed by \w+\s*-\s*/, '').replace(/\*\*/g, '');
                                             }
                                         }
                                     }
@@ -2071,11 +2102,11 @@ function SummaryTab({ match, analysis, onDiscuss, localMatch, setLocalMatch, onC
                                 </div>
 
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                    {killSection.items.map((kill, i) => {
+                                    {killSection.items.slice(0, Math.max(1, Math.min(4, userStats.SoloKill || 4))).map((kill, i) => {
                                         const isObject = typeof kill === 'object';
                                         const time = isObject ? kill.time : kill.match(/(\d+:\d+)/)?.[1];
                                         const victim = isObject ? kill.victim : kill.match(/Killed (\w+)/)?.[1];
-                                        const context = isObject ? kill.context : kill.split('-')[1]?.trim();
+                                        const context = (isObject ? kill.context : kill.split('-')[1]?.trim())?.replace(/\*\*/g, '');
 
                                         const isSummary = time === 'SUMMARY' || victim === 'Stats';
                                         const isAssist = victim === 'Assisted';
