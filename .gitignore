@@ -179,3 +179,6 @@ scripts/rebuild_player_profile.py
 scripts/update_personal_stats.py
 .healer.pid
 OUR_JOURNEY.md
+
+# Nexus Comm-Link (Managed in its own Repository)
+nexus_comm_link/
