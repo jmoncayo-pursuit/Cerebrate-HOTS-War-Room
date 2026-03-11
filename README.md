@@ -82,8 +82,7 @@ Nexus Command Lab leverages a best-in-class multi-model strategy, routing tasks 
 
 ## 🏗️ Architecture: DX + AX
 
-We follow **DX (Developer Experience)** and **AX (Agent Experience)** as first-class architecture standards.
-
+Nexus Lab Experiments prioritize **DX (Developer Experience)** and **AX (Agent Experience)** as foundational architecture standards for a robust and user-friendly environment, influencing system design and implementation.
 ### DX — Developer Experience
 - **Unified entrypoint**: `./dev.sh` brings up the frontend, API, and replay watcher.
 - **Predictable API**: REST under `/api` with a single discovery manifest.
